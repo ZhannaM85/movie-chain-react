@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import type { Movie } from '../types/movie';
 import { getActorDetails, getActorMovieCredits, posterUrl, profileUrl } from '../services/tmdb';
 import type { Actor } from '../types/movie';
 import { useChainContext } from '../context/ChainContext';
 import { Link } from 'react-router-dom';
+
+type SortOption = 'popularity' | 'title-asc' | 'title-desc' | 'date-newest' | 'date-oldest';
 
 export default function MovieSuggestions() {
   const { selectedActorId, addMovie, links } = useChainContext();
@@ -13,15 +15,22 @@ export default function MovieSuggestions() {
   const [error, setError] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<SortOption>('popularity');
+  const [prevDeps, setPrevDeps] = useState({ actorId: selectedActorId, linksLen: links.length });
+
+  if (selectedActorId !== prevDeps.actorId || links.length !== prevDeps.linksLen) {
+    setPrevDeps({ actorId: selectedActorId, linksLen: links.length });
+    setLoading(true);
+    setError(null);
+  }
 
   useEffect(() => {
     if (!selectedActorId) return;
-
-    setLoading(true);
-    setError(null);
+    let ignore = false;
 
     Promise.all([getActorDetails(selectedActorId), getActorMovieCredits(selectedActorId)])
       .then(([actorData, creditsData]) => {
+        if (ignore) return;
         setActor(actorData);
         const watchedIds = new Set(links.map((l) => l.movie.id));
         const filtered = creditsData.cast
@@ -29,8 +38,16 @@ export default function MovieSuggestions() {
           .sort((a, b) => b.popularity - a.popularity);
         setMovies(filtered);
       })
-      .catch((err: Error) => setError(err.message))
-      .finally(() => setLoading(false));
+      .catch((err: Error) => {
+        if (ignore) return;
+        setError(err.message);
+      })
+      .finally(() => {
+        if (ignore) return;
+        setLoading(false);
+      });
+
+    return () => { ignore = true; };
   }, [selectedActorId, links]);
 
   if (!selectedActorId) return null;
@@ -74,47 +91,34 @@ export default function MovieSuggestions() {
         </div>
       )}
 
-      <div className="mb-4">
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search filmography..."
-          className="w-full max-w-sm px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+          className="w-full sm:max-w-sm px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
         />
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as SortOption)}
+          className="px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition cursor-pointer"
+        >
+          <option value="popularity">Sort: Popularity</option>
+          <option value="title-asc">Sort: Title A–Z</option>
+          <option value="title-desc">Sort: Title Z–A</option>
+          <option value="date-newest">Sort: Newest first</option>
+          <option value="date-oldest">Sort: Oldest first</option>
+        </select>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-        {(() => {
-          const query = searchQuery.trim().toLowerCase();
-          const filtered = query
-            ? movies.filter((m) => m.title.toLowerCase().includes(query))
-            : showAll
-              ? movies
-              : movies.slice(0, 20);
-          return filtered.map((movie) => (
-            <button
-              key={movie.id}
-              onClick={() => addMovie(movie)}
-              className="group text-left rounded-lg overflow-hidden bg-gray-800/50 hover:bg-gray-800 border border-gray-800 hover:border-indigo-500/50 transition-all hover:scale-[1.02]"
-            >
-              <img
-                src={posterUrl(movie.poster_path, 'w342')}
-                alt={movie.title}
-                className="w-full aspect-[2/3] object-cover"
-              />
-              <div className="p-2">
-                <h4 className="text-sm font-medium text-gray-200 group-hover:text-white truncate">
-                  {movie.title}
-                </h4>
-                <p className="text-xs text-gray-500">
-                  {movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A'}
-                </p>
-              </div>
-            </button>
-          ));
-        })()}
-      </div>
+      <MovieGrid
+        movies={movies}
+        sortBy={sortBy}
+        searchQuery={searchQuery}
+        showAll={showAll}
+        onSelect={addMovie}
+      />
       {!searchQuery.trim() && !showAll && movies.length > 20 && (
         <button
           onClick={() => setShowAll(true)}
@@ -127,9 +131,80 @@ export default function MovieSuggestions() {
       {movies.length === 0 && (
         <p className="text-gray-500 py-4 text-center">No more movies available from this actor.</p>
       )}
-      {movies.length > 0 && searchQuery.trim() && !movies.some((m) => m.title.toLowerCase().includes(searchQuery.trim().toLowerCase())) && (
-        <p className="text-gray-500 py-4 text-center">No movies matching "{searchQuery.trim()}"</p>
-      )}
+    </div>
+  );
+}
+
+function sortMovies(movies: Movie[], sortBy: SortOption): Movie[] {
+  const sorted = [...movies];
+  switch (sortBy) {
+    case 'title-asc':
+      return sorted.sort((a, b) => a.title.localeCompare(b.title));
+    case 'title-desc':
+      return sorted.sort((a, b) => b.title.localeCompare(a.title));
+    case 'date-newest':
+      return sorted.sort((a, b) => (b.release_date || '').localeCompare(a.release_date || ''));
+    case 'date-oldest':
+      return sorted.sort((a, b) => (a.release_date || '').localeCompare(b.release_date || ''));
+    case 'popularity':
+    default:
+      return sorted.sort((a, b) => b.popularity - a.popularity);
+  }
+}
+
+function MovieGrid({
+  movies,
+  sortBy,
+  searchQuery,
+  showAll,
+  onSelect,
+}: {
+  movies: Movie[];
+  sortBy: SortOption;
+  searchQuery: string;
+  showAll: boolean;
+  onSelect: (movie: Movie) => void;
+}) {
+  const displayMovies = useMemo(() => {
+    const sorted = sortMovies(movies, sortBy);
+    const query = searchQuery.trim().toLowerCase();
+    if (query) {
+      return sorted.filter((m) => m.title.toLowerCase().includes(query));
+    }
+    return showAll ? sorted : sorted.slice(0, 20);
+  }, [movies, sortBy, searchQuery, showAll]);
+
+  if (displayMovies.length === 0 && searchQuery.trim()) {
+    return (
+      <p className="text-gray-500 py-4 text-center">
+        No movies matching "{searchQuery.trim()}"
+      </p>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+      {displayMovies.map((movie) => (
+        <button
+          key={movie.id}
+          onClick={() => onSelect(movie)}
+          className="group text-left rounded-lg overflow-hidden bg-gray-800/50 hover:bg-gray-800 border border-gray-800 hover:border-indigo-500/50 transition-all hover:scale-[1.02]"
+        >
+          <img
+            src={posterUrl(movie.poster_path, 'w342')}
+            alt={movie.title}
+            className="w-full aspect-[2/3] object-cover"
+          />
+          <div className="p-2">
+            <h4 className="text-sm font-medium text-gray-200 group-hover:text-white truncate">
+              {movie.title}
+            </h4>
+            <p className="text-xs text-gray-500">
+              {movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A'}
+            </p>
+          </div>
+        </button>
+      ))}
     </div>
   );
 }
