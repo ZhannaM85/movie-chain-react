@@ -10,7 +10,9 @@ export default function ChainList() {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-3 px-1">
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Chain</h2>
+        <Link to="/chain" className="text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors">
+          Chain
+        </Link>
         {links.length > 1 && (
           <button
             onClick={undoLast}

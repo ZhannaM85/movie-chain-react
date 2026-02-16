@@ -2,6 +2,10 @@
 
 A React learning project where movies are chained together through shared actors. Start with any movie, pick an actor from it, then pick one of their other movies — and keep going!
 
+## Live Demo
+
+The app is deployed and available at: **[https://zhannam85.github.io/movie-chain-react/](https://zhannam85.github.io/movie-chain-react/)**
+
 ## Rules of the Chain
 
 1. Pick a starting movie (from trending or search)
