@@ -30,7 +30,7 @@ function ChainView({ movieId }: { movieId: number }) {
       <div className="flex gap-6">
         {/* Sidebar */}
         <aside className="hidden md:block w-56 flex-shrink-0">
-          <div className="sticky top-20">
+          <div className="sticky top-20 max-h-[calc(100vh-5rem)] flex flex-col">
             <ChainList />
           </div>
         </aside>

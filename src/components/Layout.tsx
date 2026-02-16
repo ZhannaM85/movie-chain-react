@@ -14,9 +14,12 @@ export default function Layout({ children }: { children: ReactNode }) {
           </Link>
           <div className="flex items-center gap-4">
             {links.length > 0 && (
-              <span className="text-sm text-gray-400">
+              <Link
+                to="/chain"
+                className="text-sm text-gray-400 hover:text-indigo-400 transition-colors"
+              >
                 {links.length} movie{links.length !== 1 ? 's' : ''} in chain
-              </span>
+              </Link>
             )}
             {links.length > 0 && (
               <button
