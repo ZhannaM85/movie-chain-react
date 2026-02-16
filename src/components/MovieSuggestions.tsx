@@ -11,6 +11,8 @@ export default function MovieSuggestions() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     if (!selectedActorId) return;
@@ -72,32 +74,61 @@ export default function MovieSuggestions() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-        {movies.slice(0, 20).map((movie) => (
-          <button
-            key={movie.id}
-            onClick={() => addMovie(movie)}
-            className="group text-left rounded-lg overflow-hidden bg-gray-800/50 hover:bg-gray-800 border border-gray-800 hover:border-indigo-500/50 transition-all hover:scale-[1.02]"
-          >
-            <img
-              src={posterUrl(movie.poster_path, 'w342')}
-              alt={movie.title}
-              className="w-full aspect-[2/3] object-cover"
-            />
-            <div className="p-2">
-              <h4 className="text-sm font-medium text-gray-200 group-hover:text-white truncate">
-                {movie.title}
-              </h4>
-              <p className="text-xs text-gray-500">
-                {movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A'}
-              </p>
-            </div>
-          </button>
-        ))}
+      <div className="mb-4">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search filmography..."
+          className="w-full max-w-sm px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+        />
       </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        {(() => {
+          const query = searchQuery.trim().toLowerCase();
+          const filtered = query
+            ? movies.filter((m) => m.title.toLowerCase().includes(query))
+            : showAll
+              ? movies
+              : movies.slice(0, 20);
+          return filtered.map((movie) => (
+            <button
+              key={movie.id}
+              onClick={() => addMovie(movie)}
+              className="group text-left rounded-lg overflow-hidden bg-gray-800/50 hover:bg-gray-800 border border-gray-800 hover:border-indigo-500/50 transition-all hover:scale-[1.02]"
+            >
+              <img
+                src={posterUrl(movie.poster_path, 'w342')}
+                alt={movie.title}
+                className="w-full aspect-[2/3] object-cover"
+              />
+              <div className="p-2">
+                <h4 className="text-sm font-medium text-gray-200 group-hover:text-white truncate">
+                  {movie.title}
+                </h4>
+                <p className="text-xs text-gray-500">
+                  {movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A'}
+                </p>
+              </div>
+            </button>
+          ));
+        })()}
+      </div>
+      {!searchQuery.trim() && !showAll && movies.length > 20 && (
+        <button
+          onClick={() => setShowAll(true)}
+          className="mt-4 text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+        >
+          Show all {movies.length} movies
+        </button>
+      )}
 
       {movies.length === 0 && (
         <p className="text-gray-500 py-4 text-center">No more movies available from this actor.</p>
+      )}
+      {movies.length > 0 && searchQuery.trim() && !movies.some((m) => m.title.toLowerCase().includes(searchQuery.trim().toLowerCase())) && (
+        <p className="text-gray-500 py-4 text-center">No movies matching "{searchQuery.trim()}"</p>
       )}
     </div>
   );
