@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 type SortOption = 'popularity' | 'title-asc' | 'title-desc' | 'date-newest' | 'date-oldest';
 
 export default function MovieSuggestions() {
-  const { selectedActorId, addMovie, links } = useChainContext();
+  const { selectedActorId, addMovie, links, cancelActorSelection } = useChainContext();
   const [actor, setActor] = useState<Actor | null>(null);
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
@@ -88,6 +88,13 @@ export default function MovieSuggestions() {
             </Link>
             <p className="text-sm text-gray-400">Pick a movie from their filmography</p>
           </div>
+          <button
+            type="button"
+            onClick={cancelActorSelection}
+            className="ml-auto text-xs px-3 py-1.5 rounded-full border border-indigo-500/60 text-indigo-300 hover:bg-indigo-500/10 hover:border-indigo-400 transition-colors"
+          >
+            Change actor
+          </button>
         </div>
       )}
 

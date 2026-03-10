@@ -96,6 +96,15 @@ export function useChain() {
     });
   }, []);
 
+  const cancelActorSelection = useCallback(() => {
+    sessionStorage.removeItem('pending-actor-name');
+    setState((prev) => ({
+      ...prev,
+      currentStep: 'pick-actor',
+      selectedActorId: null,
+    }));
+  }, []);
+
   const undoLast = useCallback(() => {
     setState((prev) => {
       if (prev.links.length <= 1) {
@@ -125,5 +134,6 @@ export function useChain() {
     updateComment,
     resetChain,
     undoLast,
+    cancelActorSelection,
   };
 }
