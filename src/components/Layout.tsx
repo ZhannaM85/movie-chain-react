@@ -9,23 +9,23 @@ export default function Layout({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-gray-950 text-gray-100">
       <header className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <Link
               to="/"
               className="text-xl font-bold tracking-tight text-white hover:text-indigo-400 transition-colors"
             >
               Movie Chain
             </Link>
-            <nav className="hidden sm:flex items-center gap-4 text-sm">
+            <nav className="flex items-center gap-3 text-xs sm:text-sm text-gray-400">
               <Link
                 to="/"
-                className="text-gray-400 hover:text-indigo-400 transition-colors"
+                className="hover:text-indigo-400 transition-colors"
               >
                 Home
               </Link>
               <Link
                 to="/about"
-                className="text-gray-400 hover:text-indigo-400 transition-colors"
+                className="hover:text-indigo-400 transition-colors"
               >
                 About
               </Link>
