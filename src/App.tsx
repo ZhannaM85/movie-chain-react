@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage';
 import MovieDetailPage from './pages/MovieDetailPage';
 import ActorDetailPage from './pages/ActorDetailPage';
 import ChainPage from './pages/ChainPage';
+import AboutPage from './pages/AboutPage';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/chain" element={<ChainPage />} />
           <Route path="/movie/:id" element={<MovieDetailPage />} />
           <Route path="/actor/:id" element={<ActorDetailPage />} />
+          <Route path="/about" element={<AboutPage />} />
         </Routes>
       </Layout>
     </ChainProvider>
