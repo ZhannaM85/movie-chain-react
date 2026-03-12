@@ -2,6 +2,11 @@ import { useParams, Link } from 'react-router-dom';
 import { useActorDetails } from '../hooks/useActorDetails';
 import { profileUrl, posterUrl } from '../services/tmdb';
 
+/**
+ * Page that shows biography and notable movies for a specific actor.
+ *
+ * @returns {JSX.Element} The actor detail view.
+ */
 export default function ActorDetailPage() {
   const { id } = useParams<{ id: string }>();
   const personId = id ? parseInt(id, 10) : null;
