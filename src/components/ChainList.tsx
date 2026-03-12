@@ -2,6 +2,11 @@ import { Link } from 'react-router-dom';
 import { useChainContext } from '../context/ChainContext';
 import { posterUrl } from '../services/tmdb';
 
+/**
+ * Sidebar list that summarizes the current movie chain with quick navigation.
+ *
+ * @returns {JSX.Element | null} The chain list, or null if there is no chain.
+ */
 export default function ChainList() {
   const { links, undoLast } = useChainContext();
 

@@ -3,6 +3,11 @@ import { Link } from 'react-router-dom';
 import { useChainContext } from '../context/ChainContext';
 import { posterUrl, profileUrl, getActorDetails } from '../services/tmdb';
 
+/**
+ * Dedicated page that visualizes the full movie chain with connecting actors.
+ *
+ * @returns {JSX.Element} The chain overview page.
+ */
 export default function ChainPage() {
   const { links, resetChain, undoLast } = useChainContext();
 
@@ -131,6 +136,12 @@ export default function ChainPage() {
   );
 }
 
+/**
+ * Small circular avatar for a connecting actor in the chain.
+ *
+ * @param {{ actorId: number }} props - The actor identifier whose avatar should be shown.
+ * @returns {JSX.Element} The avatar image or a placeholder icon.
+ */
 function ActorAvatar({ actorId }: { actorId: number }) {
   const [imgSrc, setImgSrc] = useState<string | null>(null);
 

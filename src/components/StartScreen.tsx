@@ -3,6 +3,11 @@ import type { Movie } from '../types/movie';
 import { getTrendingMovies, searchMovies, posterUrl } from '../services/tmdb';
 import { useChainContext } from '../context/ChainContext';
 
+/**
+ * Landing screen where the user can search or browse movies to start a new chain.
+ *
+ * @returns {JSX.Element} The start screen view.
+ */
 export default function StartScreen() {
   const { startChain } = useChainContext();
   const [trending, setTrending] = useState<Movie[]>([]);

@@ -1,5 +1,10 @@
 import { Link } from 'react-router-dom';
 
+/**
+ * Static informational page that explains how the Movie Chain app works.
+ *
+ * @returns {JSX.Element} The about page content.
+ */
 export default function AboutPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 space-y-8">

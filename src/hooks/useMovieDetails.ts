@@ -8,6 +8,12 @@ interface UseMovieDetailsResult {
   error: string | null;
 }
 
+/**
+ * React hook that fetches detailed information and credits for a movie.
+ *
+ * @param {number | null} movieId - The TMDB movie identifier, or null to clear data.
+ * @returns {UseMovieDetailsResult} The movie with credits plus loading and error state.
+ */
 export function useMovieDetails(movieId: number | null): UseMovieDetailsResult {
   const [movie, setMovie] = useState<(Movie & { credits: MovieCredits }) | null>(null);
   const [loading, setLoading] = useState(false);

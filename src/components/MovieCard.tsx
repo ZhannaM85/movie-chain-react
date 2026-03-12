@@ -7,6 +7,12 @@ interface MovieCardProps {
   showLink?: boolean;
 }
 
+/**
+ * Displays a card with key information about a movie, optionally wrapped in a link.
+ *
+ * @param {MovieCardProps} props - The component props.
+ * @returns {JSX.Element} The rendered movie card.
+ */
 export default function MovieCard({ movie, showLink = true }: MovieCardProps) {
   const year = movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A';
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '—';

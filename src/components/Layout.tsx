@@ -3,6 +3,12 @@ import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { useChainContext } from '../context/ChainContext';
 
+/**
+ * Main application shell with header, navigation, and responsive layout around the page content.
+ *
+ * @param {{ children: ReactNode }} props - The layout props.
+ * @returns {JSX.Element} The rendered layout.
+ */
 export default function Layout({ children }: { children: ReactNode }) {
   const { links, resetChain } = useChainContext();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);

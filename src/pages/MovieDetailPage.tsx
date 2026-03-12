@@ -4,6 +4,11 @@ import { posterUrl, profileUrl } from '../services/tmdb';
 import { useChainContext } from '../context/ChainContext';
 import UserComment from '../components/UserComment';
 
+/**
+ * Page that shows full details for a movie, including cast and any chain comment.
+ *
+ * @returns {JSX.Element} The movie detail view.
+ */
 export default function MovieDetailPage() {
   const { id } = useParams<{ id: string }>();
   const movieId = id ? parseInt(id, 10) : null;
