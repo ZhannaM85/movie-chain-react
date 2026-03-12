@@ -9,6 +9,12 @@ interface UseActorDetailsResult {
   error: string | null;
 }
 
+/**
+ * React hook that fetches an actor and a curated list of their movies.
+ *
+ * @param {number | null} personId - The TMDB person identifier, or null to clear data.
+ * @returns {UseActorDetailsResult} The actor details, movies, and loading/error state.
+ */
 export function useActorDetails(personId: number | null): UseActorDetailsResult {
   const [actor, setActor] = useState<Actor | null>(null);
   const [movies, setMovies] = useState<Movie[]>([]);

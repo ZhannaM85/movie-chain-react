@@ -8,6 +8,12 @@ interface ActorPickerProps {
   movieId: number;
 }
 
+/**
+ * Shows the main cast for a movie and lets the user pick an actor to continue the chain.
+ *
+ * @param {ActorPickerProps} props - The component props.
+ * @returns {JSX.Element} The rendered actor picker.
+ */
 export default function ActorPicker({ movieId }: ActorPickerProps) {
   const { selectActor, excludedActorId } = useChainContext();
   const [cast, setCast] = useState<Actor[]>([]);

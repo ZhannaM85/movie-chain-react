@@ -8,6 +8,11 @@ import ActorDetailPage from './pages/ActorDetailPage';
 import ChainPage from './pages/ChainPage';
 import AboutPage from './pages/AboutPage';
 
+/**
+ * Root application component that wires up providers, layout, and routes.
+ *
+ * @returns {JSX.Element} The routed application tree.
+ */
 function App() {
   return (
     <ChainProvider>

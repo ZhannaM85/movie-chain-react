@@ -3,6 +3,11 @@ import type { ChainState, Movie } from '../types/movie';
 
 const STORAGE_KEY = 'movie-chain-state';
 
+/**
+ * Loads the persisted movie chain state from localStorage, falling back to the initial state.
+ *
+ * @returns {ChainState} The restored or default chain state.
+ */
 function loadState(): ChainState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -18,10 +23,29 @@ function loadState(): ChainState {
   };
 }
 
+/**
+ * Persists the given chain state to localStorage.
+ *
+ * @param {ChainState} state - The current chain state to store.
+ */
 function saveState(state: ChainState) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+/**
+ * React hook that manages the full lifecycle of a movie chain,
+ * including persistence, navigation steps, and user comments.
+ *
+ * @returns {ChainState & {
+ *   startChain: (movie: Movie) => void;
+ *   selectActor: (actorId: number, actorName: string) => void;
+ *   addMovie: (movie: Movie) => void;
+ *   updateComment: (index: number, comment: string) => void;
+ *   resetChain: () => void;
+ *   undoLast: () => void;
+ *   cancelActorSelection: () => void;
+ * }} The current chain state and mutation helpers.
+ */
 export function useChain() {
   const [state, setState] = useState<ChainState>(loadState);
 

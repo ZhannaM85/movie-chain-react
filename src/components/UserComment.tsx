@@ -5,6 +5,12 @@ interface UserCommentProps {
   chainIndex: number;
 }
 
+/**
+ * Allows the user to add and edit a personal note for a specific movie in the chain.
+ *
+ * @param {UserCommentProps} props - The component props.
+ * @returns {JSX.Element | null} The comment editor or display, or null if the link is missing.
+ */
 export default function UserComment({ chainIndex }: UserCommentProps) {
   const { links, updateComment } = useChainContext();
   const link = links[chainIndex];

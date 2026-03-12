@@ -7,6 +7,11 @@ import MovieSuggestions from '../components/MovieSuggestions';
 import UserComment from '../components/UserComment';
 import { useMovieDetails } from '../hooks/useMovieDetails';
 
+/**
+ * Main page that either shows the start screen or the active chain view.
+ *
+ * @returns {JSX.Element} The rendered home page.
+ */
 export default function HomePage() {
   const { links, currentStep } = useChainContext();
 
@@ -20,6 +25,12 @@ export default function HomePage() {
   return <ChainView movieId={currentMovieId} />;
 }
 
+/**
+ * Renders the current movie, user comment, and the next-step controls for the chain.
+ *
+ * @param {{ movieId: number }} props - The props containing the current movie ID.
+ * @returns {JSX.Element} The chain view for the current movie.
+ */
 function ChainView({ movieId }: { movieId: number }) {
   const { currentStep, links } = useChainContext();
   const { movie, loading } = useMovieDetails(movieId);

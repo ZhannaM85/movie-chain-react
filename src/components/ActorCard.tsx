@@ -10,6 +10,12 @@ interface ActorCardProps {
   showLink?: boolean;
 }
 
+/**
+ * Renders a selectable or linked card for an actor with optional selection and disabled states.
+ *
+ * @param {ActorCardProps} props - The component props.
+ * @returns {JSX.Element} The rendered actor card.
+ */
 export default function ActorCard({ actor, onClick, selected, disabled, showLink = false }: ActorCardProps) {
   const inner = (
     <>

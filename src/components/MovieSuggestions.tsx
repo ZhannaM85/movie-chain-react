@@ -7,6 +7,11 @@ import { Link } from 'react-router-dom';
 
 type SortOption = 'popularity' | 'title-asc' | 'title-desc' | 'date-newest' | 'date-oldest';
 
+/**
+ * Shows a filtered and sortable list of movies from the selected actor's filmography.
+ *
+ * @returns {JSX.Element | null} The movie suggestions section, or null if no actor is selected.
+ */
 export default function MovieSuggestions() {
   const { selectedActorId, addMovie, links, cancelActorSelection } = useChainContext();
   const [actor, setActor] = useState<Actor | null>(null);
@@ -142,6 +147,13 @@ export default function MovieSuggestions() {
   );
 }
 
+/**
+ * Sorts a list of movies according to the chosen sort option.
+ *
+ * @param {Movie[]} movies - The movies to sort.
+ * @param {SortOption} sortBy - The active sort option.
+ * @returns {Movie[]} A new sorted array of movies.
+ */
 function sortMovies(movies: Movie[], sortBy: SortOption): Movie[] {
   const sorted = [...movies];
   switch (sortBy) {
@@ -159,6 +171,18 @@ function sortMovies(movies: Movie[], sortBy: SortOption): Movie[] {
   }
 }
 
+/**
+ * Grid component that displays the actor's movies with search, sort, and pagination controls.
+ *
+ * @param {{
+ *   movies: Movie[];
+ *   sortBy: SortOption;
+ *   searchQuery: string;
+ *   showAll: boolean;
+ *   onSelect: (movie: Movie) => void;
+ * }} props - The grid props.
+ * @returns {JSX.Element} The rendered grid of movies.
+ */
 function MovieGrid({
   movies,
   sortBy,
