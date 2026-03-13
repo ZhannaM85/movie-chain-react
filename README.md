@@ -38,7 +38,7 @@ cp .env.example .env
 
 Edit `.env` and replace `your_tmdb_api_key_here` with your actual API key.
 
-### 3. Install and Run
+### 3. Install and Run Application
 
 ```bash
 npm install
