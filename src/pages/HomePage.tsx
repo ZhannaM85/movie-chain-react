@@ -70,8 +70,8 @@ function ChainView({ movieId }: { movieId: number }) {
           ) : null}
 
           <div className="border-t border-gray-800 pt-6">
-            {currentStep === 'pick-actor' && movie && (
-              <ActorPicker movieId={movie.id} />
+            {currentStep === 'pick-actor' && movie?.credits && (
+              <ActorPicker credits={movie.credits} />
             )}
             {currentStep === 'pick-movie' && <MovieSuggestions />}
           </div>
