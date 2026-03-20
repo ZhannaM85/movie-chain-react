@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
-import { posterUrl, profileUrl, getActorDetails } from '../services/tmdb';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
  * @returns {JSX.Element} The chain overview page.
  */
 export default function ChainPage() {
+  const api = useMovieApiForChain();
   const { links, resetChain, undoLast } = useChainContext();
   const { t } = useTranslation();
 
@@ -75,7 +76,7 @@ export default function ChainPage() {
                   className="flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
                 >
                   {link.connectingActorId && (
-                    <ActorAvatar actorId={link.connectingActorId} />
+                    <ActorAvatar actorId={link.connectingActorId} api={api} />
                   )}
                   <span>{link.connectingActorName}</span>
                 </Link>
@@ -91,7 +92,7 @@ export default function ChainPage() {
               </span>
               {link.movie.poster_path ? (
                 <img
-                  src={posterUrl(link.movie.poster_path, 'w185')}
+                  src={api.posterUrl(link.movie.poster_path, 'w185')}
                   alt={link.movie.title}
                   className="w-20 sm:w-24 rounded-lg object-cover flex-shrink-0"
                 />
@@ -144,21 +145,22 @@ export default function ChainPage() {
  * @param {{ actorId: number }} props - The actor identifier whose avatar should be shown.
  * @returns {JSX.Element} The avatar image or a placeholder icon.
  */
-function ActorAvatar({ actorId }: { actorId: number }) {
+function ActorAvatar({ actorId, api }: { actorId: number; api: import('../services/movieApi').MovieApi }) {
   const { i18n } = useTranslation();
   const [imgSrc, setImgSrc] = useState<string | null>(null);
 
   useEffect(() => {
     let ignore = false;
-    getActorDetails(actorId)
+    api
+      .getActorDetails(actorId)
       .then((actor) => {
         if (!ignore && actor.profile_path) {
-          setImgSrc(profileUrl(actor.profile_path));
+          setImgSrc(api.profileUrl(actor.profile_path));
         }
       })
       .catch(() => {});
     return () => { ignore = true; };
-  }, [actorId, i18n.resolvedLanguage, i18n.language]);
+  }, [actorId, api, i18n.resolvedLanguage, i18n.language]);
 
   if (!imgSrc) {
     return (

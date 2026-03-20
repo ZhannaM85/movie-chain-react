@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Actor, Movie } from '../types/movie';
-import { getActorDetails, getActorMovieCredits } from '../services/tmdb';
+import type { MovieApi } from '../services/movieApi';
 import { useTranslation } from 'react-i18next';
 
 interface UseActorDetailsResult {
@@ -13,10 +13,11 @@ interface UseActorDetailsResult {
 /**
  * React hook that fetches an actor and a curated list of their movies.
  *
- * @param {number | null} personId - The TMDB person identifier, or null to clear data.
+ * @param {number | null} personId - The person identifier.
+ * @param {MovieApi} api - The movie API to use (TMDB or Kinopoisk).
  * @returns {UseActorDetailsResult} The actor details, movies, and loading/error state.
  */
-export function useActorDetails(personId: number | null): UseActorDetailsResult {
+export function useActorDetails(personId: number | null, api: MovieApi): UseActorDetailsResult {
   const { i18n } = useTranslation();
   const [actor, setActor] = useState<Actor | null>(null);
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -35,7 +36,7 @@ export function useActorDetails(personId: number | null): UseActorDetailsResult 
     setLoading(true);
     setError(null);
 
-    Promise.all([getActorDetails(personId), getActorMovieCredits(personId)])
+    Promise.all([api.getActorDetails(personId), api.getActorMovieCredits(personId)])
       .then(([actorData, creditsData]) => {
         if (!cancelled) {
           setActor(actorData);
@@ -55,7 +56,7 @@ export function useActorDetails(personId: number | null): UseActorDetailsResult 
     return () => {
       cancelled = true;
     };
-  }, [personId, i18n.resolvedLanguage, i18n.language]);
+  }, [personId, api, i18n.resolvedLanguage, i18n.language]);
 
   return { actor, movies, loading, error };
 }

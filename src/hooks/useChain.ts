@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { ChainState, Movie } from '../types/movie';
+import type { ChainState, Movie, MovieSource } from '../types/movie';
 
 const STORAGE_KEY = 'movie-chain-state';
 
@@ -11,7 +11,10 @@ const STORAGE_KEY = 'movie-chain-state';
 function loadState(): ChainState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as ChainState;
+    const parsed = raw ? (JSON.parse(raw) as ChainState) : null;
+    if (parsed) {
+      return { ...parsed, source: parsed.source ?? 'tmdb' };
+    }
   } catch {
     // ignore corrupted data
   }
@@ -53,8 +56,9 @@ export function useChain() {
     saveState(state);
   }, [state]);
 
-  const startChain = useCallback((movie: Movie) => {
+  const startChain = useCallback((movie: Movie, source?: MovieSource) => {
     setState({
+      source: source ?? 'tmdb',
       links: [
         {
           movie,
@@ -85,6 +89,7 @@ export function useChain() {
       sessionStorage.removeItem('pending-actor-name');
       return {
         ...prev,
+        source: prev.source ?? 'tmdb',
         links: [
           ...prev.links,
           {
@@ -142,6 +147,7 @@ export function useChain() {
       const links = prev.links.slice(0, -1);
       const prevLink = links.length >= 2 ? links[links.length - 1] : null;
       return {
+        ...prev,
         links,
         currentStep: 'pick-actor',
         selectedActorId: null,

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { Movie } from '../types/movie';
-import { posterUrl } from '../services/tmdb';
+import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useTranslation } from 'react-i18next';
 
 interface MovieCardProps {
@@ -15,6 +15,7 @@ interface MovieCardProps {
  * @returns {JSX.Element} The rendered movie card.
  */
 export default function MovieCard({ movie, showLink = true }: MovieCardProps) {
+  const api = useMovieApiForChain();
   const { t } = useTranslation();
   const year = movie.release_date ? new Date(movie.release_date).getFullYear() : t('na');
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '—';
@@ -23,7 +24,7 @@ export default function MovieCard({ movie, showLink = true }: MovieCardProps) {
     <div className="flex gap-4 bg-gray-800/60 rounded-xl p-4 border border-gray-700/50">
       {movie.poster_path ? (
         <img
-          src={posterUrl(movie.poster_path, 'w185')}
+          src={api.posterUrl(movie.poster_path, 'w185')}
           alt={movie.title}
           className="w-28 sm:w-36 rounded-lg object-cover flex-shrink-0"
         />

@@ -11,6 +11,7 @@ export default defineConfig({
     setupFiles: ['src/test/setup.ts'],
     env: {
       VITE_TMDB_API_KEY: 'test-api-key',
+      VITE_KINOPOISK_API_KEY: '',
     },
   },
 })

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { Actor } from '../types/movie';
-import { profileUrl } from '../services/tmdb';
+import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useTranslation } from 'react-i18next';
 
 interface ActorCardProps {
@@ -18,12 +18,13 @@ interface ActorCardProps {
  * @returns {JSX.Element} The rendered actor card.
  */
 export default function ActorCard({ actor, onClick, selected, disabled, showLink = false }: ActorCardProps) {
+  const api = useMovieApiForChain();
   const { t } = useTranslation();
   const inner = (
     <>
       {actor.profile_path ? (
         <img
-          src={profileUrl(actor.profile_path)}
+          src={api.profileUrl(actor.profile_path)}
           alt={actor.name}
           className="w-full aspect-[2/3] object-cover rounded-t-lg"
         />

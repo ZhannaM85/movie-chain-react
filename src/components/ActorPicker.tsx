@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Actor } from '../types/movie';
-import { getMovieCredits } from '../services/tmdb';
+import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
 import ActorCard from './ActorCard';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +16,7 @@ interface ActorPickerProps {
  * @returns {JSX.Element} The rendered actor picker.
  */
 export default function ActorPicker({ movieId }: ActorPickerProps) {
+  const api = useMovieApiForChain();
   const { selectActor, excludedActorId } = useChainContext();
   const { t, i18n } = useTranslation();
   const [cast, setCast] = useState<Actor[]>([]);
@@ -27,7 +28,8 @@ export default function ActorPicker({ movieId }: ActorPickerProps) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(null);
-    getMovieCredits(movieId)
+    api
+      .getMovieCredits(movieId)
       .then((credits) => {
         const actors = credits.cast.filter(
           (a) => a.known_for_department === 'Acting' || a.order !== undefined
@@ -36,7 +38,7 @@ export default function ActorPicker({ movieId }: ActorPickerProps) {
       })
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [movieId, i18n.resolvedLanguage, i18n.language]);
+  }, [movieId, api, i18n.resolvedLanguage, i18n.language]);
 
   if (loading) {
     return (
