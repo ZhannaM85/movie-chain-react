@@ -10,6 +10,7 @@ import {
   getActorMovieCredits,
   getMovieCredits,
 } from './tmdb';
+import { clearApiResponseCache } from './apiResponseCache';
 
 describe('posterUrl', () => {
   it('returns full URL for non-null path with default size', () => {
@@ -61,6 +62,7 @@ describe('TMDB API functions', () => {
   beforeEach(() => {
     fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
+    clearApiResponseCache();
   });
 
   afterEach(() => {
