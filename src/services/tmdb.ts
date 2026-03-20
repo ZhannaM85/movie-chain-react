@@ -43,6 +43,9 @@ export function profileUrl(path: string | null, size: 'w185' | 'h632' | 'origina
  * @returns {Promise<T>} The parsed JSON response.
  * @throws {Error} When the HTTP response is not OK.
  */
+/** Merges concurrent identical fetches (e.g. React Strict Mode dev double-mount). */
+const inFlightTmdb = new Map<string, Promise<unknown>>();
+
 async function fetchTmdb<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
   const url = new URL(`${BASE_URL}${endpoint}`);
   url.searchParams.set('api_key', API_KEY);
@@ -51,11 +54,24 @@ async function fetchTmdb<T>(endpoint: string, params: Record<string, string> = {
     url.searchParams.set(key, value);
   }
 
-  const response = await fetch(url.toString());
-  if (!response.ok) {
-    throw new Error(`TMDB API error: ${response.status} ${response.statusText}`);
+  const key = url.toString();
+  const existing = inFlightTmdb.get(key) as Promise<T> | undefined;
+  if (existing) return existing;
+
+  const promise = (async (): Promise<T> => {
+    const response = await fetch(key);
+    if (!response.ok) {
+      throw new Error(`TMDB API error: ${response.status} ${response.statusText}`);
+    }
+    return response.json() as Promise<T>;
+  })();
+
+  inFlightTmdb.set(key, promise);
+  try {
+    return await promise;
+  } finally {
+    inFlightTmdb.delete(key);
   }
-  return response.json() as Promise<T>;
 }
 
 /**

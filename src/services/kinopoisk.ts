@@ -83,6 +83,9 @@ function mapKpStaffToActor(item: KpStaffItem, character?: string): Actor {
   };
 }
 
+/** Merges concurrent identical fetches (e.g. React Strict Mode dev double-mount). */
+const inFlightKp = new Map<string, Promise<unknown>>();
+
 async function fetchKp<T>(endpoint: string, params?: Record<string, string>): Promise<T> {
   const url = new URL(`${BASE_URL}${endpoint}`);
   if (params) {
@@ -90,13 +93,26 @@ async function fetchKp<T>(endpoint: string, params?: Record<string, string>): Pr
       url.searchParams.set(key, value);
     }
   }
-  const response = await fetch(url.toString(), {
-    headers: { 'X-API-KEY': API_KEY },
-  });
-  if (!response.ok) {
-    throw new Error(`Kinopoisk API error: ${response.status} ${response.statusText}`);
+  const key = url.toString();
+  const existing = inFlightKp.get(key) as Promise<T> | undefined;
+  if (existing) return existing;
+
+  const promise = (async (): Promise<T> => {
+    const response = await fetch(key, {
+      headers: { 'X-API-KEY': API_KEY },
+    });
+    if (!response.ok) {
+      throw new Error(`Kinopoisk API error: ${response.status} ${response.statusText}`);
+    }
+    return response.json() as Promise<T>;
+  })();
+
+  inFlightKp.set(key, promise);
+  try {
+    return await promise;
+  } finally {
+    inFlightKp.delete(key);
   }
-  return response.json() as Promise<T>;
 }
 
 function posterUrl(path: string | null, _size?: string): string {

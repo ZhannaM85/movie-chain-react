@@ -147,3 +147,17 @@ export function cacheRemove(fullKey: string): void {
     // ignore
   }
 }
+
+/** Clears all persisted API entries (e.g. for tests). */
+export function clearApiResponseCache(): void {
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k?.startsWith(PREFIX)) keys.push(k);
+    }
+    for (const k of keys) localStorage.removeItem(k);
+  } catch {
+    // ignore
+  }
+}
