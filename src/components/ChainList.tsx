@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useChainContext } from '../context/ChainContext';
 import { posterUrl } from '../services/tmdb';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Sidebar list that summarizes the current movie chain with quick navigation.
@@ -9,6 +10,7 @@ import { posterUrl } from '../services/tmdb';
  */
 export default function ChainList() {
   const { links, undoLast } = useChainContext();
+  const { t } = useTranslation();
 
   if (links.length === 0) return null;
 
@@ -16,14 +18,14 @@ export default function ChainList() {
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-3 px-1">
         <Link to="/chain" className="text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors">
-          Chain
+          {t('chain')}
         </Link>
         {links.length > 1 && (
           <button
             onClick={undoLast}
             className="text-xs text-gray-500 hover:text-red-400 transition-colors"
           >
-            Undo
+            {t('undo')}
           </button>
         )}
       </div>

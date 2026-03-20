@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Movie } from '../types/movie';
 import { posterUrl } from '../services/tmdb';
+import { useTranslation } from 'react-i18next';
 
 interface MovieCardProps {
   movie: Movie;
@@ -14,7 +15,8 @@ interface MovieCardProps {
  * @returns {JSX.Element} The rendered movie card.
  */
 export default function MovieCard({ movie, showLink = true }: MovieCardProps) {
-  const year = movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A';
+  const { t } = useTranslation();
+  const year = movie.release_date ? new Date(movie.release_date).getFullYear() : t('na');
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '—';
 
   const content = (
@@ -27,7 +29,7 @@ export default function MovieCard({ movie, showLink = true }: MovieCardProps) {
         />
       ) : (
         <div className="w-28 sm:w-36 aspect-[2/3] rounded-lg bg-gray-700 flex items-center justify-center text-gray-500 text-xs flex-shrink-0">
-          No Poster
+          {t('noPoster')}
         </div>
       )}
       <div className="flex-1 min-w-0">
@@ -40,7 +42,7 @@ export default function MovieCard({ movie, showLink = true }: MovieCardProps) {
             </svg>
             {rating}
           </span>
-          {movie.runtime && <span>{movie.runtime} min</span>}
+          {movie.runtime && <span>{movie.runtime} {t('min')}</span>}
         </div>
         {movie.genres && movie.genres.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-3">

@@ -1,0 +1,218 @@
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+
+const STORAGE_KEY = 'movie-chain-lang';
+const SUPPORTED_LANGUAGES = ['en-US', 'ru-RU'] as const;
+
+function getInitialLanguage() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored && SUPPORTED_LANGUAGES.includes(stored as (typeof SUPPORTED_LANGUAGES)[number])) {
+    return stored;
+  }
+
+  const browser = navigator.language;
+  if (browser.toLowerCase().startsWith('ru')) {
+    return 'ru-RU';
+  }
+  return 'en-US';
+}
+
+const resources = {
+  'en-US': {
+    translation: {
+      appName: 'Movie Chain',
+      navHome: 'Home',
+      navAbout: 'About',
+      language: 'Language',
+      chainCount_one: '{{count}} movie in chain',
+      chainCount_other: '{{count}} movies in chain',
+      newChain: 'New Chain',
+      confirmNewChain: 'Start a new chain? This will clear your current progress.',
+      backToChain: 'Back to chain',
+      noPoster: 'No Poster',
+      noPhoto: 'No Photo',
+      na: 'N/A',
+      loadingMovieDetails: 'Loading movie details...',
+      loadingMovie: 'Loading movie...',
+      loadingActorDetails: 'Loading actor details...',
+      loadingCast: 'Loading cast...',
+      loadingFilmography: 'Loading filmography...',
+      failedLoadMovieDetails: 'Failed to load movie details.',
+      failedLoadActorDetails: 'Failed to load actor details.',
+      failedLoadMovies: 'Failed to load movies',
+      failedLoadCast: 'Failed to load cast: {{error}}',
+      failedLoadMoviesWithReason: 'Failed to load movies: {{error}}',
+      sortPopularity: 'Sort: Popularity',
+      sortTitleAsc: 'Sort: Title A-Z',
+      sortTitleDesc: 'Sort: Title Z-A',
+      sortDateNewest: 'Sort: Newest first',
+      sortDateOldest: 'Sort: Oldest first',
+      cast: 'Cast',
+      knownFor: 'Known For',
+      born: 'Born',
+      votes: 'votes',
+      asCharacter: 'as {{character}}',
+      min: 'min',
+      startTitle: 'Start Your Movie Chain',
+      startSubtitle: 'Pick a movie to begin. Each next movie will be linked by a shared actor.',
+      searchMoviePlaceholder: 'Search for a movie...',
+      searchResults: 'Search Results',
+      trendingThisWeek: 'Trending This Week',
+      noMoviesForQuery: 'No movies found for "{{query}}"',
+      tmdbKeyHint: 'Make sure your TMDB API key is set in the .env file.',
+      pickActorToContinue: 'Pick an actor to continue the chain',
+      showAllCast: 'Show all {{count}} cast members',
+      pickFromFilmography: 'Pick a movie from their filmography',
+      changeActor: 'Change actor',
+      searchFilmography: 'Search filmography...',
+      showAllMovies: 'Show all {{count}} movies',
+      noMoreMoviesFromActor: 'No more movies available from this actor.',
+      noMatchingMovies: 'No movies matching "{{query}}"',
+      yourNotes: 'Your Notes',
+      edit: 'Edit',
+      addNote: '+ Add a note about this movie',
+      notePlaceholder: 'Write your thoughts about this movie...',
+      save: 'Save',
+      cancel: 'Cancel',
+      chain: 'Chain',
+      undo: 'Undo',
+      noChainYet: 'No Chain Yet',
+      startChain: 'Start a Chain',
+      noChainDescription: 'Start building your movie chain to see it here.',
+      yourMovieChain: 'Your Movie Chain',
+      linkedMovies_one: '{{count}} movie linked together',
+      linkedMovies_other: '{{count}} movies linked together',
+      undoLast: 'Undo Last',
+      aboutTitle: 'About Movie Chain',
+      aboutIntro:
+        'Movie Chain is a small learning project where you build a path of movies that are all connected through the actors who star in them.',
+      aboutHowWorks: 'How the chain works',
+      aboutStep1: 'Pick a starting movie from the home screen (trending list or search).',
+      aboutStep2: 'From that movie, pick an actor from the cast grid.',
+      aboutStep3: "You'll see a list of other movies that actor has appeared in. Choose one to continue the chain.",
+      aboutStep4:
+        "On the new movie, pick a different actor from the cast (you can't reuse the actor that just brought you here).",
+      aboutStep5: 'Repeat steps 3-4 to grow your chain as long as you like.',
+      aboutRules: 'Rules & constraints',
+      aboutRule1: 'Each new movie must share an actor with the previous movie in the chain.',
+      aboutRule2:
+        'The connecting actor is shown between movies in the chain overview, so you can always see how you got from one to the next.',
+      aboutRule3:
+        'When choosing an actor on a movie, the actor who connected you to that movie is disabled - you have to pick someone else.',
+      aboutRule4:
+        "You can use the Undo actions to remove the last movie in the chain, or Change actor when you're browsing an actor's filmography to go back and pick a different actor.",
+      aboutRule5: 'Comments you add for each movie are stored locally in your browser, along with the chain itself.',
+      aboutTech: 'Tech behind the scenes',
+      aboutTechText:
+        'The app is built with React, TypeScript, Vite, Tailwind CSS, and the TMDB API for movie and actor data. Your chain and notes are saved to localStorage so you can come back to them later on the same device.',
+      aboutFooterBefore: 'Designed and implemented by',
+      aboutFooterAfter: 'with love, passion, and Cursor',
+    },
+  },
+  'ru-RU': {
+    translation: {
+      appName: 'Movie Chain',
+      navHome: 'Главная',
+      navAbout: 'О проекте',
+      language: 'Язык',
+      chainCount_one: '{{count}} фильм в цепочке',
+      chainCount_few: '{{count}} фильма в цепочке',
+      chainCount_many: '{{count}} фильмов в цепочке',
+      chainCount_other: '{{count}} фильма в цепочке',
+      newChain: 'Новая цепочка',
+      confirmNewChain: 'Начать новую цепочку? Текущий прогресс будет очищен.',
+      backToChain: 'Назад к цепочке',
+      noPoster: 'Нет постера',
+      noPhoto: 'Нет фото',
+      na: 'Н/Д',
+      loadingMovieDetails: 'Загрузка информации о фильме...',
+      loadingMovie: 'Загрузка фильма...',
+      loadingActorDetails: 'Загрузка информации об актере...',
+      loadingCast: 'Загрузка актерского состава...',
+      loadingFilmography: 'Загрузка фильмографии...',
+      failedLoadMovieDetails: 'Не удалось загрузить информацию о фильме.',
+      failedLoadActorDetails: 'Не удалось загрузить информацию об актере.',
+      failedLoadMovies: 'Не удалось загрузить фильмы',
+      failedLoadCast: 'Не удалось загрузить актерский состав: {{error}}',
+      failedLoadMoviesWithReason: 'Не удалось загрузить фильмы: {{error}}',
+      sortPopularity: 'Сортировка: популярность',
+      sortTitleAsc: 'Сортировка: название А-Я',
+      sortTitleDesc: 'Сортировка: название Я-А',
+      sortDateNewest: 'Сортировка: сначала новые',
+      sortDateOldest: 'Сортировка: сначала старые',
+      cast: 'В ролях',
+      knownFor: 'Известен по',
+      born: 'Дата рождения',
+      votes: 'голосов',
+      asCharacter: 'в роли {{character}}',
+      min: 'мин',
+      startTitle: 'Начните свою цепочку фильмов',
+      startSubtitle: 'Выберите фильм для начала. Каждый следующий фильм будет связан общим актером.',
+      searchMoviePlaceholder: 'Найти фильм...',
+      searchResults: 'Результаты поиска',
+      trendingThisWeek: 'Популярное за неделю',
+      noMoviesForQuery: 'По запросу "{{query}}" фильмы не найдены',
+      tmdbKeyHint: 'Убедитесь, что TMDB API ключ указан в файле .env.',
+      pickActorToContinue: 'Выберите актера, чтобы продолжить цепочку',
+      showAllCast: 'Показать весь состав ({{count}})',
+      pickFromFilmography: 'Выберите фильм из его фильмографии',
+      changeActor: 'Сменить актера',
+      searchFilmography: 'Поиск по фильмографии...',
+      showAllMovies: 'Показать все фильмы ({{count}})',
+      noMoreMoviesFromActor: 'У этого актера больше нет доступных фильмов.',
+      noMatchingMovies: 'Нет фильмов по запросу "{{query}}"',
+      yourNotes: 'Ваши заметки',
+      edit: 'Редактировать',
+      addNote: '+ Добавить заметку о фильме',
+      notePlaceholder: 'Напишите ваши мысли об этом фильме...',
+      save: 'Сохранить',
+      cancel: 'Отмена',
+      chain: 'Цепочка',
+      undo: 'Отменить',
+      noChainYet: 'Цепочка пока не начата',
+      startChain: 'Начать цепочку',
+      noChainDescription: 'Начните собирать цепочку фильмов, и она появится здесь.',
+      yourMovieChain: 'Ваша цепочка фильмов',
+      linkedMovies_one: '{{count}} фильм связан',
+      linkedMovies_few: '{{count}} фильма связаны',
+      linkedMovies_many: '{{count}} фильмов связаны',
+      linkedMovies_other: '{{count}} фильма связаны',
+      undoLast: 'Отменить последний',
+      aboutTitle: 'О Movie Chain',
+      aboutIntro:
+        'Movie Chain - это небольшой учебный проект, где вы строите путь из фильмов, связанных между собой актерами, которые в них снимаются.',
+      aboutHowWorks: 'Как работает цепочка',
+      aboutStep1: 'Выберите стартовый фильм на главном экране (популярные или поиск).',
+      aboutStep2: 'Из этого фильма выберите актера в сетке актеров.',
+      aboutStep3: 'Вы увидите список других фильмов с этим актером. Выберите один, чтобы продолжить цепочку.',
+      aboutStep4: 'В новом фильме выберите другого актера (нельзя повторно использовать предыдущего связующего актера).',
+      aboutStep5: 'Повторяйте шаги 3-4 и продолжайте цепочку сколько угодно.',
+      aboutRules: 'Правила и ограничения',
+      aboutRule1: 'Каждый новый фильм должен иметь общего актера с предыдущим фильмом в цепочке.',
+      aboutRule2:
+        'Связующий актер показывается между фильмами в обзоре цепочки, поэтому всегда видно, как вы перешли от одного фильма к другому.',
+      aboutRule3: 'При выборе актера в фильме актер, который привел вас в этот фильм, недоступен - нужно выбрать другого.',
+      aboutRule4:
+        'Можно использовать действия Отменить, чтобы убрать последний фильм в цепочке, или Сменить актера в фильмографии, чтобы вернуться и выбрать другого актера.',
+      aboutRule5: 'Комментарии к каждому фильму сохраняются локально в браузере вместе с самой цепочкой.',
+      aboutTech: 'Технологии',
+      aboutTechText:
+        'Приложение создано на React, TypeScript, Vite, Tailwind CSS и TMDB API для данных о фильмах и актерах. Ваша цепочка и заметки сохраняются в localStorage, поэтому вы можете вернуться к ним позже на этом же устройстве.',
+      aboutFooterBefore: 'Дизайн и реализация:',
+      aboutFooterAfter: 'с любовью, страстью и Cursor',
+    },
+  },
+};
+
+i18n.use(initReactI18next).init({
+  resources,
+  lng: getInitialLanguage(),
+  fallbackLng: 'en-US',
+  interpolation: { escapeValue: false },
+});
+
+i18n.on('languageChanged', (lang) => {
+  localStorage.setItem(STORAGE_KEY, lang);
+});
+
+export default i18n;

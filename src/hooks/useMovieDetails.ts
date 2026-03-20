@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { Movie, MovieCredits } from '../types/movie';
 import { getMovieDetails } from '../services/tmdb';
+import { useTranslation } from 'react-i18next';
 
 interface UseMovieDetailsResult {
   movie: (Movie & { credits: MovieCredits }) | null;
@@ -15,12 +16,14 @@ interface UseMovieDetailsResult {
  * @returns {UseMovieDetailsResult} The movie with credits plus loading and error state.
  */
 export function useMovieDetails(movieId: number | null): UseMovieDetailsResult {
+  const { i18n } = useTranslation();
   const [movie, setMovie] = useState<(Movie & { credits: MovieCredits }) | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (movieId === null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMovie(null);
       return;
     }
@@ -43,7 +46,7 @@ export function useMovieDetails(movieId: number | null): UseMovieDetailsResult {
     return () => {
       cancelled = true;
     };
-  }, [movieId]);
+  }, [movieId, i18n.resolvedLanguage, i18n.language]);
 
   return { movie, loading, error };
 }

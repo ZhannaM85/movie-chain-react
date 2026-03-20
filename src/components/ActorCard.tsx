@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Actor } from '../types/movie';
 import { profileUrl } from '../services/tmdb';
+import { useTranslation } from 'react-i18next';
 
 interface ActorCardProps {
   actor: Actor;
@@ -17,6 +18,7 @@ interface ActorCardProps {
  * @returns {JSX.Element} The rendered actor card.
  */
 export default function ActorCard({ actor, onClick, selected, disabled, showLink = false }: ActorCardProps) {
+  const { t } = useTranslation();
   const inner = (
     <>
       {actor.profile_path ? (
@@ -35,7 +37,7 @@ export default function ActorCard({ actor, onClick, selected, disabled, showLink
       <div className="p-2">
         <p className="text-sm font-medium text-gray-200 truncate">{actor.name}</p>
         {actor.character && (
-          <p className="text-xs text-gray-500 truncate">as {actor.character}</p>
+          <p className="text-xs text-gray-500 truncate">{t('asCharacter', { character: actor.character })}</p>
         )}
       </div>
     </>

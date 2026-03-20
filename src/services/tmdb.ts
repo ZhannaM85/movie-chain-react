@@ -1,4 +1,5 @@
 import type { Movie, Actor, MovieCredits, ActorMovieCredits } from '../types/movie';
+import i18n from '../i18n';
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY as string;
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -40,6 +41,7 @@ export function profileUrl(path: string | null, size: 'w185' | 'h632' | 'origina
 async function fetchTmdb<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
   const url = new URL(`${BASE_URL}${endpoint}`);
   url.searchParams.set('api_key', API_KEY);
+  url.searchParams.set('language', i18n.resolvedLanguage ?? i18n.language ?? 'en-US');
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, value);
   }

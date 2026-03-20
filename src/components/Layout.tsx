@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { useChainContext } from '../context/ChainContext';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Main application shell with header, navigation, and responsive layout around the page content.
@@ -12,6 +13,7 @@ import { useChainContext } from '../context/ChainContext';
 export default function Layout({ children }: { children: ReactNode }) {
   const { links, resetChain } = useChainContext();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const { t, i18n } = useTranslation();
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
@@ -23,7 +25,7 @@ export default function Layout({ children }: { children: ReactNode }) {
               className="text-xl font-bold tracking-tight text-white hover:text-indigo-400 transition-colors"
               onClick={() => setMobileNavOpen(false)}
             >
-              Movie Chain
+              {t('appName')}
             </Link>
             {/* Desktop nav */}
             <nav className="hidden sm:flex items-center gap-4 text-sm text-gray-400">
@@ -31,13 +33,13 @@ export default function Layout({ children }: { children: ReactNode }) {
                 to="/"
                 className="hover:text-indigo-400 transition-colors"
               >
-                Home
+                {t('navHome')}
               </Link>
               <Link
                 to="/about"
                 className="hover:text-indigo-400 transition-colors"
               >
-                About
+                {t('navAbout')}
               </Link>
             </nav>
             {/* Mobile hamburger */}
@@ -45,9 +47,9 @@ export default function Layout({ children }: { children: ReactNode }) {
               type="button"
               className="sm:hidden inline-flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 text-gray-300 hover:bg-gray-800 hover:border-gray-600 transition-colors"
               onClick={() => setMobileNavOpen((open) => !open)}
-              aria-label="Toggle navigation"
+              aria-label={t('navHome')}
             >
-              <span className="sr-only">Toggle navigation</span>
+              <span className="sr-only">{t('navHome')}</span>
               <span className="space-y-1">
                 <span className="block w-4 h-[2px] bg-current" />
                 <span className="block w-4 h-[2px] bg-current" />
@@ -56,26 +58,40 @@ export default function Layout({ children }: { children: ReactNode }) {
             </button>
           </div>
           <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 text-xs text-gray-400">
+              {t('language')}
+              <select
+                value={i18n.language}
+                onChange={(e) => {
+                  void i18n.changeLanguage(e.target.value);
+                  setMobileNavOpen(false);
+                }}
+                className="rounded-md border border-gray-700 bg-gray-800 px-2 py-1 text-xs text-gray-200"
+              >
+                <option value="en-US">English</option>
+                <option value="ru-RU">Русский</option>
+              </select>
+            </label>
             {links.length > 0 && (
               <Link
                 to="/chain"
                 className="text-sm text-gray-400 hover:text-indigo-400 transition-colors"
                 onClick={() => setMobileNavOpen(false)}
               >
-                {links.length} movie{links.length !== 1 ? 's' : ''} in chain
+                {t('chainCount', { count: links.length })}
               </Link>
             )}
             {links.length > 0 && (
               <button
                 onClick={() => {
-                  if (window.confirm('Start a new chain? This will clear your current progress.')) {
+                  if (window.confirm(t('confirmNewChain'))) {
                     resetChain();
                   }
                   setMobileNavOpen(false);
                 }}
                 className="text-sm px-3 py-1.5 rounded-md bg-gray-800 hover:bg-red-900/50 hover:text-red-300 text-gray-300 transition-colors"
               >
-                New Chain
+                {t('newChain')}
               </button>
             )}
           </div>
@@ -90,14 +106,14 @@ export default function Layout({ children }: { children: ReactNode }) {
               className="py-1 text-gray-300 hover:text-indigo-300 transition-colors"
               onClick={() => setMobileNavOpen(false)}
             >
-              Home
+              {t('navHome')}
             </Link>
             <Link
               to="/about"
               className="py-1 text-gray-300 hover:text-indigo-300 transition-colors"
               onClick={() => setMobileNavOpen(false)}
             >
-              About
+              {t('navAbout')}
             </Link>
           </div>
         </div>

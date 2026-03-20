@@ -3,6 +3,7 @@ import type { Actor } from '../types/movie';
 import { getMovieCredits } from '../services/tmdb';
 import { useChainContext } from '../context/ChainContext';
 import ActorCard from './ActorCard';
+import { useTranslation } from 'react-i18next';
 
 interface ActorPickerProps {
   movieId: number;
@@ -16,12 +17,14 @@ interface ActorPickerProps {
  */
 export default function ActorPicker({ movieId }: ActorPickerProps) {
   const { selectActor, excludedActorId } = useChainContext();
+  const { t, i18n } = useTranslation();
   const [cast, setCast] = useState<Actor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(null);
     getMovieCredits(movieId)
@@ -33,26 +36,26 @@ export default function ActorPicker({ movieId }: ActorPickerProps) {
       })
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [movieId]);
+  }, [movieId, i18n.resolvedLanguage, i18n.language]);
 
   if (loading) {
     return (
       <div className="flex items-center gap-2 text-gray-400 py-4">
         <span className="inline-block w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
-        Loading cast...
+        {t('loadingCast')}
       </div>
     );
   }
 
   if (error) {
-    return <p className="text-red-400 py-4">Failed to load cast: {error}</p>;
+    return <p className="text-red-400 py-4">{t('failedLoadCast', { error })}</p>;
   }
 
   const displayCast = showAll ? cast : cast.slice(0, 12);
 
   return (
     <div>
-      <h3 className="text-lg font-semibold text-gray-200 mb-3">Pick an actor to continue the chain</h3>
+      <h3 className="text-lg font-semibold text-gray-200 mb-3">{t('pickActorToContinue')}</h3>
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
         {displayCast.map((actor) => {
           const isExcluded = actor.id === excludedActorId;
@@ -71,7 +74,7 @@ export default function ActorPicker({ movieId }: ActorPickerProps) {
           onClick={() => setShowAll(true)}
           className="mt-4 text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
         >
-          Show all {cast.length} cast members
+          {t('showAllCast', { count: cast.length })}
         </button>
       )}
     </div>
