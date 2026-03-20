@@ -1,57 +1,28 @@
-import { useState, useEffect } from 'react';
-import type { Actor } from '../types/movie';
-import { useMovieApiForChain } from '../context/MovieApiContext';
+import { useState } from 'react';
+import type { MovieCredits } from '../types/movie';
 import { useChainContext } from '../context/ChainContext';
 import ActorCard from './ActorCard';
 import { useTranslation } from 'react-i18next';
 
 interface ActorPickerProps {
-  movieId: number;
+  credits: MovieCredits;
 }
 
 /**
  * Shows the main cast for a movie and lets the user pick an actor to continue the chain.
+ * Uses credits passed from parent to avoid duplicate API calls.
  *
  * @param {ActorPickerProps} props - The component props.
  * @returns {JSX.Element} The rendered actor picker.
  */
-export default function ActorPicker({ movieId }: ActorPickerProps) {
-  const api = useMovieApiForChain();
+export default function ActorPicker({ credits }: ActorPickerProps) {
   const { selectActor, excludedActorId } = useChainContext();
-  const { t, i18n } = useTranslation();
-  const [cast, setCast] = useState<Actor[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
   const [showAll, setShowAll] = useState(false);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true);
-    setError(null);
-    api
-      .getMovieCredits(movieId)
-      .then((credits) => {
-        const actors = credits.cast.filter(
-          (a) => a.known_for_department === 'Acting' || a.order !== undefined
-        );
-        setCast(actors);
-      })
-      .catch((err: Error) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [movieId, api, i18n.resolvedLanguage, i18n.language]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center gap-2 text-gray-400 py-4">
-        <span className="inline-block w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
-        {t('loadingCast')}
-      </div>
-    );
-  }
-
-  if (error) {
-    return <p className="text-red-400 py-4">{t('failedLoadCast', { error })}</p>;
-  }
+  const cast = credits.cast.filter(
+    (a) => a.known_for_department === 'Acting' || a.order !== undefined
+  );
 
   const displayCast = showAll ? cast : cast.slice(0, 12);
 
