@@ -1,7 +1,12 @@
 import type { Movie, Actor, MovieCredits, ActorMovieCredits } from '../types/movie';
 import i18n from '../i18n';
+import { cacheGet, cacheSet, TTL_ENTITY_MS, TTL_LIST_MS } from './apiResponseCache';
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY as string;
+
+function localeSegment(): string {
+  return (i18n.resolvedLanguage ?? i18n.language ?? 'en-US').replace(/[^a-z0-9-]/gi, '_');
+}
 const BASE_URL = 'https://api.themoviedb.org/3';
 export const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p';
 
@@ -38,6 +43,9 @@ export function profileUrl(path: string | null, size: 'w185' | 'h632' | 'origina
  * @returns {Promise<T>} The parsed JSON response.
  * @throws {Error} When the HTTP response is not OK.
  */
+/** Merges concurrent identical fetches (e.g. React Strict Mode dev double-mount). */
+const inFlightTmdb = new Map<string, Promise<unknown>>();
+
 async function fetchTmdb<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
   const url = new URL(`${BASE_URL}${endpoint}`);
   url.searchParams.set('api_key', API_KEY);
@@ -46,11 +54,24 @@ async function fetchTmdb<T>(endpoint: string, params: Record<string, string> = {
     url.searchParams.set(key, value);
   }
 
-  const response = await fetch(url.toString());
-  if (!response.ok) {
-    throw new Error(`TMDB API error: ${response.status} ${response.statusText}`);
+  const key = url.toString();
+  const existing = inFlightTmdb.get(key) as Promise<T> | undefined;
+  if (existing) return existing;
+
+  const promise = (async (): Promise<T> => {
+    const response = await fetch(key);
+    if (!response.ok) {
+      throw new Error(`TMDB API error: ${response.status} ${response.statusText}`);
+    }
+    return response.json() as Promise<T>;
+  })();
+
+  inFlightTmdb.set(key, promise);
+  try {
+    return await promise;
+  } finally {
+    inFlightTmdb.delete(key);
   }
-  return response.json() as Promise<T>;
 }
 
 /**
@@ -59,8 +80,13 @@ async function fetchTmdb<T>(endpoint: string, params: Record<string, string> = {
  * @returns {Promise<Movie[]>} A list of trending movies.
  */
 export async function getTrendingMovies(): Promise<Movie[]> {
+  const key = `tmdb:${localeSegment()}:trending:week`;
+  const hit = cacheGet<Movie[]>(key);
+  if (hit) return hit;
   const data = await fetchTmdb<{ results: Movie[] }>('/trending/movie/week');
-  return data.results;
+  const results = data.results;
+  cacheSet(key, results, TTL_LIST_MS);
+  return results;
 }
 
 /**
@@ -70,9 +96,15 @@ export async function getTrendingMovies(): Promise<Movie[]> {
  * @returns {Promise<Movie[]>} Matching movies, or an empty array for blank queries.
  */
 export async function searchMovies(query: string): Promise<Movie[]> {
-  if (!query.trim()) return [];
-  const data = await fetchTmdb<{ results: Movie[] }>('/search/movie', { query });
-  return data.results;
+  const q = query.trim();
+  if (!q) return [];
+  const key = `tmdb:${localeSegment()}:search:${q.toLowerCase().slice(0, 200)}`;
+  const hit = cacheGet<Movie[]>(key);
+  if (hit) return hit;
+  const data = await fetchTmdb<{ results: Movie[] }>('/search/movie', { query: q });
+  const results = data.results;
+  cacheSet(key, results, TTL_LIST_MS);
+  return results;
 }
 
 /**
@@ -82,9 +114,14 @@ export async function searchMovies(query: string): Promise<Movie[]> {
  * @returns {Promise<Movie & { credits: MovieCredits }>} The movie with attached credits.
  */
 export async function getMovieDetails(movieId: number): Promise<Movie & { credits: MovieCredits }> {
-  return fetchTmdb<Movie & { credits: MovieCredits }>(`/movie/${movieId}`, {
+  const key = `tmdb:${localeSegment()}:movie:${movieId}`;
+  const hit = cacheGet<Movie & { credits: MovieCredits }>(key);
+  if (hit) return hit;
+  const data = await fetchTmdb<Movie & { credits: MovieCredits }>(`/movie/${movieId}`, {
     append_to_response: 'credits',
   });
+  cacheSet(key, data, TTL_ENTITY_MS);
+  return data;
 }
 
 /**
@@ -94,7 +131,12 @@ export async function getMovieDetails(movieId: number): Promise<Movie & { credit
  * @returns {Promise<MovieCredits>} The movie credits payload.
  */
 export async function getMovieCredits(movieId: number): Promise<MovieCredits> {
-  return fetchTmdb<MovieCredits>(`/movie/${movieId}/credits`);
+  const key = `tmdb:${localeSegment()}:credits:${movieId}`;
+  const hit = cacheGet<MovieCredits>(key);
+  if (hit) return hit;
+  const data = await fetchTmdb<MovieCredits>(`/movie/${movieId}/credits`);
+  cacheSet(key, data, TTL_ENTITY_MS);
+  return data;
 }
 
 /**
@@ -104,7 +146,12 @@ export async function getMovieCredits(movieId: number): Promise<MovieCredits> {
  * @returns {Promise<Actor>} The actor details.
  */
 export async function getActorDetails(personId: number): Promise<Actor> {
-  return fetchTmdb<Actor>(`/person/${personId}`);
+  const key = `tmdb:${localeSegment()}:actor:${personId}`;
+  const hit = cacheGet<Actor>(key);
+  if (hit) return hit;
+  const data = await fetchTmdb<Actor>(`/person/${personId}`);
+  cacheSet(key, data, TTL_ENTITY_MS);
+  return data;
 }
 
 /**
@@ -114,5 +161,10 @@ export async function getActorDetails(personId: number): Promise<Actor> {
  * @returns {Promise<ActorMovieCredits>} The actor's movie credits payload.
  */
 export async function getActorMovieCredits(personId: number): Promise<ActorMovieCredits> {
-  return fetchTmdb<ActorMovieCredits>(`/person/${personId}/movie_credits`);
+  const key = `tmdb:${localeSegment()}:actorMovieCredits:${personId}`;
+  const hit = cacheGet<ActorMovieCredits>(key);
+  if (hit) return hit;
+  const data = await fetchTmdb<ActorMovieCredits>(`/person/${personId}/movie_credits`);
+  cacheSet(key, data, TTL_ENTITY_MS);
+  return data;
 }
