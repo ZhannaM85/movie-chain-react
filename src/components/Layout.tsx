@@ -90,7 +90,6 @@ export default function Layout({ children }: { children: ReactNode }) {
               {api.source === 'kinopoisk' ? t('dataSourceKinopoisk') : t('dataSourceTmdb')}
             </span>
             <label className="flex items-center gap-2 text-xs text-gray-400">
-              {t('language')}
               <select
                 value={i18n.language}
                 onChange={(e) => {
