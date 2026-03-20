@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useActorDetails } from '../hooks/useActorDetails';
-import { profileUrl, posterUrl } from '../services/tmdb';
+import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -9,10 +9,11 @@ import { useTranslation } from 'react-i18next';
  * @returns {JSX.Element} The actor detail view.
  */
 export default function ActorDetailPage() {
+  const api = useMovieApiForChain();
   const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const personId = id ? parseInt(id, 10) : null;
-  const { actor, movies, loading, error } = useActorDetails(personId);
+  const { actor, movies, loading, error } = useActorDetails(personId, api);
 
   if (loading) {
     return (
@@ -43,7 +44,7 @@ export default function ActorDetailPage() {
       <div className="flex flex-col sm:flex-row gap-6 mb-8">
         {actor.profile_path ? (
           <img
-            src={profileUrl(actor.profile_path, 'h632')}
+            src={api.profileUrl(actor.profile_path, 'h632')}
             alt={actor.name}
             className="w-full sm:w-56 rounded-xl object-cover flex-shrink-0"
           />
@@ -80,7 +81,7 @@ export default function ActorDetailPage() {
                 className="rounded-lg overflow-hidden bg-gray-800/50 border border-gray-800 hover:border-indigo-500/50 hover:bg-gray-800 transition-all hover:scale-[1.02]"
               >
                 <img
-                  src={posterUrl(movie.poster_path, 'w342')}
+                  src={api.posterUrl(movie.poster_path, 'w342')}
                   alt={movie.title}
                   className="w-full aspect-[2/3] object-cover"
                 />

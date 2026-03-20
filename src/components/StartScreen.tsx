@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Movie } from '../types/movie';
-import { getTrendingMovies, searchMovies, posterUrl } from '../services/tmdb';
+import { useMovieApi } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
 import { useTranslation } from 'react-i18next';
 
@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
  * @returns {JSX.Element} The start screen view.
  */
 export default function StartScreen() {
+  const api = useMovieApi();
   const { startChain } = useChainContext();
   const { t } = useTranslation();
   const [trending, setTrending] = useState<Movie[]>([]);
@@ -20,11 +21,12 @@ export default function StartScreen() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getTrendingMovies()
+    api
+      .getTrendingMovies()
       .then(setTrending)
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [api]);
 
   useEffect(() => {
     if (!query.trim()) {
@@ -35,14 +37,15 @@ export default function StartScreen() {
 
     const timer = setTimeout(() => {
       setSearching(true);
-      searchMovies(query)
+      api
+        .searchMovies(query)
         .then(setSearchResults)
         .catch(() => setSearchResults([]))
         .finally(() => setSearching(false));
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, api]);
 
   const movies = query.trim() ? searchResults : trending;
   const title = query.trim() ? t('searchResults') : t('trendingThisWeek');
@@ -53,9 +56,7 @@ export default function StartScreen() {
         <div className="bg-red-900/30 border border-red-800 rounded-lg p-6 max-w-md text-center">
           <h2 className="text-xl font-semibold text-red-300 mb-2">{t('failedLoadMovies')}</h2>
           <p className="text-red-200/70 text-sm">{error}</p>
-          <p className="text-red-200/50 text-xs mt-3">
-            {t('tmdbKeyHint')}
-          </p>
+          <p className="text-red-200/50 text-xs mt-3">{t('apiKeyHint')}</p>
         </div>
       </div>
     );
@@ -89,12 +90,12 @@ export default function StartScreen() {
         {movies.map((movie) => (
           <button
             key={movie.id}
-            onClick={() => startChain(movie)}
+            onClick={() => startChain(movie, api.source)}
             className="group text-left rounded-lg overflow-hidden bg-gray-800/50 hover:bg-gray-800 border border-gray-800 hover:border-indigo-500/50 transition-all hover:scale-[1.02]"
           >
             {movie.poster_path ? (
               <img
-                src={posterUrl(movie.poster_path, 'w342')}
+                src={api.posterUrl(movie.poster_path, 'w342')}
                 alt={movie.title}
                 className="w-full aspect-[2/3] object-cover"
               />

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
+import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
-import { posterUrl } from '../services/tmdb';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
  * @returns {JSX.Element | null} The chain list, or null if there is no chain.
  */
 export default function ChainList() {
+  const api = useMovieApiForChain();
   const { links, undoLast } = useChainContext();
   const { t } = useTranslation();
 
@@ -45,7 +46,7 @@ export default function ChainList() {
               <span className="text-xs text-gray-600 w-5 text-right flex-shrink-0">{index + 1}</span>
               {link.movie.poster_path ? (
                 <img
-                  src={posterUrl(link.movie.poster_path, 'w185')}
+                  src={api.posterUrl(link.movie.poster_path, 'w185')}
                   alt={link.movie.title}
                   className="w-8 h-12 rounded object-cover flex-shrink-0"
                 />

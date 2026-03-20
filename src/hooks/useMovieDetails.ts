@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Movie, MovieCredits } from '../types/movie';
-import { getMovieDetails } from '../services/tmdb';
+import type { MovieApi } from '../services/movieApi';
 import { useTranslation } from 'react-i18next';
 
 interface UseMovieDetailsResult {
@@ -12,10 +12,11 @@ interface UseMovieDetailsResult {
 /**
  * React hook that fetches detailed information and credits for a movie.
  *
- * @param {number | null} movieId - The TMDB movie identifier, or null to clear data.
+ * @param {number | null} movieId - The movie identifier.
+ * @param {MovieApi} api - The movie API to use (TMDB or Kinopoisk).
  * @returns {UseMovieDetailsResult} The movie with credits plus loading and error state.
  */
-export function useMovieDetails(movieId: number | null): UseMovieDetailsResult {
+export function useMovieDetails(movieId: number | null, api: MovieApi): UseMovieDetailsResult {
   const { i18n } = useTranslation();
   const [movie, setMovie] = useState<(Movie & { credits: MovieCredits }) | null>(null);
   const [loading, setLoading] = useState(false);
@@ -32,7 +33,8 @@ export function useMovieDetails(movieId: number | null): UseMovieDetailsResult {
     setLoading(true);
     setError(null);
 
-    getMovieDetails(movieId)
+    api
+      .getMovieDetails(movieId)
       .then((data) => {
         if (!cancelled) setMovie(data);
       })
@@ -46,7 +48,7 @@ export function useMovieDetails(movieId: number | null): UseMovieDetailsResult {
     return () => {
       cancelled = true;
     };
-  }, [movieId, i18n.resolvedLanguage, i18n.language]);
+  }, [movieId, api, i18n.resolvedLanguage, i18n.language]);
 
   return { movie, loading, error };
 }

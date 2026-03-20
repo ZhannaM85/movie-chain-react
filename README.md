@@ -19,16 +19,21 @@ The app is deployed and available at: **[https://zhannam85.github.io/movie-chain
 - **React 18** + **TypeScript** (via Vite)
 - **Tailwind CSS** for styling
 - **React Router v6** for navigation
-- **TMDB API** for movie and actor data
+- **TMDB API** for movie and actor data (with **Kinopoisk API** fallback when TMDB is blocked)
 - **localStorage** for persisting chain progress and comments
 
 ## Getting Started
 
-### 1. Get a TMDB API Key
+### 1. Get an API Key
 
+**TMDB** (primary):
 1. Sign up at [themoviedb.org](https://www.themoviedb.org/signup)
 2. Go to [API settings](https://www.themoviedb.org/settings/api) and request an API key
 3. Copy your API key (v3 auth)
+
+**Kinopoisk** (optional fallback when TMDB is blocked, e.g. in some regions):
+1. Register at [kinopoiskapiunofficial.tech](https://kinopoiskapiunofficial.tech)
+2. Get your API token
 
 ### 2. Configure Environment
 
@@ -36,7 +41,9 @@ The app is deployed and available at: **[https://zhannam85.github.io/movie-chain
 cp .env.example .env
 ```
 
-Edit `.env` and replace `your_tmdb_api_key_here` with your actual API key.
+Edit `.env` and set at least one of:
+- `VITE_TMDB_API_KEY` — your TMDB API key
+- `VITE_KINOPOISK_API_KEY` — your Kinopoisk API key (used automatically when TMDB fails)
 
 ### 3. Install and Run Application
 
@@ -53,6 +60,8 @@ The app will be available at `http://localhost:5173`.
 src/
   types/movie.ts          - TypeScript interfaces
   services/tmdb.ts        - TMDB API wrapper
+  services/kinopoisk.ts   - Kinopoisk API wrapper (fallback)
+  services/movieApiClient.ts - Source selection with auto-fallback
   hooks/
     useChain.ts           - Chain state management + localStorage
     useMovieDetails.ts    - Fetch movie details + credits

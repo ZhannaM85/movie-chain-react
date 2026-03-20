@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
+import { MovieApiProvider } from './context/MovieApiContext';
 import { ChainProvider } from './context/ChainContext';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
@@ -15,8 +16,9 @@ import AboutPage from './pages/AboutPage';
  */
 function App() {
   return (
-    <ChainProvider>
-      <ScrollToTop />
+    <MovieApiProvider>
+      <ChainProvider>
+        <ScrollToTop />
       <Layout>
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -27,6 +29,7 @@ function App() {
         </Routes>
       </Layout>
     </ChainProvider>
+    </MovieApiProvider>
   );
 }
 

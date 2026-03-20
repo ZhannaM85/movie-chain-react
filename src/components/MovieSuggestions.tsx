@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import type { Movie } from '../types/movie';
-import { getActorDetails, getActorMovieCredits, posterUrl, profileUrl } from '../services/tmdb';
 import type { Actor } from '../types/movie';
+import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +14,7 @@ type SortOption = 'popularity' | 'title-asc' | 'title-desc' | 'date-newest' | 'd
  * @returns {JSX.Element | null} The movie suggestions section, or null if no actor is selected.
  */
 export default function MovieSuggestions() {
+  const api = useMovieApiForChain();
   const { selectedActorId, addMovie, links, cancelActorSelection } = useChainContext();
   const { t, i18n } = useTranslation();
   const [actor, setActor] = useState<Actor | null>(null);
@@ -35,7 +36,7 @@ export default function MovieSuggestions() {
     if (!selectedActorId) return;
     let ignore = false;
 
-    Promise.all([getActorDetails(selectedActorId), getActorMovieCredits(selectedActorId)])
+    Promise.all([api.getActorDetails(selectedActorId), api.getActorMovieCredits(selectedActorId)])
       .then(([actorData, creditsData]) => {
         if (ignore) return;
         setActor(actorData);
@@ -55,7 +56,7 @@ export default function MovieSuggestions() {
       });
 
     return () => { ignore = true; };
-  }, [selectedActorId, links, i18n.resolvedLanguage, i18n.language]);
+  }, [selectedActorId, links, api, i18n.resolvedLanguage, i18n.language]);
 
   if (!selectedActorId) return null;
 
@@ -78,7 +79,7 @@ export default function MovieSuggestions() {
         <div className="flex items-center gap-3 mb-4 p-3 bg-indigo-900/20 rounded-lg border border-indigo-800/40">
           {actor.profile_path ? (
             <img
-              src={profileUrl(actor.profile_path)}
+              src={api.profileUrl(actor.profile_path)}
               alt={actor.name}
               className="w-12 h-12 rounded-full object-cover"
             />
@@ -132,6 +133,7 @@ export default function MovieSuggestions() {
         searchQuery={searchQuery}
         showAll={showAll}
         onSelect={addMovie}
+        posterUrl={api.posterUrl}
         t={t}
       />
       {!searchQuery.trim() && !showAll && movies.length > 20 && (
@@ -192,6 +194,7 @@ function MovieGrid({
   searchQuery,
   showAll,
   onSelect,
+  posterUrl,
   t,
 }: {
   movies: Movie[];
@@ -199,6 +202,7 @@ function MovieGrid({
   searchQuery: string;
   showAll: boolean;
   onSelect: (movie: Movie) => void;
+  posterUrl: (path: string | null, size?: string) => string;
   t: (key: string, options?: Record<string, unknown>) => string;
 }) {
   const displayMovies = useMemo(() => {
@@ -227,7 +231,7 @@ function MovieGrid({
           className="group text-left rounded-lg overflow-hidden bg-gray-800/50 hover:bg-gray-800 border border-gray-800 hover:border-indigo-500/50 transition-all hover:scale-[1.02]"
         >
           <img
-            src={posterUrl(movie.poster_path, 'w342')}
+            src={posterUrl(movie.poster_path ?? null, 'w342')}
             alt={movie.title}
             className="w-full aspect-[2/3] object-cover"
           />

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { useChainContext } from '../context/ChainContext';
+import { useMovieApiForChain, useMovieApiPreference } from '../context/MovieApiContext';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -11,6 +12,8 @@ import { useTranslation } from 'react-i18next';
  * @returns {JSX.Element} The rendered layout.
  */
 export default function Layout({ children }: { children: ReactNode }) {
+  const api = useMovieApiForChain();
+  const { preferKinopoisk, setPreferKinopoisk, hasKinopoiskKey } = useMovieApiPreference();
   const { links, resetChain } = useChainContext();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const { t, i18n } = useTranslation();
@@ -58,6 +61,34 @@ export default function Layout({ children }: { children: ReactNode }) {
             </button>
           </div>
           <div className="flex items-center gap-4">
+            {hasKinopoiskKey && (
+              <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+                <span className="hidden sm:inline">{t('useKinopoisk')}</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={preferKinopoisk}
+                  onClick={() => setPreferKinopoisk(!preferKinopoisk)}
+                  className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
+                    preferKinopoisk
+                      ? 'border-indigo-500 bg-indigo-600'
+                      : 'border-gray-600 bg-gray-700'
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition ${
+                      preferKinopoisk ? 'translate-x-4' : 'translate-x-0.5'
+                    }`}
+                  />
+                </button>
+              </label>
+            )}
+            <span
+              className="text-xs px-2 py-0.5 rounded-md bg-gray-800 border border-gray-700 text-gray-400"
+              title={api.source === 'kinopoisk' ? t('dataSourceKinopoisk') : t('dataSourceTmdb')}
+            >
+              {api.source === 'kinopoisk' ? t('dataSourceKinopoisk') : t('dataSourceTmdb')}
+            </span>
             <label className="flex items-center gap-2 text-xs text-gray-400">
               {t('language')}
               <select

@@ -49,7 +49,10 @@ export interface ChainLink {
   comment: string;
 }
 
+export type MovieSource = 'tmdb' | 'kinopoisk';
+
 export interface ChainState {
+  source?: MovieSource;
   links: ChainLink[];
   currentStep: 'pick-actor' | 'pick-movie' | 'start';
   selectedActorId: number | null;
