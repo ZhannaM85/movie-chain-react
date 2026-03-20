@@ -3,51 +3,70 @@ import { createTmdbApi } from './tmdbMovieApi';
 import { createKinopoiskApi } from './kinopoisk';
 
 const STORAGE_KEY = 'movie-api-source';
+const PREFER_KINOPOISK_KEY = 'movie-api-prefer-kinopoisk';
 
 let cachedApi: MovieApi | null = null;
 const apiBySource: { tmdb?: MovieApi; kinopoisk?: MovieApi } = {};
 
+export function getPreferKinopoisk(): boolean {
+  try {
+    return localStorage.getItem(PREFER_KINOPOISK_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+export function setPreferKinopoisk(value: boolean): void {
+  try {
+    localStorage.setItem(PREFER_KINOPOISK_KEY, String(value));
+  } catch {
+    // ignore
+  }
+}
+
 /**
- * Resolves the active movie API with auto-fallback: tries TMDB first,
- * switches to Kinopoisk if TMDB fails (e.g. blocked in region).
+ * Resolves the active movie API. When user has toggled "Use Kinopoisk" on,
+ * uses Kinopoisk. When off (default), uses TMDB with fallback to Kinopoisk if blocked.
  *
  * @returns {Promise<MovieApi>} The active API implementation.
  */
 export async function getMovieApi(): Promise<MovieApi> {
   if (cachedApi) return cachedApi;
 
-  const stored = sessionStorage.getItem(STORAGE_KEY) as 'tmdb' | 'kinopoisk' | null;
-  if (stored === 'kinopoisk') {
-    const kinopoiskKey = import.meta.env.VITE_KINOPOISK_API_KEY as string;
-    if (kinopoiskKey) {
-      cachedApi = createKinopoiskApi();
-      return cachedApi;
-    }
+  const preferKinopoisk = getPreferKinopoisk();
+  const tmdbKey = import.meta.env.VITE_TMDB_API_KEY as string;
+  const kinopoiskKey = import.meta.env.VITE_KINOPOISK_API_KEY as string;
+
+  if (preferKinopoisk && kinopoiskKey) {
+    cachedApi = getMovieApiForSource('kinopoisk');
+    sessionStorage.setItem(STORAGE_KEY, 'kinopoisk');
+    return cachedApi;
   }
 
-  const tmdbKey = import.meta.env.VITE_TMDB_API_KEY as string;
   if (tmdbKey) {
     try {
-      const tmdb = createTmdbApi();
-      await tmdb.getTrendingMovies();
-      cachedApi = tmdb;
+      cachedApi = getMovieApiForSource('tmdb');
+      await cachedApi.getTrendingMovies();
       sessionStorage.setItem(STORAGE_KEY, 'tmdb');
       return cachedApi;
     } catch {
-      // TMDB failed, try Kinopoisk
+      if (kinopoiskKey) {
+        cachedApi = getMovieApiForSource('kinopoisk');
+        sessionStorage.setItem(STORAGE_KEY, 'kinopoisk');
+        return cachedApi;
+      }
     }
   }
 
-  const kinopoiskKey = import.meta.env.VITE_KINOPOISK_API_KEY as string;
   if (kinopoiskKey) {
-    cachedApi = createKinopoiskApi();
+    cachedApi = getMovieApiForSource('kinopoisk');
     sessionStorage.setItem(STORAGE_KEY, 'kinopoisk');
     return cachedApi;
   }
 
   if (tmdbKey) {
     throw new Error(
-      'TMDB is unavailable in your region. Add VITE_KINOPOISK_API_KEY to .env for Kinopoisk fallback.'
+      'TMDB is unavailable in your region. Enable Kinopoisk in settings or add VITE_KINOPOISK_API_KEY to .env.'
     );
   }
   throw new Error(

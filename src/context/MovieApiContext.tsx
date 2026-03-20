@@ -1,14 +1,27 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MovieApi } from '../services/movieApi';
-import { getMovieApi, getMovieApiForSource } from '../services/movieApiClient';
+import {
+  getMovieApi,
+  getMovieApiForSource,
+  getPreferKinopoisk,
+  setPreferKinopoisk as persistPreferKinopoisk,
+  resetMovieApiCache,
+} from '../services/movieApiClient';
 import { useChainContext } from './ChainContext';
 
-const MovieApiContext = createContext<MovieApi | null>(null);
+type MovieApiContextValue = {
+  api: MovieApi | null;
+  preferKinopoisk: boolean;
+  setPreferKinopoisk: (value: boolean) => void;
+  hasKinopoiskKey: boolean;
+};
+
+const MovieApiContext = createContext<MovieApiContextValue | null>(null);
 
 /**
  * Provides the active movie API (TMDB or Kinopoisk) to the component subtree.
- * Resolves the API on mount with auto-fallback from TMDB to Kinopoisk.
+ * Supports a manual toggle to prefer Kinopoisk when TMDB is blocked.
  *
  * @param {{ children: ReactNode }} props - The provider props.
  * @returns {JSX.Element} The context provider element.
@@ -17,12 +30,32 @@ export function MovieApiProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
   const [api, setApi] = useState<MovieApi | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [preferKinopoisk, setPreferKinopoiskState] = useState(getPreferKinopoisk);
+  const hasKinopoiskKey = Boolean(import.meta.env.VITE_KINOPOISK_API_KEY as string);
 
-  useEffect(() => {
+  const resolveApi = useCallback(() => {
+    setError(null);
     getMovieApi()
       .then(setApi)
       .catch((err: Error) => setError(err.message));
   }, []);
+
+  useEffect(() => {
+    resolveApi();
+  }, [resolveApi]);
+
+  const setPreferKinopoisk = useCallback(
+    (value: boolean) => {
+      persistPreferKinopoisk(value);
+      setPreferKinopoiskState(value);
+      resetMovieApiCache();
+      setApi(null);
+      getMovieApi()
+        .then(setApi)
+        .catch((err: Error) => setError(err.message));
+    },
+    []
+  );
 
   if (error) {
     return (
@@ -44,7 +77,18 @@ export function MovieApiProvider({ children }: { children: ReactNode }) {
     );
   }
 
-  return <MovieApiContext.Provider value={api}>{children}</MovieApiContext.Provider>;
+  return (
+    <MovieApiContext.Provider
+      value={{
+        api,
+        preferKinopoisk,
+        setPreferKinopoisk,
+        hasKinopoiskKey,
+      }}
+    >
+      {children}
+    </MovieApiContext.Provider>
+  );
 }
 
 /**
@@ -53,11 +97,22 @@ export function MovieApiProvider({ children }: { children: ReactNode }) {
  * @returns {MovieApi} The active movie API.
  */
 export function useMovieApi(): MovieApi {
-  const api = useContext(MovieApiContext);
-  if (!api) {
+  const ctx = useContext(MovieApiContext);
+  if (!ctx?.api) {
     throw new Error('useMovieApi must be used within MovieApiProvider');
   }
-  return api;
+  return ctx.api;
+}
+
+/**
+ * Hook to access API preference and toggle. Must be used within MovieApiProvider.
+ */
+export function useMovieApiPreference() {
+  const ctx = useContext(MovieApiContext);
+  if (!ctx) {
+    throw new Error('useMovieApiPreference must be used within MovieApiProvider');
+  }
+  return ctx;
 }
 
 /**
@@ -65,10 +120,13 @@ export function useMovieApi(): MovieApi {
  * otherwise the session API. Must be used within both MovieApiProvider and ChainProvider.
  */
 export function useMovieApiForChain(): MovieApi {
-  const sessionApi = useMovieApi();
+  const ctx = useContext(MovieApiContext);
   const { links, source } = useChainContext();
+  if (!ctx?.api) {
+    throw new Error('useMovieApiForChain must be used within MovieApiProvider');
+  }
   if (links.length > 0 && source) {
     return getMovieApiForSource(source);
   }
-  return sessionApi;
+  return ctx.api;
 }

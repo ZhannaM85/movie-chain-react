@@ -31,6 +31,9 @@ vi.mock('../services/movieApiClient', () => ({
     getActorDetails: vi.fn(),
     getActorMovieCredits: vi.fn(),
   }),
+  getPreferKinopoisk: vi.fn().mockReturnValue(false),
+  setPreferKinopoisk: vi.fn(),
+  resetMovieApiCache: vi.fn(),
 }));
 
 const minimalMovie: Movie = {
