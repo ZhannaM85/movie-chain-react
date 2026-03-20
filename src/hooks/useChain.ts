@@ -117,12 +117,14 @@ export function useChain() {
   }, []);
 
   const resetChain = useCallback(() => {
-    setState({
+    const emptyState: ChainState = {
       links: [],
       currentStep: 'start',
       selectedActorId: null,
       excludedActorId: null,
-    });
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(emptyState));
+    setState(emptyState);
   }, []);
 
   const cancelActorSelection = useCallback(() => {

@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 export default function Layout({ children }: { children: ReactNode }) {
   const api = useMovieApiForChain();
   const { preferKinopoisk, setPreferKinopoisk, hasKinopoiskKey } = useMovieApiPreference();
-  const { links, resetChain } = useChainContext();
+  const { links, source, resetChain } = useChainContext();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const { t, i18n } = useTranslation();
 
@@ -68,7 +68,13 @@ export default function Layout({ children }: { children: ReactNode }) {
                   type="button"
                   role="switch"
                   aria-checked={preferKinopoisk}
-                  onClick={() => setPreferKinopoisk(!preferKinopoisk)}
+                  onClick={() => {
+                    const newVal = !preferKinopoisk;
+                    if (!newVal && links.length > 0 && source === 'kinopoisk') {
+                      resetChain();
+                    }
+                    setPreferKinopoisk(newVal);
+                  }}
                   className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
                     preferKinopoisk
                       ? 'border-indigo-500 bg-indigo-600'

@@ -36,8 +36,13 @@ export default function MovieSuggestions() {
     if (!selectedActorId) return;
     let ignore = false;
 
-    Promise.all([api.getActorDetails(selectedActorId), api.getActorMovieCredits(selectedActorId)])
-      .then(([actorData, creditsData]) => {
+    // Fetch filmography first so Kinopoisk can populate actor cache; getActorDetails may then hit cache
+    api
+      .getActorMovieCredits(selectedActorId)
+      .then((creditsData) =>
+        api.getActorDetails(selectedActorId).then((actorData) => ({ actorData, creditsData }))
+      )
+      .then(({ actorData, creditsData }) => {
         if (ignore) return;
         setActor(actorData);
         const watchedIds = new Set(links.map((l) => l.movie.id));

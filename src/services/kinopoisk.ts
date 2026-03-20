@@ -107,6 +107,9 @@ function profileUrl(path: string | null, _size?: string): string {
 }
 
 const filmCache = new Map<number, Movie>();
+const actorCache = new Map<number, Actor>();
+
+const MAX_FILMOGRAPHY_FETCH = 12;
 
 async function getFilmDetails(filmId: number): Promise<Movie> {
   const cached = filmCache.get(filmId);
@@ -115,6 +118,13 @@ async function getFilmDetails(filmId: number): Promise<Movie> {
   const movie = mapKpFilmToMovie(data);
   filmCache.set(filmId, movie);
   return movie;
+}
+
+function cacheActorsFromStaff(staff: KpStaffItem[]): void {
+  for (const s of staff) {
+    const actor = mapKpStaffToActor(s, s.description ?? undefined);
+    actorCache.set(s.staffId, actor);
+  }
 }
 
 export function createKinopoiskApi(): MovieApi {
@@ -149,6 +159,7 @@ export function createKinopoiskApi(): MovieApi {
       const actors = (staffData ?? [])
         .filter((s) => s.professionKey === 'ACTOR')
         .map((s) => mapKpStaffToActor(s, s.description ?? undefined));
+      cacheActorsFromStaff(staffData?.filter((s) => s.professionKey === 'ACTOR') ?? []);
       return {
         ...movie,
         credits: { id: movieId, cast: actors },
@@ -162,15 +173,19 @@ export function createKinopoiskApi(): MovieApi {
       const actors = (staffData ?? [])
         .filter((s) => s.professionKey === 'ACTOR')
         .map((s) => mapKpStaffToActor(s, s.description ?? undefined));
+      cacheActorsFromStaff(staffData?.filter((s) => s.professionKey === 'ACTOR') ?? []);
       return { id: movieId, cast: actors };
     },
 
     async getActorDetails(personId: number): Promise<Actor> {
+      const cached = actorCache.get(personId);
+      if (cached) return cached;
       const data = await fetchKp<
         KpStaffItem & { personId?: number; birthday?: string; birthplace?: string }
       >(`/api/v1/staff/${personId}`);
       const id = data.personId ?? data.staffId ?? personId;
       const actor = mapKpStaffToActor({ ...data, staffId: id });
+      actorCache.set(personId, actor);
       return {
         ...actor,
         id,
@@ -181,20 +196,20 @@ export function createKinopoiskApi(): MovieApi {
     },
 
     async getActorMovieCredits(personId: number): Promise<ActorMovieCredits> {
-      const data = await fetchKp<{ films?: KpPersonFilm[] }>(`/api/v1/staff/${personId}`);
+      const data = await fetchKp<
+        KpStaffItem & { personId?: number; birthday?: string; birthplace?: string; films?: KpPersonFilm[] }
+      >(`/api/v1/staff/${personId}`);
+      const id = data.personId ?? data.staffId ?? personId;
+      const actor = mapKpStaffToActor({ ...data, staffId: id });
+      actorCache.set(personId, { ...actor, id, birthday: data.birthday, place_of_birth: data.birthplace });
+
       const films = data.films ?? [];
       const actorFilms = films.filter((f) => f.professionKey === 'ACTOR');
       const filmIds = actorFilms.map((f) => f.filmId);
-      const batchSize = 10;
       const movies: Movie[] = [];
-      for (let i = 0; i < Math.min(filmIds.length, 30); i += batchSize) {
-        const batch = filmIds.slice(i, i + batchSize);
-        const results = await Promise.all(
-          batch.map((id) => getFilmDetails(id).catch(() => null))
-        );
-        for (const m of results) {
-          if (m && m.poster_path && m.release_date) movies.push(m);
-        }
+      for (let i = 0; i < Math.min(filmIds.length, MAX_FILMOGRAPHY_FETCH); i++) {
+        const m = await getFilmDetails(filmIds[i]).catch(() => null);
+        if (m && m.poster_path && m.release_date) movies.push(m);
       }
       return { id: personId, cast: movies };
     },
