@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useChainContext } from '../context/ChainContext';
 import { posterUrl, profileUrl, getActorDetails } from '../services/tmdb';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Dedicated page that visualizes the full movie chain with connecting actors.
@@ -10,17 +11,18 @@ import { posterUrl, profileUrl, getActorDetails } from '../services/tmdb';
  */
 export default function ChainPage() {
   const { links, resetChain, undoLast } = useChainContext();
+  const { t } = useTranslation();
 
   if (links.length === 0) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold text-white mb-3">No Chain Yet</h1>
-        <p className="text-gray-400 mb-6">Start building your movie chain to see it here.</p>
+        <h1 className="text-2xl font-bold text-white mb-3">{t('noChainYet')}</h1>
+        <p className="text-gray-400 mb-6">{t('noChainDescription')}</p>
         <Link
           to="/"
           className="inline-block px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition-colors"
         >
-          Start a Chain
+          {t('startChain')}
         </Link>
       </div>
     );
@@ -31,13 +33,13 @@ export default function ChainPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <Link to="/" className="text-sm text-indigo-400 hover:text-indigo-300 mb-2 inline-block">
-            &larr; Back to chain
+            &larr; {t('backToChain')}
           </Link>
           <h1 className="text-2xl font-bold text-white">
-            Your Movie Chain
+            {t('yourMovieChain')}
           </h1>
           <p className="text-sm text-gray-400 mt-1">
-            {links.length} movie{links.length !== 1 ? 's' : ''} linked together
+            {t('linkedMovies', { count: links.length })}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -46,18 +48,18 @@ export default function ChainPage() {
               onClick={undoLast}
               className="text-sm px-3 py-1.5 rounded-md bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors"
             >
-              Undo Last
+              {t('undoLast')}
             </button>
           )}
           <button
             onClick={() => {
-              if (window.confirm('Start a new chain? This will clear your current progress.')) {
+              if (window.confirm(t('confirmNewChain'))) {
                 resetChain();
               }
             }}
             className="text-sm px-3 py-1.5 rounded-md bg-gray-800 hover:bg-red-900/50 hover:text-red-300 text-gray-300 transition-colors"
           >
-            New Chain
+            {t('newChain')}
           </button>
         </div>
       </div>
@@ -95,7 +97,7 @@ export default function ChainPage() {
                 />
               ) : (
                 <div className="w-20 sm:w-24 aspect-[2/3] rounded-lg bg-gray-700 flex items-center justify-center text-gray-500 text-xs flex-shrink-0">
-                  No Poster
+                  {t('noPoster')}
                 </div>
               )}
               <div className="flex-1 min-w-0">
@@ -106,7 +108,7 @@ export default function ChainPage() {
                   <span>
                     {link.movie.release_date
                       ? new Date(link.movie.release_date).getFullYear()
-                      : 'N/A'}
+                      : t('na')}
                   </span>
                   {link.movie.vote_average > 0 && (
                     <span className="flex items-center gap-1">
@@ -143,6 +145,7 @@ export default function ChainPage() {
  * @returns {JSX.Element} The avatar image or a placeholder icon.
  */
 function ActorAvatar({ actorId }: { actorId: number }) {
+  const { i18n } = useTranslation();
   const [imgSrc, setImgSrc] = useState<string | null>(null);
 
   useEffect(() => {
@@ -155,7 +158,7 @@ function ActorAvatar({ actorId }: { actorId: number }) {
       })
       .catch(() => {});
     return () => { ignore = true; };
-  }, [actorId]);
+  }, [actorId, i18n.resolvedLanguage, i18n.language]);
 
   if (!imgSrc) {
     return (

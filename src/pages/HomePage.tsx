@@ -6,6 +6,7 @@ import ActorPicker from '../components/ActorPicker';
 import MovieSuggestions from '../components/MovieSuggestions';
 import UserComment from '../components/UserComment';
 import { useMovieDetails } from '../hooks/useMovieDetails';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Main page that either shows the start screen or the active chain view.
@@ -32,6 +33,7 @@ export default function HomePage() {
  * @returns {JSX.Element} The chain view for the current movie.
  */
 function ChainView({ movieId }: { movieId: number }) {
+  const { t } = useTranslation();
   const { currentStep, links } = useChainContext();
   const { movie, loading } = useMovieDetails(movieId);
   const chainIndex = links.length - 1;
@@ -56,7 +58,7 @@ function ChainView({ movieId }: { movieId: number }) {
           {loading ? (
             <div className="flex items-center gap-2 text-gray-400 py-8">
               <span className="inline-block w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
-              Loading movie details...
+              {t('loadingMovieDetails')}
             </div>
           ) : movie ? (
             <>

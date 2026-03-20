@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useChainContext } from '../context/ChainContext';
+import { useTranslation } from 'react-i18next';
 
 interface UserCommentProps {
   chainIndex: number;
@@ -13,6 +14,7 @@ interface UserCommentProps {
  */
 export default function UserComment({ chainIndex }: UserCommentProps) {
   const { links, updateComment } = useChainContext();
+  const { t } = useTranslation();
   const link = links[chainIndex];
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(link?.comment || '');
@@ -35,12 +37,12 @@ export default function UserComment({ chainIndex }: UserCommentProps) {
         {link.comment ? (
           <div className="bg-gray-800/40 rounded-lg p-3 border border-gray-700/50">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-gray-500 uppercase tracking-wider">Your Notes</span>
+              <span className="text-xs text-gray-500 uppercase tracking-wider">{t('yourNotes')}</span>
               <button
                 onClick={() => { setDraft(link.comment); setEditing(true); }}
                 className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
               >
-                Edit
+                {t('edit')}
               </button>
             </div>
             <p className="text-sm text-gray-300 whitespace-pre-wrap">{link.comment}</p>
@@ -50,7 +52,7 @@ export default function UserComment({ chainIndex }: UserCommentProps) {
             onClick={() => setEditing(true)}
             className="text-sm text-gray-500 hover:text-indigo-400 transition-colors"
           >
-            + Add a note about this movie
+            {t('addNote')}
           </button>
         )}
       </div>
@@ -62,7 +64,7 @@ export default function UserComment({ chainIndex }: UserCommentProps) {
       <textarea
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
-        placeholder="Write your thoughts about this movie..."
+        placeholder={t('notePlaceholder')}
         rows={3}
         className="w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-200 placeholder-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-y"
         autoFocus
@@ -72,13 +74,13 @@ export default function UserComment({ chainIndex }: UserCommentProps) {
           onClick={handleSave}
           className="text-sm px-3 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
         >
-          Save
+          {t('save')}
         </button>
         <button
           onClick={handleCancel}
           className="text-sm px-3 py-1.5 rounded-md bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors"
         >
-          Cancel
+          {t('cancel')}
         </button>
       </div>
     </div>

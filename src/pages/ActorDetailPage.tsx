@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useActorDetails } from '../hooks/useActorDetails';
 import { profileUrl, posterUrl } from '../services/tmdb';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Page that shows biography and notable movies for a specific actor.
@@ -8,6 +9,7 @@ import { profileUrl, posterUrl } from '../services/tmdb';
  * @returns {JSX.Element} The actor detail view.
  */
 export default function ActorDetailPage() {
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const personId = id ? parseInt(id, 10) : null;
   const { actor, movies, loading, error } = useActorDetails(personId);
@@ -16,7 +18,7 @@ export default function ActorDetailPage() {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12 flex items-center gap-2 text-gray-400">
         <span className="inline-block w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
-        Loading actor details...
+        {t('loadingActorDetails')}
       </div>
     );
   }
@@ -24,9 +26,9 @@ export default function ActorDetailPage() {
   if (error || !actor) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <p className="text-red-400">Failed to load actor details.</p>
+        <p className="text-red-400">{t('failedLoadActorDetails')}</p>
         <Link to="/" className="text-indigo-400 hover:text-indigo-300 mt-2 inline-block">
-          Back to chain
+          {t('backToChain')}
         </Link>
       </div>
     );
@@ -35,7 +37,7 @@ export default function ActorDetailPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <Link to="/" className="text-sm text-indigo-400 hover:text-indigo-300 mb-4 inline-block">
-        &larr; Back to chain
+        &larr; {t('backToChain')}
       </Link>
 
       <div className="flex flex-col sm:flex-row gap-6 mb-8">
@@ -47,7 +49,7 @@ export default function ActorDetailPage() {
           />
         ) : (
           <div className="w-full sm:w-56 aspect-[2/3] rounded-xl bg-gray-800 flex items-center justify-center text-gray-600 flex-shrink-0">
-            No Photo
+            {t('noPhoto')}
           </div>
         )}
 
@@ -56,7 +58,7 @@ export default function ActorDetailPage() {
 
           <div className="flex flex-wrap gap-4 text-sm text-gray-400 mb-4">
             {actor.birthday && (
-              <span>Born: {new Date(actor.birthday).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              <span>{t('born')}: {new Date(actor.birthday).toLocaleDateString(i18n.language, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
             )}
             {actor.place_of_birth && <span>{actor.place_of_birth}</span>}
           </div>
@@ -69,7 +71,7 @@ export default function ActorDetailPage() {
 
       {movies.length > 0 && (
         <div>
-          <h2 className="text-xl font-semibold text-gray-200 mb-4">Known For</h2>
+          <h2 className="text-xl font-semibold text-gray-200 mb-4">{t('knownFor')}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             {movies.slice(0, 20).map((movie) => (
               <Link
@@ -85,7 +87,7 @@ export default function ActorDetailPage() {
                 <div className="p-2">
                   <h4 className="text-sm font-medium text-gray-200 truncate">{movie.title}</h4>
                   <p className="text-xs text-gray-500">
-                    {movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A'}
+                    {movie.release_date ? new Date(movie.release_date).getFullYear() : t('na')}
                   </p>
                 </div>
               </Link>
