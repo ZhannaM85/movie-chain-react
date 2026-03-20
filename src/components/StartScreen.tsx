@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Movie } from '../types/movie';
 import { getTrendingMovies, searchMovies, posterUrl } from '../services/tmdb';
 import { useChainContext } from '../context/ChainContext';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Landing screen where the user can search or browse movies to start a new chain.
@@ -10,6 +11,7 @@ import { useChainContext } from '../context/ChainContext';
  */
 export default function StartScreen() {
   const { startChain } = useChainContext();
+  const { t } = useTranslation();
   const [trending, setTrending] = useState<Movie[]>([]);
   const [searchResults, setSearchResults] = useState<Movie[]>([]);
   const [query, setQuery] = useState('');
@@ -26,6 +28,7 @@ export default function StartScreen() {
 
   useEffect(() => {
     if (!query.trim()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearchResults([]);
       return;
     }
@@ -42,16 +45,16 @@ export default function StartScreen() {
   }, [query]);
 
   const movies = query.trim() ? searchResults : trending;
-  const title = query.trim() ? 'Search Results' : 'Trending This Week';
+  const title = query.trim() ? t('searchResults') : t('trendingThisWeek');
 
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
         <div className="bg-red-900/30 border border-red-800 rounded-lg p-6 max-w-md text-center">
-          <h2 className="text-xl font-semibold text-red-300 mb-2">Failed to load movies</h2>
+          <h2 className="text-xl font-semibold text-red-300 mb-2">{t('failedLoadMovies')}</h2>
           <p className="text-red-200/70 text-sm">{error}</p>
           <p className="text-red-200/50 text-xs mt-3">
-            Make sure your TMDB API key is set in the .env file.
+            {t('tmdbKeyHint')}
           </p>
         </div>
       </div>
@@ -61,8 +64,8 @@ export default function StartScreen() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-2">Start Your Movie Chain</h1>
-        <p className="text-gray-400">Pick a movie to begin. Each next movie will be linked by a shared actor.</p>
+        <h1 className="text-3xl font-bold mb-2">{t('startTitle')}</h1>
+        <p className="text-gray-400">{t('startSubtitle')}</p>
       </div>
 
       <div className="max-w-md mx-auto mb-8">
@@ -70,7 +73,7 @@ export default function StartScreen() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search for a movie..."
+          placeholder={t('searchMoviePlaceholder')}
           className="w-full px-4 py-3 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
         />
       </div>
@@ -97,7 +100,7 @@ export default function StartScreen() {
               />
             ) : (
               <div className="w-full aspect-[2/3] bg-gray-700 flex items-center justify-center text-gray-500 text-sm">
-                No Poster
+                {t('noPoster')}
               </div>
             )}
             <div className="p-2">
@@ -105,7 +108,7 @@ export default function StartScreen() {
                 {movie.title}
               </h3>
               <p className="text-xs text-gray-500">
-                {movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A'}
+                {movie.release_date ? new Date(movie.release_date).getFullYear() : t('na')}
               </p>
             </div>
           </button>
@@ -113,7 +116,7 @@ export default function StartScreen() {
       </div>
 
       {!loading && !searching && movies.length === 0 && query.trim() && (
-        <p className="text-center text-gray-500 mt-8">No movies found for "{query}"</p>
+        <p className="text-center text-gray-500 mt-8">{t('noMoviesForQuery', { query })}</p>
       )}
     </div>
   );

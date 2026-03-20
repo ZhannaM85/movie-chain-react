@@ -3,6 +3,7 @@ import { useMovieDetails } from '../hooks/useMovieDetails';
 import { posterUrl, profileUrl } from '../services/tmdb';
 import { useChainContext } from '../context/ChainContext';
 import UserComment from '../components/UserComment';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Page that shows full details for a movie, including cast and any chain comment.
@@ -10,6 +11,7 @@ import UserComment from '../components/UserComment';
  * @returns {JSX.Element} The movie detail view.
  */
 export default function MovieDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const movieId = id ? parseInt(id, 10) : null;
   const { movie, loading, error } = useMovieDetails(movieId);
@@ -21,7 +23,7 @@ export default function MovieDetailPage() {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12 flex items-center gap-2 text-gray-400">
         <span className="inline-block w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
-        Loading movie...
+        {t('loadingMovie')}
       </div>
     );
   }
@@ -29,22 +31,22 @@ export default function MovieDetailPage() {
   if (error || !movie) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <p className="text-red-400">Failed to load movie details.</p>
+        <p className="text-red-400">{t('failedLoadMovieDetails')}</p>
         <Link to="/" className="text-indigo-400 hover:text-indigo-300 mt-2 inline-block">
-          Back to chain
+          {t('backToChain')}
         </Link>
       </div>
     );
   }
 
-  const year = movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A';
+  const year = movie.release_date ? new Date(movie.release_date).getFullYear() : t('na');
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '—';
   const cast = movie.credits?.cast?.slice(0, 20) || [];
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <Link to="/" className="text-sm text-indigo-400 hover:text-indigo-300 mb-4 inline-block">
-        &larr; Back to chain
+        &larr; {t('backToChain')}
       </Link>
 
       <div className="flex flex-col sm:flex-row gap-6 mb-8">
@@ -56,7 +58,7 @@ export default function MovieDetailPage() {
           />
         ) : (
           <div className="w-full sm:w-64 aspect-[2/3] rounded-xl bg-gray-800 flex items-center justify-center text-gray-600 flex-shrink-0">
-            No Poster
+            {t('noPoster')}
           </div>
         )}
 
@@ -68,12 +70,12 @@ export default function MovieDetailPage() {
 
           <div className="flex flex-wrap items-center gap-3 text-sm text-gray-400 mb-4">
             <span>{year}</span>
-            {movie.runtime && <span>{movie.runtime} min</span>}
+            {movie.runtime && <span>{movie.runtime} {t('min')}</span>}
             <span className="flex items-center gap-1">
               <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
-              {rating} ({movie.vote_count} votes)
+              {rating} ({movie.vote_count} {t('votes')})
             </span>
           </div>
 
@@ -95,7 +97,7 @@ export default function MovieDetailPage() {
 
       {cast.length > 0 && (
         <div>
-          <h2 className="text-xl font-semibold text-gray-200 mb-4">Cast</h2>
+          <h2 className="text-xl font-semibold text-gray-200 mb-4">{t('cast')}</h2>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
             {cast.map((actor) => (
               <Link
@@ -119,7 +121,7 @@ export default function MovieDetailPage() {
                 <div className="p-2">
                   <p className="text-sm font-medium text-gray-200 truncate">{actor.name}</p>
                   {actor.character && (
-                    <p className="text-xs text-gray-500 truncate">as {actor.character}</p>
+                    <p className="text-xs text-gray-500 truncate">{t('asCharacter', { character: actor.character })}</p>
                   )}
                 </div>
               </Link>

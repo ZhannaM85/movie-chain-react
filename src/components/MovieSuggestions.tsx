@@ -4,6 +4,7 @@ import { getActorDetails, getActorMovieCredits, posterUrl, profileUrl } from '..
 import type { Actor } from '../types/movie';
 import { useChainContext } from '../context/ChainContext';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 type SortOption = 'popularity' | 'title-asc' | 'title-desc' | 'date-newest' | 'date-oldest';
 
@@ -14,6 +15,7 @@ type SortOption = 'popularity' | 'title-asc' | 'title-desc' | 'date-newest' | 'd
  */
 export default function MovieSuggestions() {
   const { selectedActorId, addMovie, links, cancelActorSelection } = useChainContext();
+  const { t, i18n } = useTranslation();
   const [actor, setActor] = useState<Actor | null>(null);
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +55,7 @@ export default function MovieSuggestions() {
       });
 
     return () => { ignore = true; };
-  }, [selectedActorId, links]);
+  }, [selectedActorId, links, i18n.resolvedLanguage, i18n.language]);
 
   if (!selectedActorId) return null;
 
@@ -61,13 +63,13 @@ export default function MovieSuggestions() {
     return (
       <div className="flex items-center gap-2 text-gray-400 py-4">
         <span className="inline-block w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
-        Loading filmography...
+        {t('loadingFilmography')}
       </div>
     );
   }
 
   if (error) {
-    return <p className="text-red-400 py-4">Failed to load movies: {error}</p>;
+    return <p className="text-red-400 py-4">{t('failedLoadMoviesWithReason', { error })}</p>;
   }
 
   return (
@@ -91,14 +93,14 @@ export default function MovieSuggestions() {
             <Link to={`/actor/${actor.id}`} className="font-semibold text-indigo-300 hover:text-indigo-200 transition-colors">
               {actor.name}
             </Link>
-            <p className="text-sm text-gray-400">Pick a movie from their filmography</p>
+            <p className="text-sm text-gray-400">{t('pickFromFilmography')}</p>
           </div>
           <button
             type="button"
             onClick={cancelActorSelection}
             className="ml-auto text-xs px-3 py-1.5 rounded-full border border-indigo-500/60 text-indigo-300 hover:bg-indigo-500/10 hover:border-indigo-400 transition-colors"
           >
-            Change actor
+            {t('changeActor')}
           </button>
         </div>
       )}
@@ -108,7 +110,7 @@ export default function MovieSuggestions() {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search filmography..."
+          placeholder={t('searchFilmography')}
           className="w-full sm:max-w-sm px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
         />
         <select
@@ -116,11 +118,11 @@ export default function MovieSuggestions() {
           onChange={(e) => setSortBy(e.target.value as SortOption)}
           className="px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition cursor-pointer"
         >
-          <option value="popularity">Sort: Popularity</option>
-          <option value="title-asc">Sort: Title A–Z</option>
-          <option value="title-desc">Sort: Title Z–A</option>
-          <option value="date-newest">Sort: Newest first</option>
-          <option value="date-oldest">Sort: Oldest first</option>
+          <option value="popularity">{t('sortPopularity')}</option>
+          <option value="title-asc">{t('sortTitleAsc')}</option>
+          <option value="title-desc">{t('sortTitleDesc')}</option>
+          <option value="date-newest">{t('sortDateNewest')}</option>
+          <option value="date-oldest">{t('sortDateOldest')}</option>
         </select>
       </div>
 
@@ -130,18 +132,19 @@ export default function MovieSuggestions() {
         searchQuery={searchQuery}
         showAll={showAll}
         onSelect={addMovie}
+        t={t}
       />
       {!searchQuery.trim() && !showAll && movies.length > 20 && (
         <button
           onClick={() => setShowAll(true)}
           className="mt-4 text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
         >
-          Show all {movies.length} movies
+          {t('showAllMovies', { count: movies.length })}
         </button>
       )}
 
       {movies.length === 0 && (
-        <p className="text-gray-500 py-4 text-center">No more movies available from this actor.</p>
+        <p className="text-gray-500 py-4 text-center">{t('noMoreMoviesFromActor')}</p>
       )}
     </div>
   );
@@ -189,12 +192,14 @@ function MovieGrid({
   searchQuery,
   showAll,
   onSelect,
+  t,
 }: {
   movies: Movie[];
   sortBy: SortOption;
   searchQuery: string;
   showAll: boolean;
   onSelect: (movie: Movie) => void;
+  t: (key: string, options?: Record<string, unknown>) => string;
 }) {
   const displayMovies = useMemo(() => {
     const sorted = sortMovies(movies, sortBy);
@@ -208,7 +213,7 @@ function MovieGrid({
   if (displayMovies.length === 0 && searchQuery.trim()) {
     return (
       <p className="text-gray-500 py-4 text-center">
-        No movies matching "{searchQuery.trim()}"
+        {t('noMatchingMovies', { query: searchQuery.trim() })}
       </p>
     );
   }
@@ -231,7 +236,7 @@ function MovieGrid({
               {movie.title}
             </h4>
             <p className="text-xs text-gray-500">
-              {movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A'}
+              {movie.release_date ? new Date(movie.release_date).getFullYear() : t('na')}
             </p>
           </div>
         </button>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { Actor, Movie } from '../types/movie';
 import { getActorDetails, getActorMovieCredits } from '../services/tmdb';
+import { useTranslation } from 'react-i18next';
 
 interface UseActorDetailsResult {
   actor: Actor | null;
@@ -16,6 +17,7 @@ interface UseActorDetailsResult {
  * @returns {UseActorDetailsResult} The actor details, movies, and loading/error state.
  */
 export function useActorDetails(personId: number | null): UseActorDetailsResult {
+  const { i18n } = useTranslation();
   const [actor, setActor] = useState<Actor | null>(null);
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(false);
@@ -23,6 +25,7 @@ export function useActorDetails(personId: number | null): UseActorDetailsResult 
 
   useEffect(() => {
     if (personId === null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActor(null);
       setMovies([]);
       return;
@@ -52,7 +55,7 @@ export function useActorDetails(personId: number | null): UseActorDetailsResult 
     return () => {
       cancelled = true;
     };
-  }, [personId]);
+  }, [personId, i18n.resolvedLanguage, i18n.language]);
 
   return { actor, movies, loading, error };
 }
