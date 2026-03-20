@@ -1,4 +1,5 @@
 import { useChainContext } from '../context/ChainContext';
+import { useMovieApiForChain } from '../context/MovieApiContext';
 import StartScreen from '../components/StartScreen';
 import ChainList from '../components/ChainList';
 import MovieCard from '../components/MovieCard';
@@ -33,9 +34,10 @@ export default function HomePage() {
  * @returns {JSX.Element} The chain view for the current movie.
  */
 function ChainView({ movieId }: { movieId: number }) {
+  const api = useMovieApiForChain();
   const { t } = useTranslation();
   const { currentStep, links } = useChainContext();
-  const { movie, loading } = useMovieDetails(movieId);
+  const { movie, loading } = useMovieDetails(movieId, api);
   const chainIndex = links.length - 1;
 
   return (
