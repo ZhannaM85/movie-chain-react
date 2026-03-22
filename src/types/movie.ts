@@ -47,6 +47,8 @@ export interface ChainLink {
   connectingActorId: number | null;
   connectingActorName: string | null;
   comment: string;
+  /** Local calendar day (YYYY-MM-DD) this link counts toward in “movies per day” / heatmap. */
+  loggedDate?: string | null;
   /** Difficulty points for this step (set when linking via a shared actor). */
   stepDifficulty?: number;
 }

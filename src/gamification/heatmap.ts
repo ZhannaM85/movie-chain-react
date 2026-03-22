@@ -1,6 +1,6 @@
-import { utcDateString } from './profile';
+import { localDateString } from '../lib/dateUtils';
 
-/** GitHub-style grid: 53 columns × 7 rows = 371 days */
+/** GitHub-style grid: 53 columns × 7 rows = 371 local calendar days */
 export const HEATMAP_WEEKS = 53;
 export const HEATMAP_TOTAL_DAYS = HEATMAP_WEEKS * 7;
 
@@ -12,11 +12,11 @@ export interface HeatmapCell {
 export function buildHeatmapCells(moviesAddedByDate: Record<string, number>): HeatmapCell[] {
   const cells: HeatmapCell[] = [];
   const end = new Date();
-  end.setUTCHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
   for (let i = 0; i < HEATMAP_TOTAL_DAYS; i++) {
     const d = new Date(end);
-    d.setUTCDate(d.getUTCDate() - (HEATMAP_TOTAL_DAYS - 1 - i));
-    const ds = utcDateString(d);
+    d.setDate(d.getDate() - (HEATMAP_TOTAL_DAYS - 1 - i));
+    const ds = localDateString(d);
     cells.push({ date: ds, count: moviesAddedByDate[ds] ?? 0 });
   }
   return cells;

@@ -37,7 +37,7 @@ export default function HomePage() {
 function ChainView({ movieId }: { movieId: number }) {
   const api = useMovieApiForChain();
   const { t } = useTranslation();
-  const { currentStep, links } = useChainContext();
+  const { currentStep, links, selectedActorId } = useChainContext();
   const { movie, loading } = useMovieDetails(movieId, api);
   const chainIndex = links.length - 1;
   useSyncCastAppearances(movieId, movie?.credits?.cast, true);
@@ -75,7 +75,9 @@ function ChainView({ movieId }: { movieId: number }) {
             {currentStep === 'pick-actor' && movie?.credits && (
               <ActorPicker credits={movie.credits} />
             )}
-            {currentStep === 'pick-movie' && <MovieSuggestions />}
+            {currentStep === 'pick-movie' && (
+              <MovieSuggestions key={selectedActorId ?? 'none'} />
+            )}
           </div>
         </div>
       </div>

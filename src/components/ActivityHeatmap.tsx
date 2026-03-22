@@ -54,7 +54,7 @@ export default function ActivityHeatmap({ moviesAddedByDate }: ActivityHeatmapPr
           </div>
         ))}
       </div>
-      <p className="text-[10px] text-gray-600 mt-2">{t('heatmapUtcHint')}</p>
+      <p className="text-[10px] text-gray-600 mt-2">{t('heatmapLocalHint')}</p>
     </div>
   );
 }
