@@ -14,6 +14,14 @@ export interface GamificationProfile {
   unlockedAchievementIds: string[];
   lastStreakDate: string | null;
   currentStreak: number;
+  /** Max consecutive UTC days with any chain activity (play streak) */
+  longestStreakEver: number;
+  /** Total challenge points earned across all sessions */
+  totalChallengePointsAllTime: number;
+  /** Movies added to a chain per UTC day (start + each link) — for activity heatmap */
+  moviesAddedByDate: Record<string, number>;
+  /** Count of times each actor was chosen as the bridge to the next film (key = TMDB/KP id string) */
+  actorBridgeCounts: Record<string, { name: string; count: number }>;
   /** Best chain length when starting from that day's daily challenge (YYYY-MM-DD UTC) */
   dailyBestByDate: Record<string, number>;
   hasWrittenNoteBefore: boolean;
@@ -25,6 +33,10 @@ export const DEFAULT_GAMIFICATION_PROFILE: GamificationProfile = {
   unlockedAchievementIds: [],
   lastStreakDate: null,
   currentStreak: 0,
+  longestStreakEver: 0,
+  totalChallengePointsAllTime: 0,
+  moviesAddedByDate: {},
+  actorBridgeCounts: {},
   dailyBestByDate: {},
   hasWrittenNoteBefore: false,
 };

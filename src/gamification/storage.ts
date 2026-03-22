@@ -8,7 +8,7 @@ export function loadGamificationProfile(): GamificationProfile {
     const raw = localStorage.getItem(GAMIFICATION_STORAGE_KEY);
     if (!raw) return { ...DEFAULT_GAMIFICATION_PROFILE };
     const parsed = JSON.parse(raw) as Partial<GamificationProfile>;
-    return {
+    const merged: GamificationProfile = {
       ...DEFAULT_GAMIFICATION_PROFILE,
       ...parsed,
       unlockedAchievementIds: Array.isArray(parsed.unlockedAchievementIds)
@@ -18,7 +18,17 @@ export function loadGamificationProfile(): GamificationProfile {
         parsed.dailyBestByDate && typeof parsed.dailyBestByDate === 'object'
           ? parsed.dailyBestByDate
           : {},
+      moviesAddedByDate:
+        parsed.moviesAddedByDate && typeof parsed.moviesAddedByDate === 'object'
+          ? parsed.moviesAddedByDate
+          : {},
+      actorBridgeCounts:
+        parsed.actorBridgeCounts && typeof parsed.actorBridgeCounts === 'object'
+          ? parsed.actorBridgeCounts
+          : {},
     };
+    merged.longestStreakEver = Math.max(merged.longestStreakEver, merged.currentStreak);
+    return merged;
   } catch {
     return { ...DEFAULT_GAMIFICATION_PROFILE };
   }

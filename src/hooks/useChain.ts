@@ -4,8 +4,8 @@ import { scoreChainStep } from '../gamification/chainScoring';
 import {
   afterAddMovie,
   afterFirstNote,
-  applyStreak,
   finalizeChainReset,
+  recordStartMovie,
   utcDateString,
 } from '../gamification/profile';
 import { loadGamificationProfile, saveGamificationProfile } from '../gamification/storage';
@@ -83,7 +83,7 @@ export function useChain() {
     });
     queueMicrotask(() => {
       setGamificationProfile((p) => {
-        const next = applyStreak(p);
+        const next = recordStartMovie(p);
         saveGamificationProfile(next);
         return next;
       });
