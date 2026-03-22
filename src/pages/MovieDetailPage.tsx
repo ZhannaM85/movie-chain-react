@@ -4,6 +4,7 @@ import { useSyncCastAppearances } from '../hooks/useSyncCastAppearances';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
 import UserComment from '../components/UserComment';
+import ChainWatchedDateField from '../components/ChainWatchedDateField';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -94,6 +95,12 @@ export default function MovieDetailPage() {
           )}
 
           <p className="text-gray-300 leading-relaxed">{movie.overview}</p>
+
+          {chainIndex >= 0 && (
+            <div className="mt-4 rounded-lg border border-gray-700/50 bg-gray-800/40 p-3">
+              <ChainWatchedDateField chainIndex={chainIndex} idPrefix="movie-detail" />
+            </div>
+          )}
 
           {chainIndex >= 0 && <UserComment chainIndex={chainIndex} />}
         </div>

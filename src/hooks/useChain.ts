@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { localDateString, normalizeLoggedDateForHeatmap } from '../lib/dateUtils';
+import { normalizeLoggedDateForHeatmap } from '../lib/dateUtils';
 import type { Actor, ChainState, Movie, MovieSource } from '../types/movie';
 import { recordCastAppearancesForMovie } from '../gamification/castAppearances';
 import { scoreChainStep } from '../gamification/chainScoring';
