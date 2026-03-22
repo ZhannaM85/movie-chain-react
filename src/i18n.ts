@@ -27,6 +27,8 @@ const resources = {
       language: 'Language',
       chainCount_one: '{{count}} movie in chain',
       chainCount_other: '{{count}} movies in chain',
+      /** Shorter header label on narrow screens (full phrase still in title/aria). */
+      chainCountCompact: '{{count}} in chain',
       newChain: 'New Chain',
       confirmNewChain: 'Start a new chain? This will clear your current progress.',
       confirmNewChainRecap:
@@ -205,6 +207,7 @@ const resources = {
       chainCount_few: '{{count}} фильма в цепочке',
       chainCount_many: '{{count}} фильмов в цепочке',
       chainCount_other: '{{count}} фильма в цепочке',
+      chainCountCompact: '{{count}} в цеп.',
       newChain: 'Новая цепочка',
       confirmNewChain: 'Начать новую цепочку? Текущий прогресс будет очищен.',
       confirmNewChainRecap:

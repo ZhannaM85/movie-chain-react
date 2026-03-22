@@ -71,7 +71,7 @@ export default function Layout({ children }: { children: ReactNode }) {
               </span>
             </button>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0 min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {SHOW_KINOPOISK_TOGGLE && hasKinopoiskKey && (
               <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
                 <span className="hidden sm:inline">{t('useKinopoisk')}</span>
@@ -138,10 +138,13 @@ export default function Layout({ children }: { children: ReactNode }) {
             {links.length > 0 && (
               <Link
                 to="/chain"
-                className="text-sm text-gray-400 hover:text-indigo-400 transition-colors"
+                className="text-xs sm:text-sm text-gray-400 hover:text-indigo-400 transition-colors whitespace-nowrap shrink-0"
+                title={t('chainCount', { count: links.length })}
+                aria-label={t('chainCount', { count: links.length })}
                 onClick={() => setMobileNavOpen(false)}
               >
-                {t('chainCount', { count: links.length })}
+                <span className="sm:hidden">{t('chainCountCompact', { count: links.length })}</span>
+                <span className="hidden sm:inline">{t('chainCount', { count: links.length })}</span>
               </Link>
             )}
             {links.length > 0 && (
