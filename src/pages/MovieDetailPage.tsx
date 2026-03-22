@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useMovieDetails } from '../hooks/useMovieDetails';
+import { useSyncCastAppearances } from '../hooks/useSyncCastAppearances';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
 import UserComment from '../components/UserComment';
@@ -19,6 +20,8 @@ export default function MovieDetailPage() {
   const { links } = useChainContext();
 
   const chainIndex = links.findIndex((l) => l.movie.id === movieId);
+  const isInChain = movieId != null && chainIndex >= 0;
+  useSyncCastAppearances(movieId ?? undefined, movie?.credits?.cast, isInChain);
 
   if (loading) {
     return (

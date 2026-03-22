@@ -41,6 +41,12 @@ export default function Layout({ children }: { children: ReactNode }) {
                 {t('navHome')}
               </Link>
               <Link
+                to="/stats"
+                className="hover:text-indigo-400 transition-colors"
+              >
+                {t('navStats')}
+              </Link>
+              <Link
                 to="/about"
                 className="hover:text-indigo-400 transition-colors"
               >
@@ -171,6 +177,13 @@ export default function Layout({ children }: { children: ReactNode }) {
               onClick={() => setMobileNavOpen(false)}
             >
               {t('navHome')}
+            </Link>
+            <Link
+              to="/stats"
+              className="py-1 text-gray-300 hover:text-indigo-300 transition-colors"
+              onClick={() => setMobileNavOpen(false)}
+            >
+              {t('navStats')}
             </Link>
             <Link
               to="/about"

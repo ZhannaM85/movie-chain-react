@@ -1,11 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { ChainState, Movie, MovieSource } from '../types/movie';
+import type { Actor, ChainState, Movie, MovieSource } from '../types/movie';
+import { recordCastAppearancesForMovie } from '../gamification/castAppearances';
 import { scoreChainStep } from '../gamification/chainScoring';
 import {
   afterAddMovie,
   afterFirstNote,
-  applyStreak,
   finalizeChainReset,
+  recordStartMovie,
   utcDateString,
 } from '../gamification/profile';
 import { loadGamificationProfile, saveGamificationProfile } from '../gamification/storage';
@@ -65,6 +66,15 @@ export function useChain() {
     setGamificationToastQueue((q) => q.slice(1));
   }, []);
 
+  const aggregateCastAppearancesForMovie = useCallback((movieId: number, cast: Actor[]) => {
+    setGamificationProfile((p) => {
+      const next = recordCastAppearancesForMovie(p, movieId, cast);
+      if (next === p) return p;
+      saveGamificationProfile(next);
+      return next;
+    });
+  }, []);
+
   const startChain = useCallback((movie: Movie, source?: MovieSource, options?: StartChainOptions) => {
     setState({
       source: source ?? 'tmdb',
@@ -83,7 +93,7 @@ export function useChain() {
     });
     queueMicrotask(() => {
       setGamificationProfile((p) => {
-        const next = applyStreak(p);
+        const next = recordStartMovie(p);
         saveGamificationProfile(next);
         return next;
       });
@@ -242,6 +252,7 @@ export function useChain() {
     gamificationProfile,
     gamificationToastQueue,
     dismissGamificationToast,
+    aggregateCastAppearancesForMovie,
     startChain,
     selectActor,
     addMovie,

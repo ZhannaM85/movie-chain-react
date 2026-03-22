@@ -7,6 +7,7 @@ import ActorPicker from '../components/ActorPicker';
 import MovieSuggestions from '../components/MovieSuggestions';
 import UserComment from '../components/UserComment';
 import { useMovieDetails } from '../hooks/useMovieDetails';
+import { useSyncCastAppearances } from '../hooks/useSyncCastAppearances';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -39,6 +40,7 @@ function ChainView({ movieId }: { movieId: number }) {
   const { currentStep, links } = useChainContext();
   const { movie, loading } = useMovieDetails(movieId, api);
   const chainIndex = links.length - 1;
+  useSyncCastAppearances(movieId, movie?.credits?.cast, true);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
