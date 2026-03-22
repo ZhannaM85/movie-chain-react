@@ -4,6 +4,7 @@ import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
 import { useTranslation } from 'react-i18next';
 import { buildChainRecap } from '../gamification/chainRecap';
+import ChainWatchedDateField from './ChainWatchedDateField';
 
 /**
  * Sidebar list that summarizes the current movie chain with quick navigation.
@@ -63,40 +64,52 @@ export default function ChainList() {
                 <span className="text-xs text-indigo-400">{link.connectingActorName}</span>
               </div>
             )}
-            <Link
-              to={`/movie/${link.movie.id}`}
-              className="flex items-center gap-2 p-1.5 rounded-md hover:bg-gray-800/70 transition-colors group"
-            >
-              <span className="text-xs text-gray-600 w-5 text-right flex-shrink-0">{index + 1}</span>
-              {link.movie.poster_path ? (
-                <img
-                  src={api.posterUrl(link.movie.poster_path, 'w185')}
-                  alt={link.movie.title}
-                  className="w-8 h-12 rounded object-cover flex-shrink-0"
-                />
-              ) : (
-                <div className="w-8 h-12 rounded bg-gray-700 flex-shrink-0" />
-              )}
-              <div className="min-w-0">
-                <p className="text-sm text-gray-300 group-hover:text-white truncate">
-                  {link.movie.title}
-                </p>
-                <p className="text-xs text-gray-600">
-                  {link.movie.release_date ? new Date(link.movie.release_date).getFullYear() : ''}
-                </p>
-                {link.loggedDate && (
-                  <p className="text-[10px] text-emerald-500/90 mt-0.5 truncate" title={link.loggedDate}>
-                    {t('chainWatchedOn', {
-                      date: new Intl.DateTimeFormat(i18n.language, {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      }).format(new Date(`${link.loggedDate}T12:00:00`)),
-                    })}
-                  </p>
+            <div className="flex items-start gap-1.5 p-1.5 rounded-md hover:bg-gray-800/70 transition-colors group">
+              <Link
+                to={`/movie/${link.movie.id}`}
+                className="flex items-center gap-2 min-w-0 flex-1"
+              >
+                <span className="text-xs text-gray-600 w-5 text-right flex-shrink-0">{index + 1}</span>
+                {link.movie.poster_path ? (
+                  <img
+                    src={api.posterUrl(link.movie.poster_path, 'w185')}
+                    alt={link.movie.title}
+                    className="w-8 h-12 rounded object-cover flex-shrink-0"
+                  />
+                ) : (
+                  <div className="w-8 h-12 rounded bg-gray-700 flex-shrink-0" />
                 )}
+                <div className="min-w-0">
+                  <p className="text-sm text-gray-300 group-hover:text-white truncate">
+                    {link.movie.title}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    {link.movie.release_date ? new Date(link.movie.release_date).getFullYear() : ''}
+                  </p>
+                  {link.loggedDate && (
+                    <p className="text-[10px] text-emerald-500/90 mt-0.5 truncate" title={link.loggedDate}>
+                      {t('chainWatchedOn', {
+                        date: new Intl.DateTimeFormat(i18n.language, {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        }).format(new Date(`${link.loggedDate}T12:00:00`)),
+                      })}
+                    </p>
+                  )}
+                </div>
+              </Link>
+              <div className="shrink-0 pt-0.5 max-w-[40%] sm:max-w-none">
+                <ChainWatchedDateField
+                  chainIndex={index}
+                  idPrefix="chain-sidebar"
+                  labelClassName="sr-only"
+                  showUnsetHint={false}
+                  inputClassName="w-full min-w-0 max-w-[9.5rem] px-1 py-0.5 rounded bg-gray-900 border border-gray-600 text-[10px] text-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="flex flex-col items-stretch gap-0.5"
+                />
               </div>
-            </Link>
+            </div>
           </div>
         ))}
       </div>
