@@ -1,4 +1,4 @@
-import { localDateString, normalizeLoggedDateForHeatmap } from '../lib/dateUtils';
+import { normalizeLoggedDateForHeatmap } from '../lib/dateUtils';
 import type { ChainLink } from '../types/movie';
 import type { GamificationProfile } from './types';
 
@@ -184,7 +184,7 @@ export function afterAddMovie(
     totalChallengePointsAllTime: profile.totalChallengePointsAllTime + stepPoints,
   };
   next = applyStreak(next);
-  next = incrementDailyMovies(next, 1, newMovieLink.loggedDate);
+  next = incrementDailyMovies(next, 1, newMovieLink.loggedDate ?? undefined);
   if (stepLink?.connectingActorId != null && stepLink.connectingActorName) {
     next = incrementActorBridge(next, stepLink.connectingActorId, stepLink.connectingActorName);
   }
