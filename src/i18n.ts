@@ -197,6 +197,29 @@ const resources = {
       statLongestChain: 'Longest chain (links)',
       statAchievementsUnlocked: 'Achievements unlocked',
       statFirstNoteWritten: 'First movie note',
+      statsHelpAria: 'How this is calculated',
+      statExplainTotalMovies:
+        'Total number of movies you added to chains in this browser. Starting a chain adds the first film; each link after that adds one more. Undo removes the last movie and updates totals.',
+      statExplainChallengePoints:
+        'Sum of difficulty points from every chain step where you picked a connecting actor and the next movie. Higher scores favor lower vote counts on the movie you step into, lower movie popularity, and lower popularity on the connecting actor. The first movie in a chain has no step score.',
+      statExplainLongestStreak:
+        'Your longest run of consecutive UTC calendar days on which you had activity that counts toward the streak (typically adding a movie).',
+      statExplainCurrentStreak:
+        'How many consecutive UTC days you have played up to now. It goes up when you add a movie today after playing yesterday (UTC); it resets to 1 if you missed a UTC day.',
+      heatmapSectionExplain:
+        'Each cell is one local calendar day. The color shows how many movies count toward that day using each link’s “logged date” (defaults to today when you add the film). Darker green means more movies.',
+      statExplainBusiestDay:
+        'The local calendar day on which the most movies were counted toward your activity (same per-day counts as the heatmap).',
+      statExplainTopBridge:
+        'Actors you chose as the shared connection between two consecutive movies in a chain. We count how often each actor was selected as that link.',
+      statExplainTopCast:
+        'Actors from the full cast lists of movies in your chains (including small roles). A movie is counted once when its credits are loaded—usually when you open the movie page or play from home.',
+      statExplainMoreLongestChain:
+        'The greatest number of movies you reached in a single chain (personal best length).',
+      statExplainMoreAchievements:
+        'How many achievement badges you have unlocked in this browser (chain length, decades, first note, etc.).',
+      statExplainMoreFirstNote:
+        'Whether you have saved at least one text note on a movie in a chain.',
       yes: 'Yes',
       no: 'No',
     },
@@ -387,6 +410,29 @@ const resources = {
       statLongestChain: 'Длиннейшая цепочка (звеньев)',
       statAchievementsUnlocked: 'Достижений открыто',
       statFirstNoteWritten: 'Первая заметка к фильму',
+      statsHelpAria: 'Как это считается',
+      statExplainTotalMovies:
+        'Сколько фильмов вы добавили в цепочки в этом браузере. Старт цепочки — первый фильм; каждое следующее звено добавляет ещё один. Отмена убирает последний фильм и обновляет счётчики.',
+      statExplainChallengePoints:
+        'Сумма очков сложности за каждый шаг цепочки, где вы выбрали связующего актёра и следующий фильм. Больше очков за более «сложные» шаги: меньше голосов у фильма, к которому вы переходите, ниже популярность фильма и ниже популярность актёра-связки. У первого фильма в цепочке нет шаговых очков.',
+      statExplainLongestStreak:
+        'Самая длинная серия подряд идущих календарных дней UTC, когда у вас была активность, учитываемая в серии (обычно добавление фильма).',
+      statExplainCurrentStreak:
+        'Сколько подряд календарных дней UTC вы играли до сегодня. Растёт, если сегодня добавили фильм после вчерашней игры (UTC); сбрасывается, если пропустили день UTC.',
+      heatmapSectionExplain:
+        'Каждая ячейка — один календарный день в вашем часовом поясе. Цвет показывает, сколько фильмов учтено за этот день по полю «день» у звена (по умолчанию — день добавления). Темнее зелёный — больше фильмов.',
+      statExplainBusiestDay:
+        'Календарный день, в который учтено больше всего фильмов (те же счётчики, что и на теплокарте).',
+      statExplainTopBridge:
+        'Актёры, которых вы выбирали как общую связь между двумя соседними фильмами в цепочке. Считаем, сколько раз каждый актёр был такой связкой.',
+      statExplainTopCast:
+        'Актёры из полных титров фильмов в ваших цепочках, включая эпизодические роли. Каждый фильм учитывается один раз при загрузке состава — обычно при открытии страницы фильма или игре с главной.',
+      statExplainMoreLongestChain:
+        'Максимальное число фильмов в одной цепочке за всё время (личный рекорд по длине).',
+      statExplainMoreAchievements:
+        'Сколько достижений открыто в этом браузере (длина цепочки, десятилетия, первая заметка и т.д.).',
+      statExplainMoreFirstNote:
+        'Была ли сохранена хотя бы одна текстовая заметка к фильму в цепочке.',
       yes: 'Да',
       no: 'Нет',
     },

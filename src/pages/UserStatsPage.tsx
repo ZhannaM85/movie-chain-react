@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useChainContext } from '../context/ChainContext';
 import ActivityHeatmap from '../components/ActivityHeatmap';
 import { getTopActorBridges, getTopCastAppearances } from '../gamification/actorStats';
 import { useTranslation } from 'react-i18next';
+import { useMatchMedia } from '../hooks/useMatchMedia';
 
 /**
  * Local “profile” stats: activity heatmap, streaks, top bridge actors, totals.
@@ -34,32 +35,45 @@ export default function UserStatsPage() {
         <p className="text-sm text-gray-500 mt-1">{t('userStatsSubtitle')}</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
-        <StatCard label={t('statTotalMoviesLogged')} value={String(p.totalLinksAddedAllTime)} />
-        <StatCard label={t('statChallengePointsTotal')} value={String(p.totalChallengePointsAllTime)} />
-        <StatCard label={t('statLongestStreak')} value={String(p.longestStreakEver)} hint={t('statDaysUtc')} />
-        <StatCard label={t('statCurrentStreak')} value={String(p.currentStreak)} hint={t('statDaysUtc')} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-10 overflow-visible">
+        <StatCard label={t('statTotalMoviesLogged')} value={String(p.totalLinksAddedAllTime)} explanation={t('statExplainTotalMovies')} />
+        <StatCard
+          label={t('statChallengePointsTotal')}
+          value={String(p.totalChallengePointsAllTime)}
+          explanation={t('statExplainChallengePoints')}
+        />
+        <StatCard
+          label={t('statLongestStreak')}
+          value={String(p.longestStreakEver)}
+          hint={t('statDaysUtc')}
+          explanation={t('statExplainLongestStreak')}
+        />
+        <StatCard
+          label={t('statCurrentStreak')}
+          value={String(p.currentStreak)}
+          hint={t('statDaysUtc')}
+          explanation={t('statExplainCurrentStreak')}
+        />
       </div>
 
-      <div className="mb-10">
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-          {t('heatmapSectionTitle')}
-        </h2>
+      <div className="mb-10 overflow-visible">
+        <ExplainableSectionTitle title={t('heatmapSectionTitle')} explanation={t('heatmapSectionExplain')} />
         <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-4">
           <ActivityHeatmap moviesAddedByDate={p.moviesAddedByDate} />
         </div>
         {busiestDay && (
-          <p className="text-xs text-gray-500 mt-3">
+          <ExplainableHint
+            className="text-xs text-gray-500 mt-3"
+            explanation={t('statExplainBusiestDay')}
+          >
             {t('statBusiestDay', { date: busiestDay.date, count: busiestDay.count })}
-          </p>
+          </ExplainableHint>
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 overflow-visible">
         <section>
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-            {t('topActorsSectionTitle')}
-          </h2>
+          <ExplainableSectionTitle title={t('topActorsSectionTitle')} explanation={t('statExplainTopBridge')} />
           {topActors.length === 0 ? (
             <p className="text-sm text-gray-600">{t('topActorsEmpty')}</p>
           ) : (
@@ -88,9 +102,9 @@ export default function UserStatsPage() {
         </section>
 
         <section>
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">
-            {t('topCastSectionTitle')}
-          </h2>
+          <div className="mb-1">
+            <ExplainableSectionTitle title={t('topCastSectionTitle')} explanation={t('statExplainTopCast')} />
+          </div>
           <p className="text-xs text-gray-600 mb-3">{t('topCastSectionHint')}</p>
           {topCastActors.length === 0 ? (
             <p className="text-sm text-gray-600">{t('topCastEmpty')}</p>
@@ -124,18 +138,21 @@ export default function UserStatsPage() {
             {t('moreStatsSectionTitle')}
           </h2>
           <ul className="space-y-2 text-sm text-gray-400">
-            <li className="flex justify-between gap-4 border-b border-gray-800/80 pb-2">
-              <span>{t('statLongestChain')}</span>
-              <span className="text-gray-200 tabular-nums">{p.longestChainEver}</span>
-            </li>
-            <li className="flex justify-between gap-4 border-b border-gray-800/80 pb-2">
-              <span>{t('statAchievementsUnlocked')}</span>
-              <span className="text-gray-200 tabular-nums">{p.unlockedAchievementIds.length}</span>
-            </li>
-            <li className="flex justify-between gap-4">
-              <span>{t('statFirstNoteWritten')}</span>
-              <span className="text-gray-200">{p.hasWrittenNoteBefore ? t('yes') : t('no')}</span>
-            </li>
+            <ExplainableRow
+              label={t('statLongestChain')}
+              value={<span className="text-gray-200 tabular-nums">{p.longestChainEver}</span>}
+              explanation={t('statExplainMoreLongestChain')}
+            />
+            <ExplainableRow
+              label={t('statAchievementsUnlocked')}
+              value={<span className="text-gray-200 tabular-nums">{p.unlockedAchievementIds.length}</span>}
+              explanation={t('statExplainMoreAchievements')}
+            />
+            <ExplainableRow
+              label={t('statFirstNoteWritten')}
+              value={<span className="text-gray-200">{p.hasWrittenNoteBefore ? t('yes') : t('no')}</span>}
+              explanation={t('statExplainMoreFirstNote')}
+            />
           </ul>
         </section>
       </div>
@@ -143,12 +160,199 @@ export default function UserStatsPage() {
   );
 }
 
-function StatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
+function StatCard({
+  label,
+  value,
+  hint,
+  explanation,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  explanation?: string;
+}) {
+  const narrow = useMatchMedia('(max-width: 767px)');
+  const [open, setOpen] = useState(false);
+
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-900/50 px-4 py-3">
-      <p className="text-[11px] uppercase tracking-wider text-gray-500">{label}</p>
+    <div
+      className={
+        'relative rounded-xl border border-gray-800 bg-gray-900/50 px-4 py-3 overflow-visible' +
+        (explanation && narrow ? ' cursor-pointer' : '') +
+        (explanation && !narrow ? ' md:group cursor-help' : '')
+      }
+      onClick={() => explanation && narrow && setOpen((o) => !o)}
+      onKeyDown={(e) => {
+        if (explanation && narrow && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          setOpen((o) => !o);
+        }
+      }}
+      role={explanation && narrow ? 'button' : undefined}
+      tabIndex={explanation && narrow ? 0 : undefined}
+      aria-expanded={explanation && narrow ? open : undefined}
+    >
+      {explanation && !narrow ? (
+        <div
+          role="tooltip"
+          className="hidden md:block absolute top-full left-0 right-0 z-50 mt-1 px-3 py-2 rounded-lg border border-gray-700 bg-gray-800 shadow-lg text-xs text-gray-300 leading-snug opacity-0 invisible transition-opacity delay-75 pointer-events-none max-h-48 overflow-y-auto md:group-hover:opacity-100 md:group-hover:visible md:group-hover:delay-100"
+        >
+          {explanation}
+        </div>
+      ) : null}
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-[11px] uppercase tracking-wider text-gray-500 flex-1 min-w-0">{label}</p>
+        {explanation && narrow ? (
+          <span className="text-[10px] text-gray-600 shrink-0 select-none" aria-hidden>
+            ⓘ
+          </span>
+        ) : null}
+      </div>
       <p className="text-2xl font-semibold text-white mt-1 tabular-nums">{value}</p>
       {hint ? <p className="text-[10px] text-gray-600 mt-0.5">{hint}</p> : null}
+      {explanation && narrow && open ? (
+        <p className="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-800 leading-relaxed">{explanation}</p>
+      ) : null}
     </div>
+  );
+}
+
+function ExplainableSectionTitle({ title, explanation }: { title: string; explanation: string }) {
+  const narrow = useMatchMedia('(max-width: 767px)');
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="mb-3 overflow-visible">
+      <div
+        className={
+          'flex items-start gap-2 w-full' +
+          (narrow ? ' cursor-pointer' : ' md:group relative w-fit max-w-full cursor-help')
+        }
+        onClick={() => narrow && setOpen((o) => !o)}
+        onKeyDown={(e) => {
+          if (narrow && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            setOpen((o) => !o);
+          }
+        }}
+        role={narrow ? 'button' : undefined}
+        tabIndex={narrow ? 0 : undefined}
+        aria-expanded={narrow ? open : undefined}
+      >
+        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider text-left flex-1 min-w-0">
+          {title}
+        </h2>
+        {narrow ? (
+          <span className="text-gray-600 text-xs shrink-0 select-none mt-0.5" aria-hidden>
+            ⓘ
+          </span>
+        ) : (
+          <div
+            role="tooltip"
+            className="hidden md:block absolute top-full left-0 z-50 mt-1 w-72 max-w-[min(18rem,calc(100vw-2rem))] px-3 py-2 rounded-lg border border-gray-700 bg-gray-800 shadow-lg text-xs text-gray-300 leading-snug opacity-0 invisible transition-opacity pointer-events-none md:group-hover:opacity-100 md:group-hover:visible"
+          >
+            {explanation}
+          </div>
+        )}
+      </div>
+      {narrow && open ? (
+        <p className="text-xs text-gray-500 mt-2 leading-relaxed border-l-2 border-gray-700 pl-3">{explanation}</p>
+      ) : null}
+    </div>
+  );
+}
+
+function ExplainableHint({ children, explanation, className }: { children: ReactNode; explanation: string; className?: string }) {
+  const narrow = useMatchMedia('(max-width: 767px)');
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className={className ? `${className} overflow-visible` : 'overflow-visible'}>
+      <div
+        className={
+          'inline-flex flex-wrap items-start gap-2 max-w-full relative' +
+          (narrow ? ' cursor-pointer' : ' md:group cursor-help')
+        }
+        onClick={() => narrow && setOpen((o) => !o)}
+        onKeyDown={(e) => {
+          if (narrow && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            setOpen((o) => !o);
+          }
+        }}
+        role={narrow ? 'button' : undefined}
+        tabIndex={narrow ? 0 : undefined}
+        aria-expanded={narrow ? open : undefined}
+      >
+        <span className="min-w-0">{children}</span>
+        {narrow ? (
+          <span className="text-gray-600 text-xs shrink-0 select-none" aria-hidden>
+            ⓘ
+          </span>
+        ) : (
+          <div
+            role="tooltip"
+            className="hidden md:block absolute top-full left-0 z-50 mt-1 w-72 max-w-[min(18rem,calc(100vw-2rem))] px-3 py-2 rounded-lg border border-gray-700 bg-gray-800 shadow-lg text-xs text-gray-300 leading-snug opacity-0 invisible transition-opacity pointer-events-none md:group-hover:opacity-100 md:group-hover:visible"
+          >
+            {explanation}
+          </div>
+        )}
+      </div>
+      {narrow && open ? <p className="text-xs text-gray-500 mt-2 leading-relaxed">{explanation}</p> : null}
+    </div>
+  );
+}
+
+function ExplainableRow({
+  label,
+  value,
+  explanation,
+}: {
+  label: string;
+  value: ReactNode;
+  explanation: string;
+}) {
+  const narrow = useMatchMedia('(max-width: 767px)');
+  const [open, setOpen] = useState(false);
+
+  return (
+    <li className="border-b border-gray-800/80 pb-2 last:border-0 overflow-visible">
+      <div
+        className={
+          'flex justify-between gap-4 items-start' +
+          (narrow ? ' cursor-pointer' : ' md:group relative cursor-help')
+        }
+        onClick={() => narrow && setOpen((o) => !o)}
+        onKeyDown={(e) => {
+          if (narrow && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            setOpen((o) => !o);
+          }
+        }}
+        role={narrow ? 'button' : undefined}
+        tabIndex={narrow ? 0 : undefined}
+        aria-expanded={narrow ? open : undefined}
+      >
+        <div className="flex items-start gap-2 min-w-0 flex-1 relative">
+          <span className="text-gray-400">{label}</span>
+          {narrow ? (
+            <span className="text-gray-600 text-xs shrink-0 select-none" aria-hidden>
+              ⓘ
+            </span>
+          ) : (
+            <div
+              role="tooltip"
+              className="hidden md:block absolute top-full left-0 z-50 mt-1 w-72 max-w-[min(18rem,calc(100vw-2rem))] px-3 py-2 rounded-lg border border-gray-700 bg-gray-800 shadow-lg text-xs text-gray-300 leading-snug opacity-0 invisible transition-opacity pointer-events-none md:group-hover:opacity-100 md:group-hover:visible"
+            >
+              {explanation}
+            </div>
+          )}
+        </div>
+        <span className="shrink-0 text-right">{value}</span>
+      </div>
+      {narrow && open ? (
+        <p className="text-xs text-gray-500 mt-2 pl-1 leading-relaxed border-l-2 border-gray-700">{explanation}</p>
+      ) : null}
+    </li>
   );
 }
