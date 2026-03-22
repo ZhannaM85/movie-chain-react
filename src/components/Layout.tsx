@@ -7,6 +7,9 @@ import { useTranslation } from 'react-i18next';
 import { buildChainRecap } from '../gamification/chainRecap';
 import GamificationToasts from './GamificationToasts';
 
+/** Set to `true` to show the Kinopoisk / TMDB preference switch in the header again. */
+const SHOW_KINOPOISK_TOGGLE = false;
+
 /**
  * Main application shell with header, navigation, and responsive layout around the page content.
  *
@@ -69,7 +72,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             </button>
           </div>
           <div className="flex items-center gap-4">
-            {hasKinopoiskKey && (
+            {SHOW_KINOPOISK_TOGGLE && hasKinopoiskKey && (
               <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
                 <span className="hidden sm:inline">{t('useKinopoisk')}</span>
                 <button
