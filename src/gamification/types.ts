@@ -24,6 +24,8 @@ export interface GamificationProfile {
   actorBridgeCounts: Record<string, { name: string; count: number }>;
   /** How many chain movies each actor appears in (full credits), once per movie per actor */
   actorCastAppearanceCounts: Record<string, { name: string; count: number }>;
+  /** Per movie id: actor id → name from the last full-cast merge (used to rebuild counts for the current chain) */
+  movieCastByMovie: Record<string, Record<string, string>>;
   /** Movie ids for which we already merged full cast into actorCastAppearanceCounts */
   castAppearanceMoviesSeen: Record<string, true>;
   /** Best chain length when starting from that day's daily challenge (YYYY-MM-DD UTC) */
@@ -42,6 +44,7 @@ export const DEFAULT_GAMIFICATION_PROFILE: GamificationProfile = {
   moviesAddedByDate: {},
   actorBridgeCounts: {},
   actorCastAppearanceCounts: {},
+  movieCastByMovie: {},
   castAppearanceMoviesSeen: {},
   dailyBestByDate: {},
   hasWrittenNoteBefore: false,

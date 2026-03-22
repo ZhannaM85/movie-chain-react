@@ -30,6 +30,15 @@ describe('heatmap', () => {
     expect(monday.getDay()).toBe(1);
   });
 
+  it('week columns advance left to right (each column Monday is 7 days after the previous)', () => {
+    const { columns } = buildCalendarHeatmapWeeks({});
+    expect(columns.length).toBeGreaterThan(1);
+    const a = new Date(`${columns[0][0].date}T12:00:00`);
+    const b = new Date(`${columns[1][0].date}T12:00:00`);
+    const diffDays = (b.getTime() - a.getTime()) / (24 * 60 * 60 * 1000);
+    expect(diffDays).toBe(7);
+  });
+
   it('extends backward when activity is older than default window', () => {
     const { columns } = buildCalendarHeatmapWeeks({ '2020-06-01': 2 });
     const cellCount = columns.reduce((n, w) => n + w.length, 0);

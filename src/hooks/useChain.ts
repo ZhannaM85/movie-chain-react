@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { normalizeLoggedDateForHeatmap } from '../lib/dateUtils';
 import type { Actor, ChainState, Movie, MovieSource } from '../types/movie';
-import { recordCastAppearancesForMovie } from '../gamification/castAppearances';
+import { recordCastAppearancesForMovie, rebuildActorCastAppearanceCounts } from '../gamification/castAppearances';
 import { scoreChainStep } from '../gamification/chainScoring';
 import {
   adjustDailyForLoggedDateChange,
@@ -94,7 +94,8 @@ export function useChain() {
 
   useEffect(() => {
     setGamificationProfile((p) => {
-      const next = ensureDailyCountsFromLinks(p, state.links);
+      let next = ensureDailyCountsFromLinks(p, state.links);
+      next = rebuildActorCastAppearanceCounts(next, state.links);
       if (next === p) return p;
       saveGamificationProfile(next);
       return next;
@@ -107,12 +108,12 @@ export function useChain() {
 
   const aggregateCastAppearancesForMovie = useCallback((movieId: number, cast: Actor[]) => {
     setGamificationProfile((p) => {
-      const next = recordCastAppearancesForMovie(p, movieId, cast);
+      const next = recordCastAppearancesForMovie(p, movieId, cast, state.links);
       if (next === p) return p;
       saveGamificationProfile(next);
       return next;
     });
-  }, []);
+  }, [state.links]);
 
   const startChain = useCallback((movie: Movie, source?: MovieSource, options?: StartChainOptions) => {
     const logged = normalizeLoggedDateForHeatmap(options?.loggedDate);
