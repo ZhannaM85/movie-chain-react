@@ -2,10 +2,13 @@ import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { useChainContext } from '../context/ChainContext';
-import { useMovieApiForChain } from '../context/MovieApiContext';
+import { useMovieApiForChain, useMovieApiPreference } from '../context/MovieApiContext';
 import { useTranslation } from 'react-i18next';
 import { buildChainRecap } from '../gamification/chainRecap';
 import GamificationToasts from './GamificationToasts';
+
+/** Set to `true` to show the Kinopoisk / TMDB preference switch in the header again. */
+const SHOW_KINOPOISK_TOGGLE = false;
 
 /**
  * Main application shell with header, navigation, and responsive layout around the page content.
@@ -15,7 +18,8 @@ import GamificationToasts from './GamificationToasts';
  */
 export default function Layout({ children }: { children: ReactNode }) {
   const api = useMovieApiForChain();
-  const { links, resetChain, gamificationProfile } = useChainContext();
+  const { preferKinopoisk, setPreferKinopoisk, hasKinopoiskKey } = useMovieApiPreference();
+  const { links, source, resetChain, gamificationProfile } = useChainContext();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const { t, i18n } = useTranslation();
 
@@ -68,6 +72,42 @@ export default function Layout({ children }: { children: ReactNode }) {
             </button>
           </div>
           <div className="flex items-center gap-4">
+            {SHOW_KINOPOISK_TOGGLE && hasKinopoiskKey && (
+              <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+                <span className="hidden sm:inline">{t('useKinopoisk')}</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={preferKinopoisk}
+                  onClick={() => {
+                    const newVal = !preferKinopoisk;
+                    if (!newVal && links.length > 0 && source === 'kinopoisk') {
+                      const recap = buildChainRecap(links);
+                      const msg = t('confirmNewChainRecap', {
+                        length: recap.length,
+                        difficulty: recap.totalDifficulty,
+                        actors: recap.uniqueActors,
+                        decades: recap.distinctDecades,
+                      });
+                      if (!window.confirm(msg)) return;
+                      resetChain();
+                    }
+                    setPreferKinopoisk(newVal);
+                  }}
+                  className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
+                    preferKinopoisk
+                      ? 'border-indigo-500 bg-indigo-600'
+                      : 'border-gray-600 bg-gray-700'
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition ${
+                      preferKinopoisk ? 'translate-x-4' : 'translate-x-0.5'
+                    }`}
+                  />
+                </button>
+              </label>
+            )}
             {gamificationProfile.currentStreak > 0 && (
               <span
                 className="hidden sm:inline text-xs px-2 py-0.5 rounded-md bg-amber-950/50 border border-amber-800/60 text-amber-200/90"
