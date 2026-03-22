@@ -16,7 +16,7 @@ interface ActorPickerProps {
  * @returns {JSX.Element} The rendered actor picker.
  */
 export default function ActorPicker({ credits }: ActorPickerProps) {
-  const { selectActor, excludedActorId } = useChainContext();
+  const { selectActor, excludedActorId, prependMode } = useChainContext();
   const { t } = useTranslation();
   const [showAll, setShowAll] = useState(false);
 
@@ -28,7 +28,9 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
 
   return (
     <div>
-      <h3 className="text-lg font-semibold text-gray-200 mb-3">{t('pickActorToContinue')}</h3>
+      <h3 className="text-lg font-semibold text-gray-200 mb-3">
+        {prependMode ? t('pickActorToPrepend') : t('pickActorToContinue')}
+      </h3>
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
         {displayCast.map((actor) => {
           const isExcluded = actor.id === excludedActorId;

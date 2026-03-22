@@ -134,15 +134,22 @@ export interface AfterAddMovieResult {
   beatPersonalBest: boolean;
 }
 
+/**
+ * @param newLinkIndex - Index of the newly added movie (0 when prepending, `length - 1` when appending).
+ */
 export function afterAddMovie(
   profile: GamificationProfile,
-  linksAfterAdd: ChainLink[]
+  linksAfterAdd: ChainLink[],
+  newLinkIndex: number
 ): AfterAddMovieResult {
   const prevLongest = profile.longestChainEver;
   const newLength = linksAfterAdd.length;
 
-  const lastLink = linksAfterAdd[linksAfterAdd.length - 1];
-  const stepPoints = lastLink.stepDifficulty ?? 0;
+  const stepLinkIndex = newLinkIndex === 0 ? 1 : newLinkIndex;
+  const stepLink = linksAfterAdd[stepLinkIndex];
+  const stepPoints = stepLink?.stepDifficulty ?? 0;
+
+  const newMovieLink = linksAfterAdd[newLinkIndex];
 
   let next: GamificationProfile = {
     ...profile,
@@ -151,9 +158,9 @@ export function afterAddMovie(
     totalChallengePointsAllTime: profile.totalChallengePointsAllTime + stepPoints,
   };
   next = applyStreak(next);
-  next = incrementDailyMovies(next, 1, lastLink.loggedDate ?? localDateString());
-  if (lastLink.connectingActorId != null && lastLink.connectingActorName) {
-    next = incrementActorBridge(next, lastLink.connectingActorId, lastLink.connectingActorName);
+  next = incrementDailyMovies(next, 1, newMovieLink.loggedDate ?? localDateString());
+  if (stepLink?.connectingActorId != null && stepLink.connectingActorName) {
+    next = incrementActorBridge(next, stepLink.connectingActorId, stepLink.connectingActorName);
   }
 
   const newAchievements: string[] = [];

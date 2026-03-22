@@ -36,6 +36,7 @@ function loadState(): ChainState {
         ...parsed,
         source: parsed.source ?? 'tmdb',
         dailyChallengeDate: parsed.dailyChallengeDate ?? null,
+        prependMode: parsed.prependMode ?? false,
       };
     }
   } catch {
@@ -46,6 +47,7 @@ function loadState(): ChainState {
     currentStep: 'start',
     selectedActorId: null,
     excludedActorId: null,
+    prependMode: false,
     dailyChallengeDate: null,
   };
 }
@@ -96,6 +98,7 @@ export function useChain() {
       currentStep: 'pick-actor',
       selectedActorId: null,
       excludedActorId: null,
+      prependMode: false,
       dailyChallengeDate: options?.dailyChallenge ? utcDateString() : null,
     });
     queueMicrotask(() => {
@@ -105,6 +108,30 @@ export function useChain() {
         return next;
       });
     });
+  }, []);
+
+  const startPrependToChain = useCallback(() => {
+    setState((prev) => {
+      if (prev.links.length === 0) return prev;
+      return {
+        ...prev,
+        prependMode: true,
+        currentStep: 'pick-actor',
+        selectedActorId: null,
+        excludedActorId: null,
+      };
+    });
+    sessionStorage.removeItem(PENDING_ACTOR_KEY);
+  }, []);
+
+  const cancelPrepend = useCallback(() => {
+    sessionStorage.removeItem(PENDING_ACTOR_KEY);
+    setState((prev) => ({
+      ...prev,
+      prependMode: false,
+      currentStep: 'pick-actor',
+      selectedActorId: null,
+    }));
   }, []);
 
   const selectActor = useCallback((actorId: number, actorName: string, actorPopularity?: number | null) => {
@@ -134,22 +161,53 @@ export function useChain() {
           actorName = null;
         }
       }
-      const stepDifficulty = scoreChainStep(movie, actorPopularity);
       const day = loggedDate ?? localDateString();
-      const newLinks = [
-        ...prev.links,
-        {
-          movie,
-          connectingActorId: prev.selectedActorId,
-          connectingActorName: actorName,
-          comment: '',
-          loggedDate: day,
-          stepDifficulty,
-        },
-      ];
+      const prependMode = prev.prependMode === true && prev.links.length > 0;
+
+      let newLinks: typeof prev.links;
+      let newLinkIndex: number;
+
+      if (prependMode) {
+        const first = prev.links[0];
+        const stepDifficulty = scoreChainStep(first.movie, actorPopularity);
+        newLinks = [
+          {
+            movie,
+            connectingActorId: null,
+            connectingActorName: null,
+            comment: '',
+            loggedDate: day,
+          },
+          {
+            ...first,
+            connectingActorId: prev.selectedActorId,
+            connectingActorName: actorName,
+            stepDifficulty,
+          },
+          ...prev.links.slice(1),
+        ];
+        newLinkIndex = 0;
+      } else {
+        const stepDifficulty = scoreChainStep(movie, actorPopularity);
+        newLinks = [
+          ...prev.links,
+          {
+            movie,
+            connectingActorId: prev.selectedActorId,
+            connectingActorName: actorName,
+            comment: '',
+            loggedDate: day,
+            stepDifficulty,
+          },
+        ];
+        newLinkIndex = newLinks.length - 1;
+      }
+
+      const tail = newLinks[newLinks.length - 1];
+
       queueMicrotask(() => {
         setGamificationProfile((p) => {
-          const r = afterAddMovie(p, newLinks);
+          const r = afterAddMovie(p, newLinks, newLinkIndex);
           saveGamificationProfile(r.profile);
           const toasts: string[] = [];
           if (r.newAchievements.length) {
@@ -168,8 +226,9 @@ export function useChain() {
         ...prev,
         source: prev.source ?? 'tmdb',
         links: newLinks,
+        prependMode: false,
         currentStep: 'pick-actor',
-        excludedActorId: prev.selectedActorId,
+        excludedActorId: tail.connectingActorId ?? null,
         selectedActorId: null,
       };
     });
@@ -243,6 +302,7 @@ export function useChain() {
         currentStep: 'start',
         selectedActorId: null,
         excludedActorId: null,
+        prependMode: false,
         dailyChallengeDate: null,
       };
     });
@@ -276,6 +336,7 @@ export function useChain() {
           currentStep: 'start',
           selectedActorId: null,
           excludedActorId: null,
+          prependMode: false,
           dailyChallengeDate: null,
         };
       }
@@ -295,6 +356,7 @@ export function useChain() {
       return {
         ...prev,
         links,
+        prependMode: false,
         currentStep: 'pick-actor',
         selectedActorId: null,
         excludedActorId: prevLink?.connectingActorId ?? null,
@@ -309,6 +371,8 @@ export function useChain() {
     dismissGamificationToast,
     aggregateCastAppearancesForMovie,
     startChain,
+    startPrependToChain,
+    cancelPrepend,
     selectActor,
     addMovie,
     updateComment,
