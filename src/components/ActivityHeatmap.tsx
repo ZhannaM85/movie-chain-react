@@ -3,11 +3,11 @@ import { buildCalendarHeatmapWeeks, intensityLevel } from '../gamification/heatm
 import { useTranslation } from 'react-i18next';
 
 const LEVEL_CLASS: Record<0 | 1 | 2 | 3 | 4, string> = {
-  0: 'bg-gray-800 border border-gray-800',
-  1: 'bg-emerald-950/80 border border-emerald-900/50',
-  2: 'bg-emerald-800/70 border border-emerald-700/40',
-  3: 'bg-emerald-600/70 border border-emerald-500/40',
-  4: 'bg-emerald-400/80 border border-emerald-300/40',
+  0: 'bg-white border border-gray-200',
+  1: 'bg-emerald-200 border border-emerald-300',
+  2: 'bg-emerald-400 border border-emerald-500',
+  3: 'bg-emerald-600 border border-emerald-700',
+  4: 'bg-emerald-800 border border-emerald-900',
 };
 
 interface ActivityHeatmapProps {
