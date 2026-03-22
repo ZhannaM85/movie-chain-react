@@ -12,7 +12,7 @@ import { buildChainRecap } from '../gamification/chainRecap';
  */
 export default function ChainList() {
   const api = useMovieApiForChain();
-  const { links, undoLast, gamificationProfile } = useChainContext();
+  const { links, undoLast, gamificationProfile, startPrependToChain } = useChainContext();
   const { t } = useTranslation();
   const recap = useMemo(() => buildChainRecap(links), [links]);
 
@@ -44,6 +44,17 @@ export default function ChainList() {
         )}
       </div>
       <div className="flex-1 overflow-y-auto space-y-1 pr-1">
+        <div className="flex items-center gap-2 pl-1 pb-1">
+          <button
+            type="button"
+            onClick={() => startPrependToChain()}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-dashed border-gray-600 text-lg font-medium text-indigo-400 hover:bg-gray-800/80 hover:border-indigo-500/50 transition-colors"
+            title={t('addMovieBeforeChain')}
+            aria-label={t('addMovieBeforeChain')}
+          >
+            +
+          </button>
+        </div>
         {links.map((link, index) => (
           <div key={`${link.movie.id}-${index}`}>
             {index > 0 && link.connectingActorName && (

@@ -165,6 +165,26 @@ describe('useChain', () => {
     expect(result.current.currentStep).toBe('start');
   });
 
+  it('startPrependToChain then addMovie prepends link and sets connector on former first', async () => {
+    const movie0: Movie = { ...minimalMovie, id: 3, title: 'Older' };
+    const { result } = renderHook(() => useChain());
+    act(() => result.current.startChain(minimalMovie));
+    await flushMicrotasks();
+    act(() => result.current.startPrependToChain());
+    expect(result.current.prependMode).toBe(true);
+    act(() => result.current.selectActor(99, 'Bridge Actor'));
+    act(() => result.current.addMovie(movie0));
+    await flushMicrotasks();
+    expect(result.current.prependMode).toBe(false);
+    expect(result.current.links).toHaveLength(2);
+    expect(result.current.links[0].movie).toEqual(movie0);
+    expect(result.current.links[0].connectingActorId).toBeNull();
+    expect(result.current.links[1].movie).toEqual(minimalMovie);
+    expect(result.current.links[1].connectingActorId).toBe(99);
+    expect(result.current.links[1].connectingActorName).toBe('Bridge Actor');
+    expect(result.current.currentStep).toBe('pick-actor');
+  });
+
   it('undoLast with two links removes last link', async () => {
     const movie2: Movie = { ...minimalMovie, id: 2, title: 'Second' };
     const { result } = renderHook(() => useChain());

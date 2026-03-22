@@ -71,7 +71,7 @@ export default function Layout({ children }: { children: ReactNode }) {
               </span>
             </button>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0 min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {SHOW_KINOPOISK_TOGGLE && hasKinopoiskKey && (
               <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
                 <span className="hidden sm:inline">{t('useKinopoisk')}</span>
@@ -138,14 +138,18 @@ export default function Layout({ children }: { children: ReactNode }) {
             {links.length > 0 && (
               <Link
                 to="/chain"
-                className="text-sm text-gray-400 hover:text-indigo-400 transition-colors"
+                className="text-xs sm:text-sm text-gray-400 hover:text-indigo-400 transition-colors whitespace-nowrap shrink-0"
+                title={t('chainCount', { count: links.length })}
+                aria-label={t('chainCount', { count: links.length })}
                 onClick={() => setMobileNavOpen(false)}
               >
-                {t('chainCount', { count: links.length })}
+                <span className="sm:hidden">{t('chainCountCompact', { count: links.length })}</span>
+                <span className="hidden sm:inline">{t('chainCount', { count: links.length })}</span>
               </Link>
             )}
             {links.length > 0 && (
               <button
+                type="button"
                 onClick={() => {
                   const recap = buildChainRecap(links);
                   const msg =
@@ -162,9 +166,24 @@ export default function Layout({ children }: { children: ReactNode }) {
                   }
                   setMobileNavOpen(false);
                 }}
-                className="text-sm px-3 py-1.5 rounded-md bg-gray-800 hover:bg-red-900/50 hover:text-red-300 text-gray-300 transition-colors"
+                className="inline-flex items-center justify-center shrink-0 rounded-md bg-gray-800 hover:bg-red-900/50 hover:text-red-300 text-gray-300 transition-colors h-9 w-9 sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 text-sm"
+                title={t('newChain')}
+                aria-label={t('newChain')}
               >
-                {t('newChain')}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-5 h-5 sm:hidden"
+                  aria-hidden
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                <span className="hidden sm:inline">{t('newChain')}</span>
               </button>
             )}
           </div>
