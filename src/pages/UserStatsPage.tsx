@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useChainContext } from '../context/ChainContext';
 import ActivityHeatmap from '../components/ActivityHeatmap';
-import { getTopActorBridges } from '../gamification/actorStats';
+import { getTopActorBridges, getTopCastAppearances } from '../gamification/actorStats';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -13,6 +13,7 @@ export default function UserStatsPage() {
   const { t } = useTranslation();
 
   const topActors = useMemo(() => getTopActorBridges(p, 12), [p]);
+  const topCastActors = useMemo(() => getTopCastAppearances(p, 12), [p]);
 
   const busiestDay = useMemo(() => {
     let bestDate: string | null = null;
@@ -54,7 +55,7 @@ export default function UserStatsPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <section>
           <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
             {t('topActorsSectionTitle')}
@@ -79,6 +80,38 @@ export default function UserStatsPage() {
                   </div>
                   <span className="text-xs text-gray-500 flex-shrink-0 tabular-nums">
                     {t('actorBridgeTimes', { count: a.count })}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">
+            {t('topCastSectionTitle')}
+          </h2>
+          <p className="text-xs text-gray-600 mb-3">{t('topCastSectionHint')}</p>
+          {topCastActors.length === 0 ? (
+            <p className="text-sm text-gray-600">{t('topCastEmpty')}</p>
+          ) : (
+            <ul className="space-y-2">
+              {topCastActors.map((a, i) => (
+                <li
+                  key={a.id}
+                  className="flex items-center justify-between gap-3 rounded-lg bg-gray-800/50 border border-gray-800 px-3 py-2"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-xs text-gray-600 w-5 flex-shrink-0">{i + 1}</span>
+                    <Link
+                      to={`/actor/${a.id}`}
+                      className="text-sm text-indigo-400 hover:text-indigo-300 truncate"
+                    >
+                      {a.name}
+                    </Link>
+                  </div>
+                  <span className="text-xs text-gray-500 flex-shrink-0 tabular-nums">
+                    {t('actorCastMovies', { count: a.count })}
                   </span>
                 </li>
               ))}

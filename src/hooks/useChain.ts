@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { ChainState, Movie, MovieSource } from '../types/movie';
+import type { Actor, ChainState, Movie, MovieSource } from '../types/movie';
+import { recordCastAppearancesForMovie } from '../gamification/castAppearances';
 import { scoreChainStep } from '../gamification/chainScoring';
 import {
   afterAddMovie,
@@ -63,6 +64,15 @@ export function useChain() {
 
   const dismissGamificationToast = useCallback(() => {
     setGamificationToastQueue((q) => q.slice(1));
+  }, []);
+
+  const aggregateCastAppearancesForMovie = useCallback((movieId: number, cast: Actor[]) => {
+    setGamificationProfile((p) => {
+      const next = recordCastAppearancesForMovie(p, movieId, cast);
+      if (next === p) return p;
+      saveGamificationProfile(next);
+      return next;
+    });
   }, []);
 
   const startChain = useCallback((movie: Movie, source?: MovieSource, options?: StartChainOptions) => {
@@ -242,6 +252,7 @@ export function useChain() {
     gamificationProfile,
     gamificationToastQueue,
     dismissGamificationToast,
+    aggregateCastAppearancesForMovie,
     startChain,
     selectActor,
     addMovie,

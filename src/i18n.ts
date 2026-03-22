@@ -172,6 +172,13 @@ const resources = {
       statBusiestDay: 'Busiest day: {{date}} ({{count}} movies)',
       topActorsSectionTitle: 'Top bridge actors',
       topActorsEmpty: 'Play more chains — we will count which actors you pick most often to link films.',
+      topCastSectionTitle: 'Top actors (full cast)',
+      topCastSectionHint:
+        'Actors credited on movies in your chains — including small roles. Each movie is counted once when we load its cast (visit the movie or play from home).',
+      topCastEmpty:
+        'Open movies from your chain so we can read full credits. Your top “screen time” actors will show up here.',
+      actorCastMovies_one: 'in {{count}} movie',
+      actorCastMovies_other: 'in {{count}} movies',
       actorBridgeTimes_one: '{{count}}×',
       actorBridgeTimes_other: '{{count}}×',
       moreStatsSectionTitle: 'More',
@@ -340,6 +347,15 @@ const resources = {
       statBusiestDay: 'Самый загруженный день: {{date}} ({{count}} фильм.)',
       topActorsSectionTitle: 'Частые «мосты» — актёры',
       topActorsEmpty: 'Играйте дольше — мы покажем, каких актёров вы чаще выбираете в качестве связки.',
+      topCastSectionTitle: 'Топ актёров (полные титры)',
+      topCastSectionHint:
+        'Актёры из полного состава фильмов в ваших цепочках — в том числе эпизодические роли. Каждый фильм учитывается один раз, когда загружаются титры (страница фильма или игра с главной).',
+      topCastEmpty:
+        'Откройте фильмы из цепочки, чтобы загрузить полный состав — здесь появятся самые частые по числу ваших фильмов.',
+      actorCastMovies_one: 'в {{count}} фильме',
+      actorCastMovies_few: 'в {{count}} фильмах',
+      actorCastMovies_many: 'в {{count}} фильмах',
+      actorCastMovies_other: 'в {{count}} фильмах',
       actorBridgeTimes_one: '{{count}}×',
       actorBridgeTimes_few: '{{count}}×',
       actorBridgeTimes_many: '{{count}}×',

@@ -26,6 +26,29 @@ export function loadGamificationProfile(): GamificationProfile {
         parsed.actorBridgeCounts && typeof parsed.actorBridgeCounts === 'object'
           ? parsed.actorBridgeCounts
           : {},
+      actorCastAppearanceCounts:
+        parsed.actorCastAppearanceCounts && typeof parsed.actorCastAppearanceCounts === 'object'
+          ? parsed.actorCastAppearanceCounts
+          : {},
+      castAppearanceMoviesSeen: (() => {
+        const p = parsed as Record<string, unknown>;
+        if (
+          p.castAppearanceMoviesSeen &&
+          typeof p.castAppearanceMoviesSeen === 'object' &&
+          !Array.isArray(p.castAppearanceMoviesSeen)
+        ) {
+          return p.castAppearanceMoviesSeen as Record<string, true>;
+        }
+        const legacy = p.castAppearanceMoviesProcessed;
+        if (Array.isArray(legacy)) {
+          const seen: Record<string, true> = {};
+          for (const id of legacy) {
+            if (typeof id === 'string') seen[id] = true;
+          }
+          return seen;
+        }
+        return {};
+      })(),
     };
     merged.longestStreakEver = Math.max(merged.longestStreakEver, merged.currentStreak);
     return merged;
