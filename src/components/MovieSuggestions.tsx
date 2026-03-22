@@ -16,9 +16,9 @@ type SortOption = 'popularity' | 'title-asc' | 'title-desc' | 'date-newest' | 'd
  */
 export default function MovieSuggestions() {
   const api = useMovieApiForChain();
-  const { selectedActorId, addMovie, links, cancelActorSelection } = useChainContext();
+  const { selectedActorId, addMovie, links, cancelActorSelection, prependMode } = useChainContext();
   const { t, i18n } = useTranslation();
-  const [loggedDateForNextLink, setLoggedDateForNextLink] = useState(() => localDateString());
+  const [loggedDateForPastLink, setLoggedDateForPastLink] = useState(() => localDateString());
   const [actor, setActor] = useState<Actor | null>(null);
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,15 +113,22 @@ export default function MovieSuggestions() {
         </div>
       )}
 
-      <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
-        <label className="text-xs text-gray-500 shrink-0">{t('loggedDateForNextMovie')}</label>
-        <input
-          type="date"
-          value={loggedDateForNextLink}
-          onChange={(e) => setLoggedDateForNextLink(e.target.value)}
-          className="w-full sm:w-auto px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-        />
-      </div>
+      {prependMode && (
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <label className="text-xs text-gray-500 shrink-0" htmlFor="prepend-logged-date">
+            {t('loggedDateForPastMovie')}
+          </label>
+          <div className="w-36 shrink-0 max-w-full">
+            <input
+              id="prepend-logged-date"
+              type="date"
+              value={loggedDateForPastLink}
+              onChange={(e) => setLoggedDateForPastLink(e.target.value)}
+              className="box-border w-full min-w-0 px-2 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <input
@@ -149,7 +156,7 @@ export default function MovieSuggestions() {
         sortBy={sortBy}
         searchQuery={searchQuery}
         showAll={showAll}
-        onSelect={(movie) => addMovie(movie, loggedDateForNextLink)}
+        onSelect={(movie) => addMovie(movie, prependMode ? loggedDateForPastLink : localDateString())}
         posterUrl={api.posterUrl}
         t={t}
       />
