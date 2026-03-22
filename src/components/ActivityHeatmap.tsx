@@ -33,10 +33,10 @@ export default function ActivityHeatmap({ moviesAddedByDate }: ActivityHeatmapPr
   }, [moviesAddedByDate]);
 
   return (
-    <div className="w-full overflow-x-auto pb-1">
-      <div className="inline-flex gap-px min-w-min">
+    <div className="w-full pb-1">
+      <div className="flex w-full gap-px h-24 sm:h-28">
         {columns.map((week, wi) => (
-          <div key={wi} className="flex flex-col gap-px">
+          <div key={wi} className="flex min-w-0 flex-1 flex-col gap-px">
             {week.map((cell) => {
               const level = intensityLevel(cell.count, maxCount);
               const title =
@@ -47,7 +47,7 @@ export default function ActivityHeatmap({ moviesAddedByDate }: ActivityHeatmapPr
                 <div
                   key={cell.date}
                   title={title}
-                  className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm ${LEVEL_CLASS[level]}`}
+                  className={`min-h-0 flex-1 rounded-sm ${LEVEL_CLASS[level]}`}
                 />
               );
             })}
