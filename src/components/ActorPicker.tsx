@@ -37,7 +37,7 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
               key={actor.id}
               actor={actor}
               disabled={isExcluded}
-              onClick={() => selectActor(actor.id, actor.name)}
+              onClick={() => selectActor(actor.id, actor.name, actor.popularity)}
             />
           );
         })}

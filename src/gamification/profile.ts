@@ -1,0 +1,137 @@
+import type { ChainLink } from '../types/movie';
+import type { GamificationProfile } from './types';
+
+export function utcDateString(d = new Date()): string {
+  return d.toISOString().slice(0, 10);
+}
+
+function addUnlocked(profile: GamificationProfile, id: string): GamificationProfile {
+  if (profile.unlockedAchievementIds.includes(id)) return profile;
+  return {
+    ...profile,
+    unlockedAchievementIds: [...profile.unlockedAchievementIds, id],
+  };
+}
+
+function countDistinctDecades(links: ChainLink[]): number {
+  const decades = new Set<number>();
+  for (const link of links) {
+    const d = link.movie.release_date;
+    if (!d) continue;
+    const y = new Date(d).getFullYear();
+    if (Number.isFinite(y)) decades.add(Math.floor(y / 10) * 10);
+  }
+  return decades.size;
+}
+
+/**
+ * Updates streak when the user plays on a new calendar day (UTC).
+ */
+export function applyStreak(profile: GamificationProfile): GamificationProfile {
+  const today = utcDateString();
+  if (profile.lastStreakDate === today) return profile;
+
+  const yesterday = new Date();
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+  const yStr = utcDateString(yesterday);
+
+  let nextStreak = profile.currentStreak;
+  if (profile.lastStreakDate === null) {
+    nextStreak = 1;
+  } else if (profile.lastStreakDate === yStr) {
+    nextStreak = profile.currentStreak + 1;
+  } else {
+    nextStreak = 1;
+  }
+
+  return {
+    ...profile,
+    lastStreakDate: today,
+    currentStreak: nextStreak,
+  };
+}
+
+export interface AfterAddMovieResult {
+  profile: GamificationProfile;
+  newAchievements: string[];
+  /** True when current chain length exceeds previous longestChainEver before this step */
+  beatPersonalBest: boolean;
+}
+
+export function afterAddMovie(
+  profile: GamificationProfile,
+  linksAfterAdd: ChainLink[]
+): AfterAddMovieResult {
+  const prevLongest = profile.longestChainEver;
+  const newLength = linksAfterAdd.length;
+
+  let next: GamificationProfile = {
+    ...profile,
+    totalLinksAddedAllTime: profile.totalLinksAddedAllTime + 1,
+    longestChainEver: Math.max(profile.longestChainEver, newLength),
+  };
+  next = applyStreak(next);
+
+  const newAchievements: string[] = [];
+  const pushAch = (id: string) => {
+    if (!next.unlockedAchievementIds.includes(id)) {
+      next = addUnlocked(next, id);
+      newAchievements.push(id);
+    }
+  };
+
+  if (newLength >= 5) pushAch('chain_5');
+  if (newLength >= 10) pushAch('chain_10');
+  if (newLength >= 20) pushAch('chain_20');
+  if (countDistinctDecades(linksAfterAdd) >= 3) pushAch('three_decades');
+
+  const beatPersonalBest = newLength > prevLongest && newLength >= 2;
+
+  return { profile: next, newAchievements, beatPersonalBest };
+}
+
+export interface AfterFirstNoteResult {
+  profile: GamificationProfile;
+  newAchievements: string[];
+}
+
+export function afterFirstNote(profile: GamificationProfile): AfterFirstNoteResult {
+  if (profile.hasWrittenNoteBefore) {
+    return { profile, newAchievements: [] };
+  }
+
+  let next = { ...profile, hasWrittenNoteBefore: true };
+  next = applyStreak(next);
+
+  const newAchievements: string[] = [];
+  if (!next.unlockedAchievementIds.includes('first_note')) {
+    next = addUnlocked(next, 'first_note');
+    newAchievements.push('first_note');
+  }
+
+  return { profile: next, newAchievements };
+}
+
+export function finalizeChainReset(
+  profile: GamificationProfile,
+  links: ChainLink[],
+  dailyChallengeDate: string | null | undefined
+): GamificationProfile {
+  const length = links.length;
+  let next = {
+    ...profile,
+    longestChainEver: Math.max(profile.longestChainEver, length),
+  };
+
+  if (dailyChallengeDate && length > 0) {
+    const prevBest = next.dailyBestByDate[dailyChallengeDate] ?? 0;
+    if (length > prevBest) {
+      next = {
+        ...next,
+        dailyBestByDate: { ...next.dailyBestByDate, [dailyChallengeDate]: length },
+      };
+    }
+  }
+
+  return next;
+}
