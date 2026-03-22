@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
 import { useTranslation } from 'react-i18next';
+import { buildChainRecap } from '../gamification/chainRecap';
 
 /**
  * Sidebar list that summarizes the current movie chain with quick navigation.
@@ -10,13 +12,24 @@ import { useTranslation } from 'react-i18next';
  */
 export default function ChainList() {
   const api = useMovieApiForChain();
-  const { links, undoLast } = useChainContext();
+  const { links, undoLast, gamificationProfile } = useChainContext();
   const { t } = useTranslation();
+  const recap = useMemo(() => buildChainRecap(links), [links]);
 
   if (links.length === 0) return null;
 
   return (
     <div className="flex flex-col h-full">
+      <div className="mb-3 px-1 space-y-1.5">
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-gray-500">
+          <span title={t('challengePointsTooltip')}>
+            {t('challengePointsShort', { points: recap.totalDifficulty })}
+          </span>
+          <span title={t('bestChainTooltip')}>
+            {t('bestChainShort', { count: gamificationProfile.longestChainEver })}
+          </span>
+        </div>
+      </div>
       <div className="flex items-center justify-between mb-3 px-1">
         <Link to="/chain" className="text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors">
           {t('chain')}

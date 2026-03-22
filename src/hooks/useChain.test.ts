@@ -4,7 +4,7 @@ import { useChain } from './useChain';
 import type { Movie } from '../types/movie';
 
 const STORAGE_KEY = 'movie-chain-state';
-
+const PENDING_ACTOR_KEY = 'pending-actor-pick';
 function createMockStorage() {
   const store: Record<string, string> = {};
   return {
@@ -22,6 +22,13 @@ function createMockStorage() {
       return { ...store };
     },
   };
+}
+
+/** Flushes queueMicrotask callbacks from gamification updates */
+async function flushMicrotasks() {
+  await act(async () => {
+    await Promise.resolve();
+  });
 }
 
 const minimalMovie: Movie = {
@@ -59,11 +66,12 @@ describe('useChain', () => {
     expect(result.current.excludedActorId).toBeNull();
   });
 
-  it('startChain sets one link and step to pick-actor', () => {
+  it('startChain sets one link and step to pick-actor', async () => {
     const { result } = renderHook(() => useChain());
     act(() => {
       result.current.startChain(minimalMovie);
     });
+    await flushMicrotasks();
     expect(result.current.links).toHaveLength(1);
     expect(result.current.links[0].movie).toEqual(minimalMovie);
     expect(result.current.links[0].connectingActorId).toBeNull();
@@ -72,82 +80,98 @@ describe('useChain', () => {
     expect(result.current.currentStep).toBe('pick-actor');
   });
 
-  it('persists state to localStorage after startChain', () => {
+  it('persists state to localStorage after startChain', async () => {
     const { result } = renderHook(() => useChain());
     act(() => {
       result.current.startChain(minimalMovie);
     });
+    await flushMicrotasks();
     expect(localStorageMock.setItem).toHaveBeenCalledWith(
       STORAGE_KEY,
       expect.stringContaining('"currentStep":"pick-actor"')
     );
   });
 
-  it('selectActor updates step to pick-movie and selectedActorId', () => {
+  it('selectActor updates step to pick-movie and selectedActorId', async () => {
     const { result } = renderHook(() => useChain());
     act(() => result.current.startChain(minimalMovie));
+    await flushMicrotasks();
     act(() => result.current.selectActor(42, 'Jane Doe'));
     expect(result.current.currentStep).toBe('pick-movie');
     expect(result.current.selectedActorId).toBe(42);
-    expect(sessionStorageMock.setItem).toHaveBeenCalledWith('pending-actor-name', 'Jane Doe');
+    expect(sessionStorageMock.setItem).toHaveBeenCalledWith(
+      PENDING_ACTOR_KEY,
+      JSON.stringify({ name: 'Jane Doe', popularity: null })
+    );
   });
 
-  it('addMovie appends second link with connecting actor', () => {
+  it('addMovie appends second link with connecting actor', async () => {
     const movie2: Movie = { ...minimalMovie, id: 2, title: 'Second' };
     const { result } = renderHook(() => useChain());
     act(() => result.current.startChain(minimalMovie));
+    await flushMicrotasks();
     act(() => result.current.selectActor(42, 'Jane Doe'));
     act(() => result.current.addMovie(movie2));
+    await flushMicrotasks();
     expect(result.current.links).toHaveLength(2);
     expect(result.current.links[1].movie).toEqual(movie2);
     expect(result.current.links[1].connectingActorId).toBe(42);
     expect(result.current.links[1].connectingActorName).toBe('Jane Doe');
+    expect(result.current.links[1].stepDifficulty).toBeDefined();
     expect(result.current.currentStep).toBe('pick-actor');
     expect(result.current.excludedActorId).toBe(42);
     expect(result.current.selectedActorId).toBeNull();
   });
 
-  it('updateComment updates comment at index', () => {
+  it('updateComment updates comment at index', async () => {
     const { result } = renderHook(() => useChain());
     act(() => result.current.startChain(minimalMovie));
+    await flushMicrotasks();
     act(() => result.current.updateComment(0, 'My comment'));
+    await flushMicrotasks();
     expect(result.current.links[0].comment).toBe('My comment');
   });
 
-  it('resetChain clears links and returns to start', () => {
+  it('resetChain clears links and returns to start', async () => {
     const { result } = renderHook(() => useChain());
     act(() => result.current.startChain(minimalMovie));
+    await flushMicrotasks();
     act(() => result.current.resetChain());
+    await flushMicrotasks();
     expect(result.current.links).toEqual([]);
     expect(result.current.currentStep).toBe('start');
     expect(result.current.selectedActorId).toBeNull();
     expect(result.current.excludedActorId).toBeNull();
   });
 
-  it('cancelActorSelection clears selectedActorId and step to pick-actor', () => {
+  it('cancelActorSelection clears selectedActorId and step to pick-actor', async () => {
     const { result } = renderHook(() => useChain());
     act(() => result.current.startChain(minimalMovie));
+    await flushMicrotasks();
     act(() => result.current.selectActor(1, 'Actor'));
     act(() => result.current.cancelActorSelection());
     expect(result.current.selectedActorId).toBeNull();
     expect(result.current.currentStep).toBe('pick-actor');
-    expect(sessionStorageMock.removeItem).toHaveBeenCalledWith('pending-actor-name');
+    expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(PENDING_ACTOR_KEY);
   });
 
-  it('undoLast with one link clears chain', () => {
+  it('undoLast with one link clears chain', async () => {
     const { result } = renderHook(() => useChain());
     act(() => result.current.startChain(minimalMovie));
+    await flushMicrotasks();
     act(() => result.current.undoLast());
     expect(result.current.links).toEqual([]);
     expect(result.current.currentStep).toBe('start');
   });
 
-  it('undoLast with two links removes last link', () => {
+  it('undoLast with two links removes last link', async () => {
     const movie2: Movie = { ...minimalMovie, id: 2, title: 'Second' };
     const { result } = renderHook(() => useChain());
     act(() => result.current.startChain(minimalMovie));
+    await flushMicrotasks();
     act(() => result.current.selectActor(1, 'A'));
     act(() => result.current.addMovie(movie2));
+    await flushMicrotasks();
     expect(result.current.links).toHaveLength(2);
     act(() => result.current.undoLast());
     expect(result.current.links).toHaveLength(1);

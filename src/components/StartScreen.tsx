@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { Movie } from '../types/movie';
 import { useMovieApi } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
 import { useTranslation } from 'react-i18next';
+import { getDailyMovieIndex } from '../gamification/dailyChallenge';
+import { utcDateString } from '../gamification/profile';
 
 /**
  * Landing screen where the user can search or browse movies to start a new chain.
@@ -11,7 +13,7 @@ import { useTranslation } from 'react-i18next';
  */
 export default function StartScreen() {
   const api = useMovieApi();
-  const { startChain } = useChainContext();
+  const { startChain, gamificationProfile } = useChainContext();
   const { t } = useTranslation();
   const [trending, setTrending] = useState<Movie[]>([]);
   const [searchResults, setSearchResults] = useState<Movie[]>([]);
@@ -50,6 +52,14 @@ export default function StartScreen() {
   const movies = query.trim() ? searchResults : trending;
   const title = query.trim() ? t('searchResults') : t('trendingThisWeek');
 
+  const todayUtc = useMemo(() => utcDateString(), []);
+  const dailyIndex = useMemo(
+    () => getDailyMovieIndex(trending.length, todayUtc),
+    [trending.length, todayUtc]
+  );
+  const dailyMovie = trending.length > 0 ? trending[dailyIndex] : null;
+  const dailyBest = gamificationProfile.dailyBestByDate[todayUtc] ?? 0;
+
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
@@ -85,6 +95,38 @@ export default function StartScreen() {
           <span className="ml-2 inline-block w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
         )}
       </h2>
+
+      {!query.trim() && !loading && dailyMovie && (
+        <div className="mb-8 rounded-xl border border-indigo-500/35 bg-gradient-to-br from-indigo-950/40 to-gray-900/40 p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
+          <div className="flex gap-4 min-w-0">
+            {dailyMovie.poster_path ? (
+              <img
+                src={api.posterUrl(dailyMovie.poster_path, 'w185')}
+                alt=""
+                className="w-16 sm:w-20 rounded-lg object-cover flex-shrink-0 aspect-[2/3]"
+              />
+            ) : (
+              <div className="w-16 sm:w-20 aspect-[2/3] rounded-lg bg-gray-800 flex-shrink-0" />
+            )}
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wider text-indigo-400">
+                {t('dailyChallengeTitle')}
+              </p>
+              <p className="text-base font-semibold text-white truncate mt-1">{dailyMovie.title}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                {t('dailyChallengeBest', { count: dailyBest })}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => startChain(dailyMovie, api.source, { dailyChallenge: true })}
+            className="shrink-0 px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors w-full sm:w-auto"
+          >
+            {t('dailyChallengeCta')}
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {movies.map((movie) => (
