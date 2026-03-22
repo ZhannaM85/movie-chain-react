@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +12,9 @@ import { buildChainRecap } from '../gamification/chainRecap';
  */
 export default function ChainPage() {
   const api = useMovieApiForChain();
-  const { links, resetChain, undoLast, gamificationProfile, updateLoggedDate } = useChainContext();
+  const navigate = useNavigate();
+  const { links, resetChain, undoLast, gamificationProfile, updateLoggedDate, startPrependToChain } =
+    useChainContext();
   const { t } = useTranslation();
   const recap = useMemo(() => buildChainRecap(links), [links]);
 
@@ -89,6 +91,20 @@ export default function ChainPage() {
       </div>
 
       <div className="space-y-0">
+        <div className="mb-4 flex items-center">
+          <button
+            type="button"
+            onClick={() => {
+              startPrependToChain();
+              navigate('/');
+            }}
+            className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-dashed border-gray-600 text-xl font-medium text-indigo-400 hover:bg-gray-800/80 hover:border-indigo-500/50 transition-colors"
+            title={t('addMovieBeforeChain')}
+            aria-label={t('addMovieBeforeChain')}
+          >
+            +
+          </button>
+        </div>
         {links.map((link, index) => (
           <div key={`${link.movie.id}-${index}`}>
             {index > 0 && link.connectingActorName && (

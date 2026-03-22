@@ -61,6 +61,8 @@ export interface ChainState {
   currentStep: 'pick-actor' | 'pick-movie' | 'start';
   selectedActorId: number | null;
   excludedActorId: number | null;
+  /** When true, pick actor/movie to insert a link before the current first movie. */
+  prependMode?: boolean;
   /** UTC date (YYYY-MM-DD) when this run started from the daily challenge */
   dailyChallengeDate?: string | null;
 }

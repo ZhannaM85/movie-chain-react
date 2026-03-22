@@ -16,13 +16,13 @@ import { useTranslation } from 'react-i18next';
  * @returns {JSX.Element} The rendered home page.
  */
 export default function HomePage() {
-  const { links, currentStep } = useChainContext();
+  const { links, currentStep, prependMode } = useChainContext();
 
   if (currentStep === 'start' || links.length === 0) {
     return <StartScreen />;
   }
 
-  const currentLink = links[links.length - 1];
+  const currentLink = prependMode ? links[0] : links[links.length - 1];
   const currentMovieId = currentLink.movie.id;
 
   return <ChainView movieId={currentMovieId} />;
@@ -37,9 +37,9 @@ export default function HomePage() {
 function ChainView({ movieId }: { movieId: number }) {
   const api = useMovieApiForChain();
   const { t } = useTranslation();
-  const { currentStep, links, selectedActorId } = useChainContext();
+  const { currentStep, links, selectedActorId, prependMode, cancelPrepend } = useChainContext();
   const { movie, loading } = useMovieDetails(movieId, api);
-  const chainIndex = links.length - 1;
+  const chainIndex = prependMode ? 0 : links.length - 1;
   useSyncCastAppearances(movieId, movie?.credits?.cast, true);
 
   return (
@@ -58,6 +58,19 @@ function ChainView({ movieId }: { movieId: number }) {
           <div className="md:hidden">
             <ChainList />
           </div>
+
+          {prependMode && (
+            <div className="rounded-lg border border-indigo-500/40 bg-indigo-950/30 px-3 py-2.5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-indigo-200/90">{t('prependToChainBanner')}</p>
+              <button
+                type="button"
+                onClick={() => cancelPrepend()}
+                className="text-sm shrink-0 px-3 py-1.5 rounded-md border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors self-start sm:self-auto"
+              >
+                {t('cancel')}
+              </button>
+            </div>
+          )}
 
           {loading ? (
             <div className="flex items-center gap-2 text-gray-400 py-8">
