@@ -20,14 +20,16 @@ interface ActivityHeatmapProps {
 }
 
 /**
- * GitHub-style contribution graph: 53 weeks × 7 days (UTC), left = older.
+ * GitHub-style contribution graph: 53 columns × 7 rows of local calendar days.
+ * Columns are ordered with the most recent week on the left so current progress reads left → older toward the right.
  */
 export default function ActivityHeatmap({ moviesAddedByDate }: ActivityHeatmapProps) {
   const { t } = useTranslation();
   const { columns, maxCount } = useMemo(() => {
     const cells = buildHeatmapCells(moviesAddedByDate);
+    const weeks = splitIntoWeekColumns(cells);
     return {
-      columns: splitIntoWeekColumns(cells),
+      columns: weeks.slice().reverse(),
       maxCount: maxHeatmapCount(cells),
     };
   }, [moviesAddedByDate]);
@@ -35,9 +37,9 @@ export default function ActivityHeatmap({ moviesAddedByDate }: ActivityHeatmapPr
   return (
     <div className="w-full pb-1">
       <div className="flex w-full gap-px h-24 sm:h-28">
-        {columns.map((week, wi) => (
-          <div key={wi} className="flex min-w-0 flex-1 flex-col gap-px">
-            {week.map((cell) => {
+        {columns.map((week) => (
+          <div key={week[0]?.date ?? week[6]?.date} className="flex min-w-0 flex-1 flex-col gap-px">
+            {week.slice().reverse().map((cell) => {
               const level = intensityLevel(cell.count, maxCount);
               const title =
                 cell.count === 0
