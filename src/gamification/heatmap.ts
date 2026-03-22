@@ -1,4 +1,5 @@
 import { localDateString } from '../lib/dateUtils';
+import type { ChainLink } from '../types/movie';
 
 /** Minimum span: ~53 ISO weeks of calendar days. */
 export const HEATMAP_WEEKS = 53;
@@ -22,6 +23,27 @@ function oldestNonZeroDateKey(moviesAddedByDate: Record<string, number>): string
   const keys = Object.keys(moviesAddedByDate).filter((k) => (moviesAddedByDate[k] ?? 0) > 0);
   if (keys.length === 0) return null;
   return keys.sort()[0];
+}
+
+/**
+ * Merges persisted daily counts with the current chain’s `loggedDate` values.
+ * Keeps the heatmap aligned with /chain when profile storage was missing a day.
+ */
+export function mergeMoviesAddedByDateWithChainLinks(
+  moviesAddedByDate: Record<string, number>,
+  links: ChainLink[]
+): Record<string, number> {
+  const merged: Record<string, number> = { ...moviesAddedByDate };
+  const fromLinks = new Map<string, number>();
+  for (const link of links) {
+    const d = link.loggedDate?.trim();
+    if (!d) continue;
+    fromLinks.set(d, (fromLinks.get(d) ?? 0) + 1);
+  }
+  for (const [date, n] of fromLinks) {
+    merged[date] = Math.max(merged[date] ?? 0, n);
+  }
+  return merged;
 }
 
 /** Local midnight date (no time drift). */

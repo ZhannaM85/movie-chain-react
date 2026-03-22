@@ -4,6 +4,7 @@ import {
   HEATMAP_TOTAL_DAYS,
   intensityLevel,
   maxHeatmapCount,
+  mergeMoviesAddedByDateWithChainLinks,
   startOfWeekMonday,
 } from './heatmap';
 
@@ -50,5 +51,15 @@ describe('heatmap', () => {
 
   it('maxHeatmapCount', () => {
     expect(maxHeatmapCount([{ date: 'a', count: 0 }, { date: 'b', count: 5 }])).toBe(5);
+  });
+
+  it('mergeMoviesAddedByDateWithChainLinks fills missing days from chain loggedDate', () => {
+    const movie = { id: 1, title: 'A', overview: '', poster_path: null, backdrop_path: null, release_date: '', vote_average: 0, vote_count: 0, popularity: 0 };
+    const merged = mergeMoviesAddedByDateWithChainLinks(
+      { '2026-03-22': 1 },
+      [{ movie, connectingActorId: null, connectingActorName: null, comment: '', loggedDate: '2026-03-08' }]
+    );
+    expect(merged['2026-03-08']).toBe(1);
+    expect(merged['2026-03-22']).toBe(1);
   });
 });
