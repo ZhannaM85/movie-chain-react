@@ -149,6 +149,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             )}
             {links.length > 0 && (
               <button
+                type="button"
                 onClick={() => {
                   const recap = buildChainRecap(links);
                   const msg =
@@ -165,9 +166,24 @@ export default function Layout({ children }: { children: ReactNode }) {
                   }
                   setMobileNavOpen(false);
                 }}
-                className="text-sm px-3 py-1.5 rounded-md bg-gray-800 hover:bg-red-900/50 hover:text-red-300 text-gray-300 transition-colors"
+                className="inline-flex items-center justify-center shrink-0 rounded-md bg-gray-800 hover:bg-red-900/50 hover:text-red-300 text-gray-300 transition-colors h-9 w-9 sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 text-sm"
+                title={t('newChain')}
+                aria-label={t('newChain')}
               >
-                {t('newChain')}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-5 h-5 sm:hidden"
+                  aria-hidden
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                <span className="hidden sm:inline">{t('newChain')}</span>
               </button>
             )}
           </div>
