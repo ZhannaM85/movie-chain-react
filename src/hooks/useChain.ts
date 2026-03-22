@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { localDateString } from '../lib/dateUtils';
+import { localDateString, normalizeLoggedDateForHeatmap } from '../lib/dateUtils';
 import type { Actor, ChainState, Movie, MovieSource } from '../types/movie';
 import { recordCastAppearancesForMovie } from '../gamification/castAppearances';
 import { scoreChainStep } from '../gamification/chainScoring';
@@ -8,6 +8,7 @@ import {
   afterAddMovie,
   afterFirstNote,
   decrementDailyMovies,
+  ensureDailyCountsFromLinks,
   finalizeChainReset,
   recordStartMovie,
   utcDateString,
@@ -69,6 +70,15 @@ export function useChain() {
     saveState(state);
   }, [state]);
 
+  useEffect(() => {
+    setGamificationProfile((p) => {
+      const next = ensureDailyCountsFromLinks(p, state.links);
+      if (next === p) return p;
+      saveGamificationProfile(next);
+      return next;
+    });
+  }, [state.links]);
+
   const dismissGamificationToast = useCallback(() => {
     setGamificationToastQueue((q) => q.slice(1));
   }, []);
@@ -83,7 +93,7 @@ export function useChain() {
   }, []);
 
   const startChain = useCallback((movie: Movie, source?: MovieSource, options?: StartChainOptions) => {
-    const logged = options?.loggedDate ?? localDateString();
+    const logged = normalizeLoggedDateForHeatmap(options?.loggedDate);
     setState({
       source: source ?? 'tmdb',
       links: [
@@ -161,7 +171,7 @@ export function useChain() {
           actorName = null;
         }
       }
-      const day = loggedDate ?? localDateString();
+      const day = normalizeLoggedDateForHeatmap(loggedDate);
       const prependMode = prev.prependMode === true && prev.links.length > 0;
 
       let newLinks: typeof prev.links;

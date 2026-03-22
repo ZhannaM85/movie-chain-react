@@ -5,13 +5,19 @@ import ActivityHeatmap from '../components/ActivityHeatmap';
 import { getTopActorBridges, getTopCastAppearances } from '../gamification/actorStats';
 import { useTranslation } from 'react-i18next';
 import { useMatchMedia } from '../hooks/useMatchMedia';
+import { mergeMoviesAddedByDateWithChainLinks } from '../gamification/heatmap';
 
 /**
  * Local “profile” stats: activity heatmap, streaks, top bridge actors, totals.
  */
 export default function UserStatsPage() {
-  const { gamificationProfile: p } = useChainContext();
+  const { gamificationProfile: p, links } = useChainContext();
   const { t } = useTranslation();
+
+  const heatmapCounts = useMemo(
+    () => mergeMoviesAddedByDateWithChainLinks(p.moviesAddedByDate, links),
+    [p.moviesAddedByDate, links]
+  );
 
   const topActors = useMemo(() => getTopActorBridges(p, 12), [p]);
   const topCastActors = useMemo(() => getTopCastAppearances(p, 12), [p]);
@@ -19,14 +25,14 @@ export default function UserStatsPage() {
   const busiestDay = useMemo(() => {
     let bestDate: string | null = null;
     let bestCount = 0;
-    for (const [date, count] of Object.entries(p.moviesAddedByDate)) {
+    for (const [date, count] of Object.entries(heatmapCounts)) {
       if (count > bestCount) {
         bestCount = count;
         bestDate = date;
       }
     }
     return bestDate && bestCount > 0 ? { date: bestDate, count: bestCount } : null;
-  }, [p.moviesAddedByDate]);
+  }, [heatmapCounts]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -59,7 +65,7 @@ export default function UserStatsPage() {
       <div className="mb-10 overflow-visible">
         <ExplainableSectionTitle title={t('heatmapSectionTitle')} explanation={t('heatmapSectionExplain')} />
         <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-4">
-          <ActivityHeatmap moviesAddedByDate={p.moviesAddedByDate} />
+          <ActivityHeatmap moviesAddedByDate={heatmapCounts} />
         </div>
         {busiestDay && (
           <ExplainableHint

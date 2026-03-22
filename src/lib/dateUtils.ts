@@ -7,3 +7,12 @@ export function localDateString(d = new Date()): string {
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
 }
+
+/**
+ * Safe YYYY-MM-DD for heatmap / daily stats. Empty or missing values fall back to today.
+ */
+export function normalizeLoggedDateForHeatmap(dateStr?: string | null): string {
+  const t = dateStr?.trim();
+  if (!t) return localDateString();
+  return t;
+}
