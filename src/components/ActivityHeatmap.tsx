@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useRef, useLayoutEffect } from 'react';
 import { buildCalendarHeatmapWeeks, intensityLevel } from '../gamification/heatmap';
 import { useTranslation } from 'react-i18next';
 
@@ -16,11 +16,12 @@ interface ActivityHeatmapProps {
 
 /**
  * Activity grid: each column is one calendar week (Mon–Sun). Rows align with weekdays.
- * Newest week on the left; each cell is one local calendar day.
+ * Older weeks on the left, newer weeks on the right; each cell is one local calendar day.
  */
 export default function ActivityHeatmap({ moviesAddedByDate }: ActivityHeatmapProps) {
   const { t, i18n } = useTranslation();
   const [selected, setSelected] = useState<{ date: string; count: number } | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const formatDayLabel = useCallback(
     (iso: string) =>
@@ -41,6 +42,18 @@ export default function ActivityHeatmap({ moviesAddedByDate }: ActivityHeatmapPr
     return { columns: cols, maxCount: max, weekdayLabels: labels };
   }, [moviesAddedByDate, i18n.language]);
 
+  /** Show the most recent weeks (right side); otherwise the wide grid loads scrolled to empty past weeks. */
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const toEnd = () => {
+      el.scrollLeft = el.scrollWidth - el.clientWidth;
+    };
+    toEnd();
+    const id = requestAnimationFrame(toEnd);
+    return () => cancelAnimationFrame(id);
+  }, [columns]);
+
   return (
     <div className="w-full pb-1">
       <div className="flex gap-1 sm:gap-2 items-stretch">
@@ -54,7 +67,7 @@ export default function ActivityHeatmap({ moviesAddedByDate }: ActivityHeatmapPr
             </span>
           ))}
         </div>
-        <div className="flex-1 min-w-0 overflow-x-auto">
+        <div ref={scrollRef} className="flex-1 min-w-0 overflow-x-auto">
           <div className="flex w-max min-w-full gap-px h-24 sm:h-28">
             {columns.map((week) => (
               <div

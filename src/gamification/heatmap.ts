@@ -14,7 +14,7 @@ export interface HeatmapCell {
 }
 
 export interface CalendarHeatmapResult {
-  /** Each column is one ISO week (Mon→Sun, top to bottom). Newest week first (left). */
+  /** Each column is one ISO week (Mon→Sun, top to bottom). Older weeks left, newer weeks right. */
   columns: HeatmapCell[][];
   maxCount: number;
 }
@@ -67,8 +67,8 @@ function addDays(d: Date, n: number): Date {
 }
 
 /**
- * Builds a GitHub-style grid where each column is a real calendar week (Mon–Sun)
- * and each cell maps to exactly one local calendar day. Columns are newest-first.
+ * Builds a contribution-style grid: each column is one ISO week (Mon–Sun),
+ * each cell one local calendar day. Columns run in chronological order (older left, newer right).
  */
 export function buildCalendarHeatmapWeeks(moviesAddedByDate: Record<string, number>): CalendarHeatmapResult {
   const end = calendarDate(new Date());
@@ -109,8 +109,6 @@ export function buildCalendarHeatmapWeeks(moviesAddedByDate: Record<string, numb
     }
     columns.push(weekCells);
   }
-
-  columns.reverse();
 
   return { columns, maxCount };
 }

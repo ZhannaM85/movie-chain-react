@@ -175,7 +175,7 @@ const resources = {
       heatmapDayEmpty: '{{date}}: no movies',
       heatmapDayMovies: '{{date}}: {{count}} movies',
       heatmapLocalHint:
-        'Each square is one calendar day. Columns are ISO weeks (Monday through Sunday, top to bottom). Darker green means more movies counted for that day (see “logged date” per film).',
+        'Each square is one calendar day. Columns are ISO weeks (Monday through Sunday, top to bottom); time goes left to right (older weeks on the left). Darker green means more movies counted for that day (see “logged date” per film).',
       loggedDateForStartMovie: 'Count first movie toward',
       loggedDateForNextMovie: 'Count next pick toward',
       loggedDateForPastMovie: 'Day for this older film',
@@ -210,7 +210,7 @@ const resources = {
       statExplainCurrentStreak:
         'How many consecutive UTC days you have played up to now. It goes up when you add a movie today after playing yesterday (UTC); it resets to 1 if you missed a UTC day.',
       heatmapSectionExplain:
-        'Each cell is one local calendar day. The color shows how many movies count toward that day using each link’s “logged date” (defaults to today when you add the film). Darker green means more movies.',
+        'Each cell is one local calendar day. Columns are weeks; earlier weeks appear to the left of later weeks. The color shows how many movies count toward that day using each link’s “logged date” (defaults to today when you add the film). Darker green means more movies.',
       statExplainBusiestDay:
         'The local calendar day on which the most movies were counted toward your activity (same per-day counts as the heatmap).',
       statExplainTopBridge:
@@ -387,7 +387,7 @@ const resources = {
       heatmapDayEmpty: '{{date}}: нет фильмов',
       heatmapDayMovies: '{{date}}: {{count}} фильм.',
       heatmapLocalHint:
-        'Каждый квадрат — один календарный день. Столбцы — календарные недели (пн–вс сверху вниз). Насыщеннее зелёный — больше фильмов за этот день (см. «день» у каждого фильма).',
+        'Каждый квадрат — один календарный день. Столбцы — календарные недели (пн–вс сверху вниз); время идёт слева направо (более ранние недели слева). Насыщеннее зелёный — больше фильмов за этот день (см. «день» у каждого фильма).',
       loggedDateForStartMovie: 'Учитывать первый фильм за',
       loggedDateForNextMovie: 'Учитывать следующий выбор за',
       loggedDateForPastMovie: 'День для этого более раннего фильма',
@@ -426,7 +426,7 @@ const resources = {
       statExplainCurrentStreak:
         'Сколько подряд календарных дней UTC вы играли до сегодня. Растёт, если сегодня добавили фильм после вчерашней игры (UTC); сбрасывается, если пропустили день UTC.',
       heatmapSectionExplain:
-        'Каждая ячейка — один календарный день в вашем часовом поясе. Цвет показывает, сколько фильмов учтено за этот день по полю «день» у звена (по умолчанию — день добавления). Темнее зелёный — больше фильмов.',
+        'Каждая ячейка — один календарный день в вашем часовом поясе. Столбцы — недели; более ранние недели слева от более поздних. Цвет показывает, сколько фильмов учтено за этот день по полю «день» у звена (по умолчанию — день добавления). Темнее зелёный — больше фильмов.',
       statExplainBusiestDay:
         'Календарный день, в который учтено больше всего фильмов (те же счётчики, что и на теплокарте).',
       statExplainTopBridge:
