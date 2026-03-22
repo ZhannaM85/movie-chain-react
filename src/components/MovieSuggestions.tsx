@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import type { Movie } from '../types/movie';
 import type { Actor } from '../types/movie';
+import { localDateString } from '../lib/dateUtils';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
 import { Link } from 'react-router-dom';
@@ -17,6 +18,7 @@ export default function MovieSuggestions() {
   const api = useMovieApiForChain();
   const { selectedActorId, addMovie, links, cancelActorSelection } = useChainContext();
   const { t, i18n } = useTranslation();
+  const [loggedDateForNextLink, setLoggedDateForNextLink] = useState(() => localDateString());
   const [actor, setActor] = useState<Actor | null>(null);
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
@@ -111,6 +113,16 @@ export default function MovieSuggestions() {
         </div>
       )}
 
+      <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+        <label className="text-xs text-gray-500 shrink-0">{t('loggedDateForNextMovie')}</label>
+        <input
+          type="date"
+          value={loggedDateForNextLink}
+          onChange={(e) => setLoggedDateForNextLink(e.target.value)}
+          className="w-full sm:w-auto px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+        />
+      </div>
+
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <input
           type="text"
@@ -137,7 +149,7 @@ export default function MovieSuggestions() {
         sortBy={sortBy}
         searchQuery={searchQuery}
         showAll={showAll}
-        onSelect={addMovie}
+        onSelect={(movie) => addMovie(movie, loggedDateForNextLink)}
         posterUrl={api.posterUrl}
         t={t}
       />

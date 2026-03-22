@@ -12,7 +12,7 @@ import { buildChainRecap } from '../gamification/chainRecap';
  */
 export default function ChainPage() {
   const api = useMovieApiForChain();
-  const { links, resetChain, undoLast, gamificationProfile } = useChainContext();
+  const { links, resetChain, undoLast, gamificationProfile, updateLoggedDate } = useChainContext();
   const { t } = useTranslation();
   const recap = useMemo(() => buildChainRecap(links), [links]);
 
@@ -128,7 +128,7 @@ export default function ChainPage() {
                 <h3 className="text-lg font-semibold text-gray-200 group-hover:text-white truncate">
                   {link.movie.title}
                 </h3>
-                <div className="flex items-center gap-3 text-sm text-gray-400 mt-1">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-400 mt-1">
                   <span>
                     {link.movie.release_date
                       ? new Date(link.movie.release_date).getFullYear()
@@ -141,6 +141,24 @@ export default function ChainPage() {
                       </svg>
                       {link.movie.vote_average.toFixed(1)}
                     </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <label className="text-xs text-gray-500 shrink-0" htmlFor={`logged-date-${index}`}>
+                    {t('loggedDateShort')}
+                  </label>
+                  <input
+                    id={`logged-date-${index}`}
+                    type="date"
+                    value={link.loggedDate ?? ''}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (v) updateLoggedDate(index, v);
+                    }}
+                    className="px-2 py-1 rounded-md bg-gray-900 border border-gray-700 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                  {!link.loggedDate && (
+                    <span className="text-[10px] text-gray-600">{t('loggedDateUnsetHint')}</span>
                   )}
                 </div>
                 {link.movie.overview && (

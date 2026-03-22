@@ -160,6 +160,7 @@ describe('useChain', () => {
     act(() => result.current.startChain(minimalMovie));
     await flushMicrotasks();
     act(() => result.current.undoLast());
+    await flushMicrotasks();
     expect(result.current.links).toEqual([]);
     expect(result.current.currentStep).toBe('start');
   });
@@ -174,6 +175,7 @@ describe('useChain', () => {
     await flushMicrotasks();
     expect(result.current.links).toHaveLength(2);
     act(() => result.current.undoLast());
+    await flushMicrotasks();
     expect(result.current.links).toHaveLength(1);
     expect(result.current.links[0].movie.id).toBe(1);
     expect(result.current.currentStep).toBe('pick-actor');

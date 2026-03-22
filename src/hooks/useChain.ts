@@ -1,10 +1,13 @@
 import { useState, useCallback, useEffect } from 'react';
+import { localDateString } from '../lib/dateUtils';
 import type { Actor, ChainState, Movie, MovieSource } from '../types/movie';
 import { recordCastAppearancesForMovie } from '../gamification/castAppearances';
 import { scoreChainStep } from '../gamification/chainScoring';
 import {
+  adjustDailyForLoggedDateChange,
   afterAddMovie,
   afterFirstNote,
+  decrementDailyMovies,
   finalizeChainReset,
   recordStartMovie,
   utcDateString,
@@ -17,6 +20,8 @@ const PENDING_ACTOR_KEY = 'pending-actor-pick';
 
 export interface StartChainOptions {
   dailyChallenge?: boolean;
+  /** Local YYYY-MM-DD — heatmap day for the first movie (default: today). */
+  loggedDate?: string;
 }
 
 /**
@@ -76,6 +81,7 @@ export function useChain() {
   }, []);
 
   const startChain = useCallback((movie: Movie, source?: MovieSource, options?: StartChainOptions) => {
+    const logged = options?.loggedDate ?? localDateString();
     setState({
       source: source ?? 'tmdb',
       links: [
@@ -84,6 +90,7 @@ export function useChain() {
           connectingActorId: null,
           connectingActorName: null,
           comment: '',
+          loggedDate: logged,
         },
       ],
       currentStep: 'pick-actor',
@@ -93,7 +100,7 @@ export function useChain() {
     });
     queueMicrotask(() => {
       setGamificationProfile((p) => {
-        const next = recordStartMovie(p);
+        const next = recordStartMovie(p, logged);
         saveGamificationProfile(next);
         return next;
       });
@@ -112,7 +119,7 @@ export function useChain() {
     );
   }, []);
 
-  const addMovie = useCallback((movie: Movie) => {
+  const addMovie = useCallback((movie: Movie, loggedDate?: string) => {
     setState((prev) => {
       const raw = sessionStorage.getItem(PENDING_ACTOR_KEY);
       sessionStorage.removeItem(PENDING_ACTOR_KEY);
@@ -128,6 +135,7 @@ export function useChain() {
         }
       }
       const stepDifficulty = scoreChainStep(movie, actorPopularity);
+      const day = loggedDate ?? localDateString();
       const newLinks = [
         ...prev.links,
         {
@@ -135,6 +143,7 @@ export function useChain() {
           connectingActorId: prev.selectedActorId,
           connectingActorName: actorName,
           comment: '',
+          loggedDate: day,
           stepDifficulty,
         },
       ];
@@ -163,6 +172,25 @@ export function useChain() {
         excludedActorId: prev.selectedActorId,
         selectedActorId: null,
       };
+    });
+  }, []);
+
+  const updateLoggedDate = useCallback((index: number, loggedDate: string) => {
+    setState((prev) => {
+      const link = prev.links[index];
+      if (!link) return prev;
+      const oldDate = link.loggedDate;
+      if (oldDate === loggedDate) return prev;
+      const links = [...prev.links];
+      links[index] = { ...link, loggedDate };
+      queueMicrotask(() => {
+        setGamificationProfile((p) => {
+          const next = adjustDailyForLoggedDateChange(p, oldDate, loggedDate);
+          saveGamificationProfile(next);
+          return next;
+        });
+      });
+      return { ...prev, links };
     });
   }, []);
 
@@ -200,7 +228,12 @@ export function useChain() {
       const dailySnapshot = prev.dailyChallengeDate;
       queueMicrotask(() => {
         setGamificationProfile((p) => {
-          const next = finalizeChainReset(p, linksSnapshot, dailySnapshot);
+          let next = finalizeChainReset(p, linksSnapshot, dailySnapshot);
+          for (const link of linksSnapshot) {
+            if (link.loggedDate) {
+              next = decrementDailyMovies(next, link.loggedDate);
+            }
+          }
           saveGamificationProfile(next);
           return next;
         });
@@ -227,6 +260,17 @@ export function useChain() {
   const undoLast = useCallback(() => {
     setState((prev) => {
       if (prev.links.length <= 1) {
+        const only = prev.links[0];
+        const onlyDay = only?.loggedDate;
+        queueMicrotask(() => {
+          if (onlyDay) {
+            setGamificationProfile((p) => {
+              const next = decrementDailyMovies(p, onlyDay);
+              saveGamificationProfile(next);
+              return next;
+            });
+          }
+        });
         return {
           links: [],
           currentStep: 'start',
@@ -235,6 +279,17 @@ export function useChain() {
           dailyChallengeDate: null,
         };
       }
+      const removed = prev.links[prev.links.length - 1];
+      const removedDay = removed.loggedDate;
+      queueMicrotask(() => {
+        if (removedDay) {
+          setGamificationProfile((p) => {
+            const next = decrementDailyMovies(p, removedDay);
+            saveGamificationProfile(next);
+            return next;
+          });
+        }
+      });
       const links = prev.links.slice(0, -1);
       const prevLink = links.length >= 2 ? links[links.length - 1] : null;
       return {
@@ -257,6 +312,7 @@ export function useChain() {
     selectActor,
     addMovie,
     updateComment,
+    updateLoggedDate,
     resetChain,
     undoLast,
     cancelActorSelection,
