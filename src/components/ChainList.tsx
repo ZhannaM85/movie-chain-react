@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
@@ -6,22 +6,31 @@ import { useTranslation } from 'react-i18next';
 import { buildChainRecap } from '../gamification/chainRecap';
 import ChainWatchedDateField from './ChainWatchedDateField';
 
+interface ChainListProps {
+  /**
+   * Actor / movie pick UI shown directly under the “+” (e.g. mobile home).
+   * Chain entries render below in a scrollable region.
+   */
+  pickStepPanel?: ReactNode;
+}
+
 /**
  * Sidebar list that summarizes the current movie chain with quick navigation.
  *
  * @returns {JSX.Element | null} The chain list, or null if there is no chain.
  */
-export default function ChainList() {
+export default function ChainList({ pickStepPanel }: ChainListProps) {
   const api = useMovieApiForChain();
-  const { links, undoLast, gamificationProfile, startPrependToChain } = useChainContext();
+  const { links, undoLast, gamificationProfile, startPrependToChain, prependMode, cancelPrepend } =
+    useChainContext();
   const { t } = useTranslation();
   const recap = useMemo(() => buildChainRecap(links), [links]);
 
   if (links.length === 0) return null;
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="mb-3 px-1 space-y-1.5">
+    <div className="flex flex-col min-h-0 flex-1 h-full max-h-full overflow-hidden">
+      <div className="mb-3 px-1 space-y-1.5 shrink-0">
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-gray-500">
           <span title={t('challengePointsTooltip')}>
             {t('challengePointsShort', { points: recap.totalDifficulty })}
@@ -31,8 +40,11 @@ export default function ChainList() {
           </span>
         </div>
       </div>
-      <div className="flex items-center justify-between mb-3 px-1">
-        <Link to="/chain" className="text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors">
+      <div className="flex items-center justify-between mb-3 px-1 shrink-0">
+        <Link
+          to="/chain"
+          className="text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors"
+        >
           {t('chain')}
         </Link>
         {links.length > 1 && (
@@ -44,18 +56,39 @@ export default function ChainList() {
           </button>
         )}
       </div>
-      <div className="flex-1 overflow-y-auto space-y-1 pr-1">
-        <div className="flex items-center gap-2 pl-1 pb-1">
+
+      <div className="shrink-0 flex items-center gap-2 pl-1 pb-2">
+        <button
+          type="button"
+          onClick={() => startPrependToChain()}
+          className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-dashed border-gray-600 text-lg font-medium text-indigo-400 hover:bg-gray-800/80 hover:border-indigo-500/50 transition-colors"
+          title={t('addMovieBeforeChain')}
+          aria-label={t('addMovieBeforeChain')}
+        >
+          +
+        </button>
+      </div>
+
+      {prependMode && (
+        <div className="shrink-0 rounded-lg border border-indigo-500/40 bg-indigo-950/30 px-3 py-2.5 mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-indigo-200/90">{t('prependToChainBanner')}</p>
           <button
             type="button"
-            onClick={() => startPrependToChain()}
-            className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-dashed border-gray-600 text-lg font-medium text-indigo-400 hover:bg-gray-800/80 hover:border-indigo-500/50 transition-colors"
-            title={t('addMovieBeforeChain')}
-            aria-label={t('addMovieBeforeChain')}
+            onClick={() => cancelPrepend()}
+            className="text-sm shrink-0 px-3 py-1.5 rounded-md border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors self-start sm:self-auto"
           >
-            +
+            {t('cancel')}
           </button>
         </div>
+      )}
+
+      {pickStepPanel != null && (
+        <div className="mb-3 max-h-[min(45vh,22rem)] min-h-0 shrink-0 overflow-y-auto border-b border-gray-800 px-1 pb-3">
+          {pickStepPanel}
+        </div>
+      )}
+
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-1 pr-1">
         {links.map((link, index) => (
           <div key={`${link.movie.id}-${index}`}>
             {index > 0 && link.connectingActorName && (
