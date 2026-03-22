@@ -24,12 +24,50 @@ function countDistinctDecades(links: ChainLink[]): number {
   return decades.size;
 }
 
-/**
- * Updates streak when the user plays on a new calendar day (UTC).
- */
-export function applyStreak(profile: GamificationProfile): GamificationProfile {
+function withLongestStreakEver(profile: GamificationProfile): GamificationProfile {
+  return {
+    ...profile,
+    longestStreakEver: Math.max(profile.longestStreakEver, profile.currentStreak),
+  };
+}
+
+export function incrementDailyMovies(
+  profile: GamificationProfile,
+  by: number,
+  dateStr: string = utcDateString()
+): GamificationProfile {
+  const next = (profile.moviesAddedByDate[dateStr] ?? 0) + by;
+  return {
+    ...profile,
+    moviesAddedByDate: {
+      ...profile.moviesAddedByDate,
+      [dateStr]: next,
+    },
+  };
+}
+
+export function incrementActorBridge(
+  profile: GamificationProfile,
+  actorId: number,
+  actorName: string
+): GamificationProfile {
+  const key = String(actorId);
+  const prev = profile.actorBridgeCounts[key];
+  const count = (prev?.count ?? 0) + 1;
+  return {
+    ...profile,
+    actorBridgeCounts: {
+      ...profile.actorBridgeCounts,
+      [key]: { name: actorName, count },
+    },
+  };
+}
+
+const applyStreak = (profile: GamificationProfile): GamificationProfile => {
   const today = utcDateString();
-  if (profile.lastStreakDate === today) return profile;
+  if (profile.lastStreakDate === today) {
+    return withLongestStreakEver(profile);
+  }
 
   const yesterday = new Date();
   yesterday.setUTCDate(yesterday.getUTCDate() - 1);
@@ -44,11 +82,20 @@ export function applyStreak(profile: GamificationProfile): GamificationProfile {
     nextStreak = 1;
   }
 
-  return {
+  return withLongestStreakEver({
     ...profile,
     lastStreakDate: today,
     currentStreak: nextStreak,
-  };
+  });
+};
+
+export { applyStreak };
+
+/** Streak + one movie logged for today (starting a chain). */
+export function recordStartMovie(profile: GamificationProfile): GamificationProfile {
+  let next = applyStreak(profile);
+  next = incrementDailyMovies(next, 1);
+  return next;
 }
 
 export interface AfterAddMovieResult {
@@ -65,12 +112,20 @@ export function afterAddMovie(
   const prevLongest = profile.longestChainEver;
   const newLength = linksAfterAdd.length;
 
+  const lastLink = linksAfterAdd[linksAfterAdd.length - 1];
+  const stepPoints = lastLink.stepDifficulty ?? 0;
+
   let next: GamificationProfile = {
     ...profile,
     totalLinksAddedAllTime: profile.totalLinksAddedAllTime + 1,
     longestChainEver: Math.max(profile.longestChainEver, newLength),
+    totalChallengePointsAllTime: profile.totalChallengePointsAllTime + stepPoints,
   };
   next = applyStreak(next);
+  next = incrementDailyMovies(next, 1);
+  if (lastLink.connectingActorId != null && lastLink.connectingActorName) {
+    next = incrementActorBridge(next, lastLink.connectingActorId, lastLink.connectingActorName);
+  }
 
   const newAchievements: string[] = [];
   const pushAch = (id: string) => {

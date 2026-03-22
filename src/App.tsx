@@ -8,6 +8,7 @@ import MovieDetailPage from './pages/MovieDetailPage';
 import ActorDetailPage from './pages/ActorDetailPage';
 import ChainPage from './pages/ChainPage';
 import AboutPage from './pages/AboutPage';
+import UserStatsPage from './pages/UserStatsPage';
 
 /**
  * Root application component that wires up providers, layout, and routes.
@@ -26,6 +27,7 @@ function App() {
           <Route path="/movie/:id" element={<MovieDetailPage />} />
           <Route path="/actor/:id" element={<ActorDetailPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/stats" element={<UserStatsPage />} />
         </Routes>
       </Layout>
     </ChainProvider>
