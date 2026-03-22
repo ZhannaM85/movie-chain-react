@@ -1,3 +1,4 @@
+import { localDateString } from '../lib/dateUtils';
 import type { ChainLink } from '../types/movie';
 import type { GamificationProfile } from './types';
 
@@ -34,7 +35,7 @@ function withLongestStreakEver(profile: GamificationProfile): GamificationProfil
 export function incrementDailyMovies(
   profile: GamificationProfile,
   by: number,
-  dateStr: string = utcDateString()
+  dateStr: string = localDateString()
 ): GamificationProfile {
   const next = (profile.moviesAddedByDate[dateStr] ?? 0) + by;
   return {
@@ -44,6 +45,34 @@ export function incrementDailyMovies(
       [dateStr]: next,
     },
   };
+}
+
+export function decrementDailyMovies(profile: GamificationProfile, dateStr: string): GamificationProfile {
+  const prev = profile.moviesAddedByDate[dateStr] ?? 0;
+  if (prev <= 0) return profile;
+  const next = prev - 1;
+  const moviesAddedByDate = { ...profile.moviesAddedByDate };
+  if (next <= 0) delete moviesAddedByDate[dateStr];
+  else moviesAddedByDate[dateStr] = next;
+  return { ...profile, moviesAddedByDate };
+}
+
+/**
+ * Moves one movie between heatmap days when the user edits `loggedDate`.
+ * If `oldDate` was never set, only increments `newDate` (no decrement).
+ */
+export function adjustDailyForLoggedDateChange(
+  profile: GamificationProfile,
+  oldDate: string | null | undefined,
+  newDate: string | null | undefined
+): GamificationProfile {
+  const o = oldDate == null || oldDate === '' ? null : oldDate;
+  const n = newDate == null || newDate === '' ? null : newDate;
+  if (o === n) return profile;
+  let next = profile;
+  if (o) next = decrementDailyMovies(next, o);
+  if (n) next = incrementDailyMovies(next, 1, n);
+  return next;
 }
 
 export function incrementActorBridge(
@@ -91,10 +120,10 @@ const applyStreak = (profile: GamificationProfile): GamificationProfile => {
 
 export { applyStreak };
 
-/** Streak + one movie logged for today (starting a chain). */
-export function recordStartMovie(profile: GamificationProfile): GamificationProfile {
+/** Streak + one movie logged for the chosen calendar day (starting a chain). */
+export function recordStartMovie(profile: GamificationProfile, loggedDateForHeatmap: string): GamificationProfile {
   let next = applyStreak(profile);
-  next = incrementDailyMovies(next, 1);
+  next = incrementDailyMovies(next, 1, loggedDateForHeatmap);
   return next;
 }
 
@@ -122,7 +151,7 @@ export function afterAddMovie(
     totalChallengePointsAllTime: profile.totalChallengePointsAllTime + stepPoints,
   };
   next = applyStreak(next);
-  next = incrementDailyMovies(next, 1);
+  next = incrementDailyMovies(next, 1, lastLink.loggedDate ?? localDateString());
   if (lastLink.connectingActorId != null && lastLink.connectingActorName) {
     next = incrementActorBridge(next, lastLink.connectingActorId, lastLink.connectingActorName);
   }

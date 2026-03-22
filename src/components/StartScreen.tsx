@@ -3,6 +3,7 @@ import type { Movie } from '../types/movie';
 import { useMovieApi } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
 import { useTranslation } from 'react-i18next';
+import { localDateString } from '../lib/dateUtils';
 import { getDailyMovieIndex } from '../gamification/dailyChallenge';
 import { utcDateString } from '../gamification/profile';
 
@@ -21,6 +22,7 @@ export default function StartScreen() {
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [chainStartDate, setChainStartDate] = useState(() => localDateString());
 
   useEffect(() => {
     api
@@ -79,6 +81,16 @@ export default function StartScreen() {
         <p className="text-gray-400">{t('startSubtitle')}</p>
       </div>
 
+      <div className="max-w-md mx-auto mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <label className="text-sm text-gray-400 shrink-0">{t('loggedDateForStartMovie')}</label>
+        <input
+          type="date"
+          value={chainStartDate}
+          onChange={(e) => setChainStartDate(e.target.value)}
+          className="w-full sm:max-w-[200px] px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+        />
+      </div>
+
       <div className="max-w-md mx-auto mb-8">
         <input
           type="text"
@@ -120,7 +132,9 @@ export default function StartScreen() {
           </div>
           <button
             type="button"
-            onClick={() => startChain(dailyMovie, api.source, { dailyChallenge: true })}
+            onClick={() =>
+              startChain(dailyMovie, api.source, { dailyChallenge: true, loggedDate: chainStartDate })
+            }
             className="shrink-0 px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors w-full sm:w-auto"
           >
             {t('dailyChallengeCta')}
@@ -132,7 +146,7 @@ export default function StartScreen() {
         {movies.map((movie) => (
           <button
             key={movie.id}
-            onClick={() => startChain(movie, api.source)}
+            onClick={() => startChain(movie, api.source, { loggedDate: chainStartDate })}
             className="group text-left rounded-lg overflow-hidden bg-gray-800/50 hover:bg-gray-800 border border-gray-800 hover:border-indigo-500/50 transition-all hover:scale-[1.02]"
           >
             {movie.poster_path ? (
