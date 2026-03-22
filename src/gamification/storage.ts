@@ -30,6 +30,10 @@ export function loadGamificationProfile(): GamificationProfile {
         parsed.actorCastAppearanceCounts && typeof parsed.actorCastAppearanceCounts === 'object'
           ? parsed.actorCastAppearanceCounts
           : {},
+      movieCastByMovie:
+        parsed.movieCastByMovie && typeof parsed.movieCastByMovie === 'object'
+          ? parsed.movieCastByMovie
+          : {},
       castAppearanceMoviesSeen: (() => {
         const p = parsed as Record<string, unknown>;
         if (
@@ -51,6 +55,15 @@ export function loadGamificationProfile(): GamificationProfile {
       })(),
     };
     merged.longestStreakEver = Math.max(merged.longestStreakEver, merged.currentStreak);
+
+    const hasCastSnapshots = Object.keys(merged.movieCastByMovie).length > 0;
+    const hadSeenWithoutSnapshots =
+      !hasCastSnapshots && Object.keys(merged.castAppearanceMoviesSeen).length > 0;
+    if (hadSeenWithoutSnapshots) {
+      merged.castAppearanceMoviesSeen = {};
+      merged.actorCastAppearanceCounts = {};
+    }
+
     return merged;
   } catch {
     return { ...DEFAULT_GAMIFICATION_PROFILE };

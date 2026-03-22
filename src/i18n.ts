@@ -175,7 +175,7 @@ const resources = {
       heatmapDayEmpty: '{{date}}: no movies',
       heatmapDayMovies: '{{date}}: {{count}} movies',
       heatmapLocalHint:
-        'Each square is one calendar day. Columns are ISO weeks (Monday through Sunday, top to bottom). Darker green means more movies counted for that day (see “logged date” per film).',
+        'Each square is one calendar day. Columns are ISO weeks (Monday through Sunday, top to bottom); time goes left to right (older weeks on the left). Darker green means more movies counted for that day (see “logged date” per film).',
       loggedDateForStartMovie: 'Count first movie toward',
       loggedDateForNextMovie: 'Count next pick toward',
       loggedDateForPastMovie: 'Day for this older film',
@@ -189,7 +189,7 @@ const resources = {
       topActorsEmpty: 'Play more chains — we will count which actors you pick most often to link films.',
       topCastSectionTitle: 'Top actors (full cast)',
       topCastSectionHint:
-        'Actors credited on movies in your chains — including small roles. Each movie is counted once when we load its cast (visit the movie or play from home).',
+        'Actors from the full credits of films currently in your chain (including small roles). Each film counts once when we load its cast while that film is in the chain. Removing a film from the chain removes it from this count.',
       topCastEmpty:
         'Open movies from your chain so we can read full credits. Your top “screen time” actors will show up here.',
       actorCastMovies_one: 'in {{count}} movie',
@@ -210,13 +210,13 @@ const resources = {
       statExplainCurrentStreak:
         'How many consecutive UTC days you have played up to now. It goes up when you add a movie today after playing yesterday (UTC); it resets to 1 if you missed a UTC day.',
       heatmapSectionExplain:
-        'Each cell is one local calendar day. The color shows how many movies count toward that day using each link’s “logged date” (defaults to today when you add the film). Darker green means more movies.',
+        'Each cell is one local calendar day. Columns are weeks; earlier weeks appear to the left of later weeks. The color shows how many movies count toward that day using each link’s “logged date” (defaults to today when you add the film). Darker green means more movies.',
       statExplainBusiestDay:
         'The local calendar day on which the most movies were counted toward your activity (same per-day counts as the heatmap).',
       statExplainTopBridge:
         'Actors you chose as the shared connection between two consecutive movies in a chain. We count how often each actor was selected as that link.',
       statExplainTopCast:
-        'Actors from the full cast lists of movies in your chains (including small roles). A movie is counted once when its credits are loaded—usually when you open the movie page or play from home.',
+        'We store the full cast of each chain film when you open it (or play from home). The number here is how many of your current chain films include that actor in the credits. Undoing or resetting removes those films from the count.',
       statExplainMoreLongestChain:
         'The greatest number of movies you reached in a single chain (personal best length).',
       statExplainMoreAchievements:
@@ -387,7 +387,7 @@ const resources = {
       heatmapDayEmpty: '{{date}}: нет фильмов',
       heatmapDayMovies: '{{date}}: {{count}} фильм.',
       heatmapLocalHint:
-        'Каждый квадрат — один календарный день. Столбцы — календарные недели (пн–вс сверху вниз). Насыщеннее зелёный — больше фильмов за этот день (см. «день» у каждого фильма).',
+        'Каждый квадрат — один календарный день. Столбцы — календарные недели (пн–вс сверху вниз); время идёт слева направо (более ранние недели слева). Насыщеннее зелёный — больше фильмов за этот день (см. «день» у каждого фильма).',
       loggedDateForStartMovie: 'Учитывать первый фильм за',
       loggedDateForNextMovie: 'Учитывать следующий выбор за',
       loggedDateForPastMovie: 'День для этого более раннего фильма',
@@ -401,7 +401,7 @@ const resources = {
       topActorsEmpty: 'Играйте дольше — мы покажем, каких актёров вы чаще выбираете в качестве связки.',
       topCastSectionTitle: 'Топ актёров (полные титры)',
       topCastSectionHint:
-        'Актёры из полного состава фильмов в ваших цепочках — в том числе эпизодические роли. Каждый фильм учитывается один раз, когда загружаются титры (страница фильма или игра с главной).',
+        'Актёры из полных титров фильмов, которые сейчас в цепочке (включая эпизодические роли). Каждый фильм учитывается один раз при загрузке состава, пока фильм в цепочке. Если убрать фильм из цепочки, он перестаёт учитываться.',
       topCastEmpty:
         'Откройте фильмы из цепочки, чтобы загрузить полный состав — здесь появятся самые частые по числу ваших фильмов.',
       actorCastMovies_one: 'в {{count}} фильме',
@@ -426,13 +426,13 @@ const resources = {
       statExplainCurrentStreak:
         'Сколько подряд календарных дней UTC вы играли до сегодня. Растёт, если сегодня добавили фильм после вчерашней игры (UTC); сбрасывается, если пропустили день UTC.',
       heatmapSectionExplain:
-        'Каждая ячейка — один календарный день в вашем часовом поясе. Цвет показывает, сколько фильмов учтено за этот день по полю «день» у звена (по умолчанию — день добавления). Темнее зелёный — больше фильмов.',
+        'Каждая ячейка — один календарный день в вашем часовом поясе. Столбцы — недели; более ранние недели слева от более поздних. Цвет показывает, сколько фильмов учтено за этот день по полю «день» у звена (по умолчанию — день добавления). Темнее зелёный — больше фильмов.',
       statExplainBusiestDay:
         'Календарный день, в который учтено больше всего фильмов (те же счётчики, что и на теплокарте).',
       statExplainTopBridge:
         'Актёры, которых вы выбирали как общую связь между двумя соседними фильмами в цепочке. Считаем, сколько раз каждый актёр был такой связкой.',
       statExplainTopCast:
-        'Актёры из полных титров фильмов в ваших цепочках, включая эпизодические роли. Каждый фильм учитывается один раз при загрузке состава — обычно при открытии страницы фильма или игре с главной.',
+        'Мы сохраняем полный состав каждого фильма из цепочки, когда вы его открываете (или играете с главной). Число — сколько из фильмов текущей цепочки включают этого актёра в титрах. Отмена или сброс убирают эти фильмы из счёта.',
       statExplainMoreLongestChain:
         'Максимальное число фильмов в одной цепочке за всё время (личный рекорд по длине).',
       statExplainMoreAchievements:
