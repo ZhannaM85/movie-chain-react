@@ -13,7 +13,7 @@ import { buildChainRecap } from '../gamification/chainRecap';
 export default function ChainList() {
   const api = useMovieApiForChain();
   const { links, undoLast, gamificationProfile, startPrependToChain } = useChainContext();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const recap = useMemo(() => buildChainRecap(links), [links]);
 
   if (links.length === 0) return null;
@@ -84,6 +84,17 @@ export default function ChainList() {
                 <p className="text-xs text-gray-600">
                   {link.movie.release_date ? new Date(link.movie.release_date).getFullYear() : ''}
                 </p>
+                {link.loggedDate && (
+                  <p className="text-[10px] text-emerald-500/90 mt-0.5 truncate" title={link.loggedDate}>
+                    {t('chainWatchedOn', {
+                      date: new Intl.DateTimeFormat(i18n.language, {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      }).format(new Date(`${link.loggedDate}T12:00:00`)),
+                    })}
+                  </p>
+                )}
               </div>
             </Link>
           </div>

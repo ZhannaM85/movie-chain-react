@@ -15,7 +15,7 @@ export default function ChainPage() {
   const navigate = useNavigate();
   const { links, resetChain, undoLast, gamificationProfile, updateLoggedDate, startPrependToChain } =
     useChainContext();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const recap = useMemo(() => buildChainRecap(links), [links]);
 
   if (links.length === 0) {
@@ -144,6 +144,17 @@ export default function ChainPage() {
                 <h3 className="text-lg font-semibold text-gray-200 group-hover:text-white truncate">
                   {link.movie.title}
                 </h3>
+                {link.loggedDate && (
+                  <p className="text-sm text-emerald-400/85 mt-1">
+                    <time dateTime={link.loggedDate}>
+                      {t('chainWatchedOn', {
+                        date: new Intl.DateTimeFormat(i18n.language, {
+                          dateStyle: 'long',
+                        }).format(new Date(`${link.loggedDate}T12:00:00`)),
+                      })}
+                    </time>
+                  </p>
+                )}
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-400 mt-1">
                   <span>
                     {link.movie.release_date

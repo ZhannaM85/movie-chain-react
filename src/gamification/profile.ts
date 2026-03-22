@@ -1,4 +1,4 @@
-import { localDateString } from '../lib/dateUtils';
+import { localDateString, normalizeLoggedDateForHeatmap } from '../lib/dateUtils';
 import type { ChainLink } from '../types/movie';
 import type { GamificationProfile } from './types';
 
@@ -35,26 +35,52 @@ function withLongestStreakEver(profile: GamificationProfile): GamificationProfil
 export function incrementDailyMovies(
   profile: GamificationProfile,
   by: number,
-  dateStr: string = localDateString()
+  dateStr?: string
 ): GamificationProfile {
-  const next = (profile.moviesAddedByDate[dateStr] ?? 0) + by;
+  const key = normalizeLoggedDateForHeatmap(dateStr);
+  const next = (profile.moviesAddedByDate[key] ?? 0) + by;
   return {
     ...profile,
     moviesAddedByDate: {
       ...profile.moviesAddedByDate,
-      [dateStr]: next,
+      [key]: next,
     },
   };
 }
 
 export function decrementDailyMovies(profile: GamificationProfile, dateStr: string): GamificationProfile {
-  const prev = profile.moviesAddedByDate[dateStr] ?? 0;
+  const key = dateStr?.trim();
+  if (!key) return profile;
+  const prev = profile.moviesAddedByDate[key] ?? 0;
   if (prev <= 0) return profile;
   const next = prev - 1;
   const moviesAddedByDate = { ...profile.moviesAddedByDate };
-  if (next <= 0) delete moviesAddedByDate[dateStr];
-  else moviesAddedByDate[dateStr] = next;
+  if (next <= 0) delete moviesAddedByDate[key];
+  else moviesAddedByDate[key] = next;
   return { ...profile, moviesAddedByDate };
+}
+
+/**
+ * Ensures moviesAddedByDate reflects every link’s logged date (fixes missed increments, e.g. prepend / past dates).
+ */
+export function ensureDailyCountsFromLinks(
+  profile: GamificationProfile,
+  links: ChainLink[]
+): GamificationProfile {
+  const wanted = new Map<string, number>();
+  for (const link of links) {
+    const d = link.loggedDate?.trim();
+    if (!d) continue;
+    wanted.set(d, (wanted.get(d) ?? 0) + 1);
+  }
+  let next = profile;
+  for (const [date, need] of wanted) {
+    const have = next.moviesAddedByDate[date] ?? 0;
+    if (need > have) {
+      next = incrementDailyMovies(next, need - have, date);
+    }
+  }
+  return next;
 }
 
 /**
@@ -158,7 +184,7 @@ export function afterAddMovie(
     totalChallengePointsAllTime: profile.totalChallengePointsAllTime + stepPoints,
   };
   next = applyStreak(next);
-  next = incrementDailyMovies(next, 1, newMovieLink.loggedDate ?? localDateString());
+  next = incrementDailyMovies(next, 1, newMovieLink.loggedDate);
   if (stepLink?.connectingActorId != null && stepLink.connectingActorName) {
     next = incrementActorBridge(next, stepLink.connectingActorId, stepLink.connectingActorName);
   }
