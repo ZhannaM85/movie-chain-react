@@ -33,11 +33,31 @@ function loadState(): ChainState {
     const raw = localStorage.getItem(STORAGE_KEY);
     const parsed = raw ? (JSON.parse(raw) as ChainState) : null;
     if (parsed) {
+      const links = parsed.links ?? [];
+      const tail = links.length > 0 ? links[links.length - 1] : null;
+      /** Older saves wrongly persisted prependMode — treat as stale and resume normal “extend chain” flow. */
+      const hadPersistedPrepend = parsed.prependMode === true;
+
+      if (hadPersistedPrepend) {
+        try {
+          sessionStorage.removeItem(PENDING_ACTOR_KEY);
+        } catch {
+          // ignore
+        }
+      }
+
       return {
         ...parsed,
         source: parsed.source ?? 'tmdb',
         dailyChallengeDate: parsed.dailyChallengeDate ?? null,
-        prependMode: parsed.prependMode ?? false,
+        prependMode: false,
+        ...(hadPersistedPrepend
+          ? {
+              currentStep: 'pick-actor',
+              selectedActorId: null,
+              excludedActorId: tail?.connectingActorId ?? null,
+            }
+          : {}),
       };
     }
   } catch {
@@ -53,8 +73,10 @@ function loadState(): ChainState {
   };
 }
 
+/** Prepend is session-only; never persist it so “under +” UI cannot stick across reloads. */
 function saveState(state: ChainState) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  const persisted: ChainState = { ...state, prependMode: false };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(persisted));
 }
 
 /**

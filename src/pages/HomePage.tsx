@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useChainContext } from '../context/ChainContext';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import StartScreen from '../components/StartScreen';
@@ -37,40 +38,47 @@ export default function HomePage() {
 function ChainView({ movieId }: { movieId: number }) {
   const api = useMovieApiForChain();
   const { t } = useTranslation();
-  const { currentStep, links, selectedActorId, prependMode, cancelPrepend } = useChainContext();
+  const { currentStep, links, selectedActorId, prependMode } = useChainContext();
   const { movie, loading } = useMovieDetails(movieId, api);
   const chainIndex = prependMode ? 0 : links.length - 1;
   useSyncCastAppearances(movieId, movie?.credits?.cast, true);
 
+  let pickStepPanel: ReactNode = null;
+  if (currentStep === 'pick-actor' && movie?.credits) {
+    pickStepPanel = <ActorPicker credits={movie.credits} />;
+  } else if (currentStep === 'pick-movie') {
+    pickStepPanel = <MovieSuggestions key={selectedActorId ?? 'none'} />;
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       <div className="flex gap-6">
-        {/* Sidebar */}
+        {/* Sidebar — chain only; pick steps stay in main on md+ (wide picker) */}
         <aside className="hidden md:block w-56 flex-shrink-0">
-          <div className="sticky top-20 max-h-[calc(100vh-5rem)] flex flex-col">
+          <div className="sticky top-20 h-[calc(100vh-5rem)] flex flex-col min-h-0 overflow-hidden">
             <ChainList />
           </div>
         </aside>
 
         {/* Main content */}
         <div className="flex-1 min-w-0 space-y-6">
-          {/* Mobile chain summary */}
-          <div className="md:hidden">
-            <ChainList />
+          {/* Mobile: under “+” only when prepending; otherwise pickers below the list (usual) */}
+          <div className="md:hidden flex flex-col gap-4 min-h-0">
+            {prependMode ? (
+              <div className="flex flex-col h-[min(80vh,40rem)] min-h-0">
+                <ChainList pickStepPanel={pickStepPanel} />
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-col h-[min(80vh,40rem)] min-h-0">
+                  <ChainList />
+                </div>
+                {pickStepPanel != null && (
+                  <div className="border-t border-gray-800 pt-4">{pickStepPanel}</div>
+                )}
+              </>
+            )}
           </div>
-
-          {prependMode && (
-            <div className="rounded-lg border border-indigo-500/40 bg-indigo-950/30 px-3 py-2.5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-indigo-200/90">{t('prependToChainBanner')}</p>
-              <button
-                type="button"
-                onClick={() => cancelPrepend()}
-                className="text-sm shrink-0 px-3 py-1.5 rounded-md border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors self-start sm:self-auto"
-              >
-                {t('cancel')}
-              </button>
-            </div>
-          )}
 
           {loading ? (
             <div className="flex items-center gap-2 text-gray-400 py-8">
@@ -84,14 +92,9 @@ function ChainView({ movieId }: { movieId: number }) {
             </>
           ) : null}
 
-          <div className="border-t border-gray-800 pt-6">
-            {currentStep === 'pick-actor' && movie?.credits && (
-              <ActorPicker credits={movie.credits} />
-            )}
-            {currentStep === 'pick-movie' && (
-              <MovieSuggestions key={selectedActorId ?? 'none'} />
-            )}
-          </div>
+          {pickStepPanel != null && (
+            <div className="hidden md:block border-t border-gray-800 pt-6">{pickStepPanel}</div>
+          )}
         </div>
       </div>
     </div>
