@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
 import { useTranslation } from 'react-i18next';
+import { buildChainRecap } from '../gamification/chainRecap';
 
 /**
  * Dedicated page that visualizes the full movie chain with connecting actors.
@@ -11,8 +12,9 @@ import { useTranslation } from 'react-i18next';
  */
 export default function ChainPage() {
   const api = useMovieApiForChain();
-  const { links, resetChain, undoLast } = useChainContext();
+  const { links, resetChain, undoLast, gamificationProfile } = useChainContext();
   const { t } = useTranslation();
+  const recap = useMemo(() => buildChainRecap(links), [links]);
 
   if (links.length === 0) {
     return (
@@ -42,6 +44,21 @@ export default function ChainPage() {
           <p className="text-sm text-gray-400 mt-1">
             {t('linkedMovies', { count: links.length })}
           </p>
+          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-gray-500">
+            <span>
+              {t('challengePointsLabel')}:{' '}
+              <span className="text-indigo-300/90 font-medium">{recap.totalDifficulty}</span>
+            </span>
+            <span>
+              {t('bestChainLabel')}:{' '}
+              <span className="text-gray-300">{gamificationProfile.longestChainEver}</span>
+            </span>
+            {recap.distinctDecades >= 2 && (
+              <span>
+                {t('decadesSpanned')}: {recap.distinctDecades}
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-2">
           {links.length > 1 && (
@@ -54,7 +71,13 @@ export default function ChainPage() {
           )}
           <button
             onClick={() => {
-              if (window.confirm(t('confirmNewChain'))) {
+              const msg = t('confirmNewChainRecap', {
+                length: recap.length,
+                difficulty: recap.totalDifficulty,
+                actors: recap.uniqueActors,
+                decades: recap.distinctDecades,
+              });
+              if (window.confirm(msg)) {
                 resetChain();
               }
             }}

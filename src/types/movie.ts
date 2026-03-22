@@ -47,6 +47,8 @@ export interface ChainLink {
   connectingActorId: number | null;
   connectingActorName: string | null;
   comment: string;
+  /** Difficulty points for this step (set when linking via a shared actor). */
+  stepDifficulty?: number;
 }
 
 export type MovieSource = 'tmdb' | 'kinopoisk';
@@ -57,4 +59,6 @@ export interface ChainState {
   currentStep: 'pick-actor' | 'pick-movie' | 'start';
   selectedActorId: number | null;
   excludedActorId: number | null;
+  /** UTC date (YYYY-MM-DD) when this run started from the daily challenge */
+  dailyChallengeDate?: string | null;
 }

@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useChainContext } from '../context/ChainContext';
 import { useMovieApiForChain, useMovieApiPreference } from '../context/MovieApiContext';
 import { useTranslation } from 'react-i18next';
+import { buildChainRecap } from '../gamification/chainRecap';
+import GamificationToasts from './GamificationToasts';
 
 /**
  * Main application shell with header, navigation, and responsive layout around the page content.
@@ -14,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 export default function Layout({ children }: { children: ReactNode }) {
   const api = useMovieApiForChain();
   const { preferKinopoisk, setPreferKinopoisk, hasKinopoiskKey } = useMovieApiPreference();
-  const { links, source, resetChain } = useChainContext();
+  const { links, source, resetChain, gamificationProfile } = useChainContext();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const { t, i18n } = useTranslation();
 
@@ -71,6 +73,14 @@ export default function Layout({ children }: { children: ReactNode }) {
                   onClick={() => {
                     const newVal = !preferKinopoisk;
                     if (!newVal && links.length > 0 && source === 'kinopoisk') {
+                      const recap = buildChainRecap(links);
+                      const msg = t('confirmNewChainRecap', {
+                        length: recap.length,
+                        difficulty: recap.totalDifficulty,
+                        actors: recap.uniqueActors,
+                        decades: recap.distinctDecades,
+                      });
+                      if (!window.confirm(msg)) return;
                       resetChain();
                     }
                     setPreferKinopoisk(newVal);
@@ -88,6 +98,14 @@ export default function Layout({ children }: { children: ReactNode }) {
                   />
                 </button>
               </label>
+            )}
+            {gamificationProfile.currentStreak > 0 && (
+              <span
+                className="hidden sm:inline text-xs px-2 py-0.5 rounded-md bg-amber-950/50 border border-amber-800/60 text-amber-200/90"
+                title={t('streakTooltip')}
+              >
+                {t('streakLabel', { count: gamificationProfile.currentStreak })}
+              </span>
             )}
             <span
               className="text-xs px-2 py-0.5 rounded-md bg-gray-800 border border-gray-700 text-gray-400"
@@ -120,7 +138,17 @@ export default function Layout({ children }: { children: ReactNode }) {
             {links.length > 0 && (
               <button
                 onClick={() => {
-                  if (window.confirm(t('confirmNewChain'))) {
+                  const recap = buildChainRecap(links);
+                  const msg =
+                    links.length === 0
+                      ? t('confirmNewChain')
+                      : t('confirmNewChainRecap', {
+                          length: recap.length,
+                          difficulty: recap.totalDifficulty,
+                          actors: recap.uniqueActors,
+                          decades: recap.distinctDecades,
+                        });
+                  if (window.confirm(msg)) {
                     resetChain();
                   }
                   setMobileNavOpen(false);
@@ -155,6 +183,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         </div>
       )}
       <main>{children}</main>
+      <GamificationToasts />
     </div>
   );
 }
