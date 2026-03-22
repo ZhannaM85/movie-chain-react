@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { buildCalendarHeatmapWeeks, intensityLevel } from '../gamification/heatmap';
 import { useTranslation } from 'react-i18next';
 
@@ -20,6 +20,13 @@ interface ActivityHeatmapProps {
  */
 export default function ActivityHeatmap({ moviesAddedByDate }: ActivityHeatmapProps) {
   const { t, i18n } = useTranslation();
+  const [selected, setSelected] = useState<{ date: string; count: number } | null>(null);
+
+  const formatDayLabel = useCallback(
+    (iso: string) =>
+      new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium' }).format(new Date(`${iso}T12:00:00`)),
+    [i18n.language]
+  );
 
   const { columns, maxCount, weekdayLabels } = useMemo(() => {
     const { columns: cols, maxCount: max } = buildCalendarHeatmapWeeks(moviesAddedByDate);
@@ -56,15 +63,27 @@ export default function ActivityHeatmap({ moviesAddedByDate }: ActivityHeatmapPr
               >
                 {week.map((cell) => {
                   const level = intensityLevel(cell.count, maxCount);
+                  const dateLabel = formatDayLabel(cell.date);
                   const title =
                     cell.count === 0
-                      ? t('heatmapDayEmpty', { date: cell.date })
-                      : t('heatmapDayMovies', { date: cell.date, count: cell.count });
+                      ? t('heatmapDayEmpty', { date: dateLabel })
+                      : t('heatmapDayMovies', { date: dateLabel, count: cell.count });
+                  const isSelected = selected?.date === cell.date;
                   return (
-                    <div
+                    <button
                       key={cell.date}
+                      type="button"
                       title={title}
-                      className={`min-h-0 flex-1 rounded-sm ${LEVEL_CLASS[level]}`}
+                      aria-label={title}
+                      aria-pressed={isSelected}
+                      onClick={() => {
+                        setSelected((prev) =>
+                          prev?.date === cell.date ? null : { date: cell.date, count: cell.count }
+                        );
+                      }}
+                      className={`min-h-0 flex-1 rounded-sm text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950 ${LEVEL_CLASS[level]} ${
+                        isSelected ? 'ring-2 ring-indigo-400 ring-inset' : ''
+                      }`}
                     />
                   );
                 })}
@@ -73,6 +92,13 @@ export default function ActivityHeatmap({ moviesAddedByDate }: ActivityHeatmapPr
           </div>
         </div>
       </div>
+      {selected && (
+        <p className="text-sm text-gray-200 mt-3" role="status" aria-live="polite">
+          {selected.count === 0
+            ? t('heatmapDayEmpty', { date: formatDayLabel(selected.date) })
+            : t('heatmapDayMovies', { date: formatDayLabel(selected.date), count: selected.count })}
+        </p>
+      )}
       <p className="text-[10px] text-gray-600 mt-2">{t('heatmapLocalHint')}</p>
     </div>
   );

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useMovieDetails } from '../hooks/useMovieDetails';
 import { useSyncCastAppearances } from '../hooks/useSyncCastAppearances';
@@ -6,6 +7,8 @@ import { useChainContext } from '../context/ChainContext';
 import UserComment from '../components/UserComment';
 import ChainWatchedDateField from '../components/ChainWatchedDateField';
 import { useTranslation } from 'react-i18next';
+import type { Movie, MovieCredits } from '../types/movie';
+import type { MovieApi } from '../services/movieApi';
 
 /**
  * Page that shows full details for a movie, including cast and any chain comment.
@@ -46,7 +49,6 @@ export default function MovieDetailPage() {
 
   const year = movie.release_date ? new Date(movie.release_date).getFullYear() : t('na');
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '—';
-  const cast = movie.credits?.cast?.slice(0, 20) || [];
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -106,39 +108,65 @@ export default function MovieDetailPage() {
         </div>
       </div>
 
-      {cast.length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold text-gray-200 mb-4">{t('cast')}</h2>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
-            {cast.map((actor) => (
-              <Link
-                key={actor.id}
-                to={`/actor/${actor.id}`}
-                className="rounded-lg overflow-hidden bg-gray-800/50 border border-gray-800 hover:border-indigo-500/50 hover:bg-gray-800 transition-all hover:scale-[1.02]"
-              >
-                {actor.profile_path ? (
-                  <img
-                    src={api.profileUrl(actor.profile_path)}
-                    alt={actor.name}
-                    className="w-full aspect-[2/3] object-cover"
-                  />
-                ) : (
-                  <div className="w-full aspect-[2/3] bg-gray-700 flex items-center justify-center">
-                    <svg className="w-8 h-8 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-                    </svg>
-                  </div>
-                )}
-                <div className="p-2">
-                  <p className="text-sm font-medium text-gray-200 truncate">{actor.name}</p>
-                  {actor.character && (
-                    <p className="text-xs text-gray-500 truncate">{t('asCharacter', { character: actor.character })}</p>
-                  )}
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
+      <MovieCastSection key={movie.id} movie={movie} api={api} />
+    </div>
+  );
+}
+
+function MovieCastSection({
+  movie,
+  api,
+}: {
+  movie: Movie & { credits: MovieCredits };
+  api: MovieApi;
+}) {
+  const { t } = useTranslation();
+  const allCast = movie.credits?.cast ?? [];
+  const [showAllCast, setShowAllCast] = useState(false);
+  const cast = showAllCast ? allCast : allCast.slice(0, 20);
+
+  if (cast.length === 0) return null;
+
+  return (
+    <div>
+      <h2 className="text-xl font-semibold text-gray-200 mb-4">{t('cast')}</h2>
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+        {cast.map((actor) => (
+          <Link
+            key={actor.id}
+            to={`/actor/${actor.id}`}
+            className="rounded-lg overflow-hidden bg-gray-800/50 border border-gray-800 hover:border-indigo-500/50 hover:bg-gray-800 transition-all hover:scale-[1.02]"
+          >
+            {actor.profile_path ? (
+              <img
+                src={api.profileUrl(actor.profile_path)}
+                alt={actor.name}
+                className="w-full aspect-[2/3] object-cover"
+              />
+            ) : (
+              <div className="w-full aspect-[2/3] bg-gray-700 flex items-center justify-center">
+                <svg className="w-8 h-8 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+                </svg>
+              </div>
+            )}
+            <div className="p-2">
+              <p className="text-sm font-medium text-gray-200 truncate">{actor.name}</p>
+              {actor.character && (
+                <p className="text-xs text-gray-500 truncate">{t('asCharacter', { character: actor.character })}</p>
+              )}
+            </div>
+          </Link>
+        ))}
+      </div>
+      {!showAllCast && allCast.length > 20 && (
+        <button
+          type="button"
+          onClick={() => setShowAllCast(true)}
+          className="mt-4 text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+        >
+          {t('showAllCast', { count: allCast.length })}
+        </button>
       )}
     </div>
   );
