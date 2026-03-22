@@ -75,29 +75,36 @@ export default function StartScreen() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8 w-full min-w-0">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold mb-2">{t('startTitle')}</h1>
         <p className="text-gray-400">{t('startSubtitle')}</p>
       </div>
 
-      <div className="max-w-md mx-auto mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <label className="text-sm text-gray-400 shrink-0">{t('loggedDateForStartMovie')}</label>
-        <input
-          type="date"
-          value={chainStartDate}
-          onChange={(e) => setChainStartDate(e.target.value)}
-          className="w-full sm:max-w-[200px] px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-        />
+      <div className="max-w-md mx-auto mb-6 w-full min-w-0">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <label className="text-sm text-gray-400 sm:shrink-0" htmlFor="chain-start-date">
+            {t('loggedDateForStartMovie')}
+          </label>
+          <div className="w-full min-w-0 sm:max-w-[200px] sm:w-auto sm:flex-shrink-0">
+            <input
+              id="chain-start-date"
+              type="date"
+              value={chainStartDate}
+              onChange={(e) => setChainStartDate(e.target.value)}
+              className="box-border w-full min-w-0 max-w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+          </div>
+        </div>
       </div>
 
-      <div className="max-w-md mx-auto mb-8">
+      <div className="max-w-md mx-auto mb-8 w-full min-w-0">
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t('searchMoviePlaceholder')}
-          className="w-full px-4 py-3 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+          className="box-border w-full min-w-0 max-w-full px-4 py-3 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
         />
       </div>
 

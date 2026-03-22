@@ -24,7 +24,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   const { t, i18n } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
+    <div className="min-h-screen bg-gray-950 text-gray-100 overflow-x-hidden">
       <header className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between relative">
           <div className="flex items-center gap-3 sm:gap-4">
@@ -217,7 +217,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           </div>
         </div>
       )}
-      <main>{children}</main>
+      <main className="min-w-0">{children}</main>
       <GamificationToasts />
     </div>
   );
