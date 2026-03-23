@@ -1,8 +1,9 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState, useEffect, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useChainContext } from '../context/ChainContext';
 import ActivityHeatmap from '../components/ActivityHeatmap';
 import { getTopActorBridges, getTopCastAppearances } from '../gamification/actorStats';
+import { ACHIEVEMENT_IDS } from '../gamification/types';
 import { useTranslation } from 'react-i18next';
 import { useMatchMedia } from '../hooks/useMatchMedia';
 import { mergeMoviesAddedByDateWithChainLinks } from '../gamification/heatmap';
@@ -92,7 +93,7 @@ export default function UserStatsPage() {
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-xs text-gray-600 w-5 flex-shrink-0">{i + 1}</span>
                     <Link
-                      to={`/actor/${a.id}`}
+                      to={`/actor/${a.id}?from=bridge`}
                       className="text-sm text-indigo-400 hover:text-indigo-300 truncate"
                     >
                       {a.name}
@@ -124,7 +125,7 @@ export default function UserStatsPage() {
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-xs text-gray-600 w-5 flex-shrink-0">{i + 1}</span>
                     <Link
-                      to={`/actor/${a.id}`}
+                      to={`/actor/${a.id}?from=cast`}
                       className="text-sm text-indigo-400 hover:text-indigo-300 truncate"
                     >
                       {a.name}
@@ -149,9 +150,9 @@ export default function UserStatsPage() {
               value={<span className="text-gray-200 tabular-nums">{p.longestChainEver}</span>}
               explanation={t('statExplainMoreLongestChain')}
             />
-            <ExplainableRow
-              label={t('statAchievementsUnlocked')}
-              value={<span className="text-gray-200 tabular-nums">{p.unlockedAchievementIds.length}</span>}
+            <AchievementsUnlockedRow
+              count={p.unlockedAchievementIds.length}
+              unlockedIds={p.unlockedAchievementIds}
               explanation={t('statExplainMoreAchievements')}
             />
             <ExplainableRow
@@ -163,6 +164,123 @@ export default function UserStatsPage() {
         </section>
       </div>
     </div>
+  );
+}
+
+function sortUnlockedAchievementIds(unlockedIds: string[]): string[] {
+  const set = new Set(unlockedIds);
+  const ordered = ACHIEVEMENT_IDS.filter((id) => set.has(id));
+  const rest = unlockedIds.filter((id) => !(ACHIEVEMENT_IDS as readonly string[]).includes(id));
+  return [...ordered, ...rest];
+}
+
+function UnlockedAchievementsModal({
+  unlockedIds,
+  explanation,
+  onClose,
+}: {
+  unlockedIds: string[];
+  explanation: string;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const sorted = useMemo(() => sortUnlockedAchievementIds(unlockedIds), [unlockedIds]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4 bg-black/60"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="achievements-modal-title"
+      onMouseDown={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div
+        className="w-full max-w-md rounded-xl border border-gray-700 bg-gray-900 shadow-xl max-h-[85vh] flex flex-col"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-800 shrink-0">
+          <h2 id="achievements-modal-title" className="text-lg font-semibold text-white pr-2">
+            {t('statAchievementsModalTitle')}
+          </h2>
+          <button
+            type="button"
+            className="text-sm text-indigo-400 hover:text-indigo-300 px-2 py-1 shrink-0 rounded-lg hover:bg-gray-800/80"
+            onClick={onClose}
+          >
+            {t('statAchievementsModalClose')}
+          </button>
+        </div>
+        <div className="overflow-y-auto px-4 py-3 flex-1 min-h-0">
+          {sorted.length === 0 ? (
+            <p className="text-sm text-gray-500">{t('statAchievementsModalEmpty')}</p>
+          ) : (
+            <ul className="space-y-3">
+              {sorted.map((id) => (
+                <li
+                  key={id}
+                  className="rounded-lg border border-gray-800 bg-gray-800/40 px-3 py-2"
+                >
+                  <p className="text-sm font-medium text-gray-200">
+                    {t(`achievement.${id}.title`, { defaultValue: id })}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {t(`achievement.${id}.desc`, { defaultValue: '' })}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="text-xs text-gray-600 mt-4 pt-3 border-t border-gray-800 leading-relaxed">{explanation}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AchievementsUnlockedRow({
+  count,
+  unlockedIds,
+  explanation,
+}: {
+  count: number;
+  unlockedIds: string[];
+  explanation: string;
+}) {
+  const { t } = useTranslation();
+  const [modalOpen, setModalOpen] = useState(false);
+
+  return (
+    <li className="border-b border-gray-800/80 pb-2 last:border-0 overflow-visible">
+      <button
+        type="button"
+        className="w-full flex justify-between gap-4 items-start text-left rounded-lg -mx-1 px-1 py-0.5 hover:bg-gray-800/50 border border-transparent hover:border-gray-700/40 transition-colors cursor-pointer group"
+        onClick={() => setModalOpen(true)}
+        aria-expanded={modalOpen}
+        aria-haspopup="dialog"
+      >
+        <span className="text-gray-400 group-hover:text-indigo-300 transition-colors">
+          {t('statAchievementsUnlocked')}
+        </span>
+        <span className="shrink-0 text-right text-gray-200 tabular-nums group-hover:text-indigo-300 transition-colors">
+          {count}
+        </span>
+      </button>
+      {modalOpen ? (
+        <UnlockedAchievementsModal
+          unlockedIds={unlockedIds}
+          explanation={explanation}
+          onClose={() => setModalOpen(false)}
+        />
+      ) : null}
+    </li>
   );
 }
 

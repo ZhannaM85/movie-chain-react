@@ -22,6 +22,8 @@ export interface GamificationProfile {
   moviesAddedByDate: Record<string, number>;
   /** Count of times each actor was chosen as the bridge to the next film (key = TMDB/KP id string) */
   actorBridgeCounts: Record<string, { name: string; count: number }>;
+  /** Destination movie ids (one per distinct film) when that actor was the bridge — for stats / actor page */
+  actorBridgeMovieIds: Record<string, number[]>;
   /** How many chain movies each actor appears in (full credits), once per movie per actor */
   actorCastAppearanceCounts: Record<string, { name: string; count: number }>;
   /** Per movie id: actor id → name from the last full-cast merge (used to rebuild counts for the current chain) */
@@ -43,6 +45,7 @@ export const DEFAULT_GAMIFICATION_PROFILE: GamificationProfile = {
   totalChallengePointsAllTime: 0,
   moviesAddedByDate: {},
   actorBridgeCounts: {},
+  actorBridgeMovieIds: {},
   actorCastAppearanceCounts: {},
   movieCastByMovie: {},
   castAppearanceMoviesSeen: {},

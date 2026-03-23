@@ -104,16 +104,23 @@ export function adjustDailyForLoggedDateChange(
 export function incrementActorBridge(
   profile: GamificationProfile,
   actorId: number,
-  actorName: string
+  actorName: string,
+  bridgeToMovieId: number
 ): GamificationProfile {
   const key = String(actorId);
   const prev = profile.actorBridgeCounts[key];
   const count = (prev?.count ?? 0) + 1;
+  const prevIds = profile.actorBridgeMovieIds[key] ?? [];
+  const nextIds = prevIds.includes(bridgeToMovieId) ? prevIds : [...prevIds, bridgeToMovieId];
   return {
     ...profile,
     actorBridgeCounts: {
       ...profile.actorBridgeCounts,
       [key]: { name: actorName, count },
+    },
+    actorBridgeMovieIds: {
+      ...profile.actorBridgeMovieIds,
+      [key]: nextIds,
     },
   };
 }
@@ -186,7 +193,12 @@ export function afterAddMovie(
   next = applyStreak(next);
   next = incrementDailyMovies(next, 1, newMovieLink.loggedDate ?? undefined);
   if (stepLink?.connectingActorId != null && stepLink.connectingActorName) {
-    next = incrementActorBridge(next, stepLink.connectingActorId, stepLink.connectingActorName);
+    next = incrementActorBridge(
+      next,
+      stepLink.connectingActorId,
+      stepLink.connectingActorName,
+      newMovieLink.movie.id
+    );
   }
 
   const newAchievements: string[] = [];
