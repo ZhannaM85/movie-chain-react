@@ -63,12 +63,6 @@ export default function ChainList({ prependPanel }: ChainListProps) {
           .reverse()
           .map(({ link, chainIndex }) => (
           <div key={`${link.movie.id}-${chainIndex}`}>
-            {chainIndex > 0 && link.connectingActorName && (
-              <div className="flex items-center gap-1.5 py-1 pl-3">
-                <div className="w-px h-3 bg-gray-700" />
-                <span className="text-xs text-indigo-400">{link.connectingActorName}</span>
-              </div>
-            )}
             <div className="flex items-start gap-1.5 p-1.5 rounded-md hover:bg-gray-800/70 transition-colors group">
               <Link
                 to={`/movie/${link.movie.id}`}
@@ -106,6 +100,12 @@ export default function ChainList({ prependPanel }: ChainListProps) {
                 />
               </div>
             </div>
+            {chainIndex > 0 && link.connectingActorName && (
+              <div className="flex items-center gap-1.5 py-1 pl-3">
+                <div className="w-px h-3 bg-gray-700" />
+                <span className="text-xs text-indigo-400">{link.connectingActorName}</span>
+              </div>
+            )}
           </div>
         ))}
       </div>
