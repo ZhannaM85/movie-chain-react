@@ -89,9 +89,12 @@ export default function ChainList({ pickStepPanel }: ChainListProps) {
       )}
 
       <div className="flex-1 min-h-0 overflow-y-auto space-y-1 pr-1">
-        {links.map((link, index) => (
-          <div key={`${link.movie.id}-${index}`}>
-            {index > 0 && link.connectingActorName && (
+        {links
+          .map((link, chainIndex) => ({ link, chainIndex }))
+          .reverse()
+          .map(({ link, chainIndex }) => (
+          <div key={`${link.movie.id}-${chainIndex}`}>
+            {chainIndex > 0 && link.connectingActorName && (
               <div className="flex items-center gap-1.5 py-1 pl-3">
                 <div className="w-px h-3 bg-gray-700" />
                 <span className="text-xs text-indigo-400">{link.connectingActorName}</span>
@@ -102,7 +105,9 @@ export default function ChainList({ pickStepPanel }: ChainListProps) {
                 to={`/movie/${link.movie.id}`}
                 className="flex items-center gap-2 min-w-0 flex-1"
               >
-                <span className="text-xs text-gray-600 w-5 text-right flex-shrink-0">{index + 1}</span>
+                <span className="text-xs text-gray-600 w-5 text-right flex-shrink-0">
+                  {links.length - chainIndex}
+                </span>
                 {link.movie.poster_path ? (
                   <img
                     src={api.posterUrl(link.movie.poster_path, 'w185')}
@@ -123,7 +128,7 @@ export default function ChainList({ pickStepPanel }: ChainListProps) {
               </Link>
               <div className="shrink-0 pt-0.5 max-w-[40%] sm:max-w-none">
                 <ChainWatchedDateField
-                  chainIndex={index}
+                  chainIndex={chainIndex}
                   idPrefix="chain-sidebar"
                   labelClassName="sr-only"
                   showUnsetHint={false}
