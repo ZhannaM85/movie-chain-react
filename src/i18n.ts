@@ -118,6 +118,7 @@ const resources = {
         'Pick an actor from the first movie who also appears in the older film you will add',
       prependToChainBanner: 'Adding a movie before the first in your chain (older history).',
       addMovieBeforeChain: 'Add a movie before the first in the chain',
+      addMovieBeforeChainBottom: 'Add a movie at the older end of the chain (before the first film)',
       showAllCast: 'Show all {{count}} cast members',
       pickFromFilmography: 'Pick a movie from their filmography',
       changeActor: 'Change actor',
@@ -330,6 +331,8 @@ const resources = {
         'Выберите актёра из первого фильма, который также снимался в более раннем фильме, который вы добавите',
       prependToChainBanner: 'Добавление фильма перед первым в цепочке (более ранняя история).',
       addMovieBeforeChain: 'Добавить фильм перед первым в цепочке',
+      addMovieBeforeChainBottom:
+        'Добавить фильм в более ранний конец цепочки (перед первым фильмом)',
       showAllCast: 'Показать весь состав ({{count}})',
       pickFromFilmography: 'Выберите фильм из его фильмографии',
       changeActor: 'Сменить актера',

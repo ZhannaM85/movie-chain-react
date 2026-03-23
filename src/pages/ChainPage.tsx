@@ -189,6 +189,20 @@ export default function ChainPage() {
             </div>
           </div>
         ))}
+        <div className="mt-4 flex items-center">
+          <button
+            type="button"
+            onClick={() => {
+              startPrependToChain();
+              navigate('/');
+            }}
+            className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-dashed border-gray-600 text-xl font-medium text-indigo-400 hover:bg-gray-800/80 hover:border-indigo-500/50 transition-colors"
+            title={t('addMovieBeforeChainBottom')}
+            aria-label={t('addMovieBeforeChainBottom')}
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
   );

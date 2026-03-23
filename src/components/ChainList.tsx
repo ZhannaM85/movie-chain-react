@@ -139,6 +139,17 @@ export default function ChainList({ pickStepPanel }: ChainListProps) {
             </div>
           </div>
         ))}
+        <div className="shrink-0 flex items-center gap-2 pl-1 pt-2 pb-1">
+          <button
+            type="button"
+            onClick={() => startPrependToChain()}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-dashed border-gray-600 text-lg font-medium text-indigo-400 hover:bg-gray-800/80 hover:border-indigo-500/50 transition-colors"
+            title={t('addMovieBeforeChainBottom')}
+            aria-label={t('addMovieBeforeChainBottom')}
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
   );
