@@ -91,41 +91,15 @@ export default function ChainPage() {
       </div>
 
       <div className="space-y-0">
-        <div className="mb-4 flex items-center">
-          <button
-            type="button"
-            onClick={() => {
-              startPrependToChain();
-              navigate('/');
-            }}
-            className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-dashed border-gray-600 text-xl font-medium text-indigo-400 hover:bg-gray-800/80 hover:border-indigo-500/50 transition-colors"
-            title={t('addMovieBeforeChain')}
-            aria-label={t('addMovieBeforeChain')}
-          >
-            +
-          </button>
-        </div>
-        {links.map((link, index) => (
-          <div key={`${link.movie.id}-${index}`}>
-            {index > 0 && link.connectingActorName && (
-              <div className="flex items-center gap-3 py-3 pl-6">
-                <div className="w-px h-6 bg-indigo-500/40" />
-                <Link
-                  to={link.connectingActorId ? `/actor/${link.connectingActorId}` : '#'}
-                  className="flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
-                >
-                  {link.connectingActorId && (
-                    <ActorAvatar actorId={link.connectingActorId} api={api} />
-                  )}
-                  <span>{link.connectingActorName}</span>
-                </Link>
-              </div>
-            )}
-
+        {links
+          .map((link, chainIndex) => ({ link, chainIndex }))
+          .reverse()
+          .map(({ link, chainIndex }) => (
+          <div key={`${link.movie.id}-${chainIndex}`}>
             <div className="rounded-xl bg-gray-800/60 border border-gray-700/50 hover:border-indigo-500/40 hover:bg-gray-800/80 transition-all overflow-hidden">
               <Link to={`/movie/${link.movie.id}`} className="flex gap-4 p-4 group">
                 <span className="text-lg font-bold text-gray-600 w-8 text-right flex-shrink-0 pt-1">
-                  {index + 1}
+                  {links.length - chainIndex}
                 </span>
                 {link.movie.poster_path ? (
                   <img
@@ -181,11 +155,39 @@ export default function ChainPage() {
                 </div>
               </Link>
               <div className="px-4 pb-4 pt-2 border-t border-gray-700/40 bg-gray-900/15">
-                <ChainWatchedDateField chainIndex={index} idPrefix="chain-page" />
+                <ChainWatchedDateField chainIndex={chainIndex} idPrefix="chain-page" />
               </div>
             </div>
+            {chainIndex > 0 && link.connectingActorName && (
+              <div className="flex items-center gap-3 py-3 pl-6">
+                <div className="w-px h-6 bg-indigo-500/40" />
+                <Link
+                  to={link.connectingActorId ? `/actor/${link.connectingActorId}` : '#'}
+                  className="flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+                >
+                  {link.connectingActorId && (
+                    <ActorAvatar actorId={link.connectingActorId} api={api} />
+                  )}
+                  <span>{link.connectingActorName}</span>
+                </Link>
+              </div>
+            )}
           </div>
         ))}
+        <div className="mt-4 flex items-center">
+          <button
+            type="button"
+            onClick={() => {
+              startPrependToChain();
+              navigate('/');
+            }}
+            className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-dashed border-gray-600 text-xl font-medium text-indigo-400 hover:bg-gray-800/80 hover:border-indigo-500/50 transition-colors"
+            title={t('addMovieBeforeChainBottom')}
+            aria-label={t('addMovieBeforeChainBottom')}
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
   );
