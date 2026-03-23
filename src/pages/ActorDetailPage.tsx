@@ -1,7 +1,51 @@
 import { useParams, Link } from 'react-router-dom';
+import { useMemo, useEffect, useState } from 'react';
 import { useActorDetails } from '../hooks/useActorDetails';
 import { useMovieApiForChain } from '../context/MovieApiContext';
+import { useChainContext } from '../context/ChainContext';
 import { useTranslation } from 'react-i18next';
+import type { Movie } from '../types/movie';
+import { getBridgeMovieIdsForActor, getCastMovieIdsForActorInChain } from '../gamification/actorStats';
+
+function MoviePosterGrid({
+  title,
+  movies,
+  api,
+  t,
+}: {
+  title: string;
+  movies: Movie[];
+  api: ReturnType<typeof useMovieApiForChain>;
+  t: (key: string, opts?: Record<string, string | number>) => string;
+}) {
+  if (movies.length === 0) return null;
+  return (
+    <div className="mb-10">
+      <h2 className="text-xl font-semibold text-gray-200 mb-4">{title}</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        {movies.map((movie) => (
+          <Link
+            key={movie.id}
+            to={`/movie/${movie.id}`}
+            className="rounded-lg overflow-hidden bg-gray-800/50 border border-gray-800 hover:border-indigo-500/50 hover:bg-gray-800 transition-all hover:scale-[1.02]"
+          >
+            <img
+              src={api.posterUrl(movie.poster_path, 'w342')}
+              alt={movie.title}
+              className="w-full aspect-[2/3] object-cover"
+            />
+            <div className="p-2">
+              <h4 className="text-sm font-medium text-gray-200 truncate">{movie.title}</h4>
+              <p className="text-xs text-gray-500">
+                {movie.release_date ? new Date(movie.release_date).getFullYear() : t('na')}
+              </p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /**
  * Page that shows biography and notable movies for a specific actor.
@@ -11,9 +55,64 @@ import { useTranslation } from 'react-i18next';
 export default function ActorDetailPage() {
   const api = useMovieApiForChain();
   const { t, i18n } = useTranslation();
+  const { gamificationProfile, links } = useChainContext();
   const { id } = useParams<{ id: string }>();
-  const personId = id ? parseInt(id, 10) : null;
+  const personId = id && !Number.isNaN(Number.parseInt(id, 10)) ? Number.parseInt(id, 10) : null;
+  const actorIdStr = id ?? '';
   const { actor, movies, loading, error } = useActorDetails(personId, api);
+
+  const bridgeMovieIds = useMemo(
+    () => getBridgeMovieIdsForActor(gamificationProfile, actorIdStr, links),
+    [gamificationProfile, actorIdStr, links]
+  );
+  const castMovieIds = useMemo(
+    () => getCastMovieIdsForActorInChain(gamificationProfile, actorIdStr, links),
+    [gamificationProfile, actorIdStr, links]
+  );
+
+  const [chainBridgeMovies, setChainBridgeMovies] = useState<Movie[]>([]);
+  const [chainCastMovies, setChainCastMovies] = useState<Movie[]>([]);
+  const [chainMoviesLoading, setChainMoviesLoading] = useState(false);
+
+  useEffect(() => {
+    const unique = Array.from(new Set([...bridgeMovieIds, ...castMovieIds]));
+    if (unique.length === 0 || personId === null) {
+      setChainBridgeMovies([]);
+      setChainCastMovies([]);
+      return;
+    }
+
+    let cancelled = false;
+    setChainMoviesLoading(true);
+
+    Promise.all(
+      unique.map(async (mid) => {
+        try {
+          const d = await api.getMovieDetails(mid);
+          const { credits: _c, ...movie } = d;
+          return movie as Movie;
+        } catch {
+          return null;
+        }
+      })
+    )
+      .then((results) => {
+        if (cancelled) return;
+        const byId = new Map<number, Movie>();
+        for (const m of results) {
+          if (m) byId.set(m.id, m);
+        }
+        setChainBridgeMovies(bridgeMovieIds.map((i) => byId.get(i)).filter((m): m is Movie => m != null));
+        setChainCastMovies(castMovieIds.map((i) => byId.get(i)).filter((m): m is Movie => m != null));
+      })
+      .finally(() => {
+        if (!cancelled) setChainMoviesLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [api, personId, bridgeMovieIds, castMovieIds]);
 
   if (loading) {
     return (
@@ -34,6 +133,9 @@ export default function ActorDetailPage() {
       </div>
     );
   }
+
+  const showChainSpinner =
+    chainMoviesLoading && (bridgeMovieIds.length > 0 || castMovieIds.length > 0);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -59,7 +161,14 @@ export default function ActorDetailPage() {
 
           <div className="flex flex-wrap gap-4 text-sm text-gray-400 mb-4">
             {actor.birthday && (
-              <span>{t('born')}: {new Date(actor.birthday).toLocaleDateString(i18n.language, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              <span>
+                {t('born')}:{' '}
+                {new Date(actor.birthday).toLocaleDateString(i18n.language, {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </span>
             )}
             {actor.place_of_birth && <span>{actor.place_of_birth}</span>}
           </div>
@@ -69,6 +178,16 @@ export default function ActorDetailPage() {
           )}
         </div>
       </div>
+
+      {showChainSpinner && (
+        <div className="mb-6 flex items-center gap-2 text-sm text-gray-500">
+          <span className="inline-block w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+          {t('loadingFilmography')}
+        </div>
+      )}
+
+      <MoviePosterGrid title={t('actorYourChainBridge')} movies={chainBridgeMovies} api={api} t={t} />
+      <MoviePosterGrid title={t('actorYourChainCast')} movies={chainCastMovies} api={api} t={t} />
 
       {movies.length > 0 && (
         <div>
