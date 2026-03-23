@@ -56,7 +56,7 @@ function ChainView({ movieId }: { movieId: number }) {
         {/* Mobile: order-1 = current movie + actors first; desktop: chain left. Chain is full-bleed width on small screens. */}
         <aside className="order-2 md:order-1 w-full min-w-0 max-w-full md:w-72 lg:w-80 xl:w-96 shrink-0">
           <div className="flex flex-col w-full md:overflow-hidden md:h-[calc(100vh-5rem)] md:sticky md:top-20 min-h-0">
-            <ChainList />
+            <ChainList prependPanel={prependMode ? pickStepPanel : undefined} />
           </div>
         </aside>
 
@@ -78,7 +78,11 @@ function ChainView({ movieId }: { movieId: number }) {
           ) : null}
 
           {pickStepPanel != null && (
-            <div className="order-2 md:order-3 border-t border-gray-800 pt-4 md:pt-6">
+            <div
+              className={`order-2 md:order-3 border-t border-gray-800 pt-4 md:pt-6 ${
+                prependMode ? 'hidden md:block' : ''
+              }`}
+            >
               {pickStepPanel}
             </div>
           )}

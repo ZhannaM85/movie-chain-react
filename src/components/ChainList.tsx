@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
@@ -6,12 +6,20 @@ import { useTranslation } from 'react-i18next';
 import { buildChainRecap } from '../gamification/chainRecap';
 import ChainWatchedDateField from './ChainWatchedDateField';
 
+interface ChainListProps {
+  /**
+   * When prepending on small screens, render pick-actor / pick-movie UI next to the chain footer
+   * so users do not have to scroll back to the movie card.
+   */
+  prependPanel?: ReactNode;
+}
+
 /**
  * Sidebar list that summarizes the current movie chain with quick navigation.
  *
  * @returns {JSX.Element | null} The chain list, or null if there is no chain.
  */
-export default function ChainList() {
+export default function ChainList({ prependPanel }: ChainListProps) {
   const api = useMovieApiForChain();
   const { links, undoLast, gamificationProfile, startPrependToChain, prependMode, cancelPrepend } =
     useChainContext();
@@ -114,6 +122,9 @@ export default function ChainList() {
               {t('cancel')}
             </button>
           </div>
+        )}
+        {prependMode && prependPanel != null && (
+          <div className="md:hidden w-full min-w-0 px-1 pb-1">{prependPanel}</div>
         )}
         <div className="flex items-center gap-2 pl-1 pb-1">
           <button
