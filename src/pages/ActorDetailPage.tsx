@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useMemo, useEffect, useState } from 'react';
 import { useActorDetails } from '../hooks/useActorDetails';
 import { useMovieApiForChain } from '../context/MovieApiContext';
@@ -12,15 +12,17 @@ function MoviePosterGrid({
   movies,
   api,
   t,
+  className = 'mb-10',
 }: {
   title: string;
   movies: Movie[];
   api: ReturnType<typeof useMovieApiForChain>;
   t: (key: string, opts?: Record<string, string | number>) => string;
+  className?: string;
 }) {
   if (movies.length === 0) return null;
   return (
-    <div className="mb-10">
+    <div className={className}>
       <h2 className="text-xl font-semibold text-gray-200 mb-4">{title}</h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
         {movies.map((movie) => (
@@ -57,6 +59,10 @@ export default function ActorDetailPage() {
   const { t, i18n } = useTranslation();
   const { gamificationProfile, links } = useChainContext();
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const fromStats = searchParams.get('from');
+  const cameFromStatsPage = fromStats === 'cast' || fromStats === 'bridge';
+  const castSectionFirst = fromStats === 'cast';
   const personId = id && !Number.isNaN(Number.parseInt(id, 10)) ? Number.parseInt(id, 10) : null;
   const actorIdStr = id ?? '';
   const { actor, movies, loading, error } = useActorDetails(personId, api);
@@ -76,7 +82,7 @@ export default function ActorDetailPage() {
 
   useEffect(() => {
     const unique = Array.from(new Set([...bridgeMovieIds, ...castMovieIds]));
-    if (unique.length === 0 || personId === null) {
+    if (unique.length === 0) {
       setChainBridgeMovies([]);
       setChainCastMovies([]);
       return;
@@ -112,7 +118,21 @@ export default function ActorDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [api, personId, bridgeMovieIds, castMovieIds]);
+  }, [api, bridgeMovieIds, castMovieIds]);
+
+  useEffect(() => {
+    if (chainMoviesLoading) return;
+    const targetId =
+      fromStats === 'cast' && chainCastMovies.length > 0
+        ? 'actor-chain-cast'
+        : fromStats === 'bridge' && chainBridgeMovies.length > 0
+          ? 'actor-chain-bridge'
+          : null;
+    if (!targetId) return;
+    requestAnimationFrame(() => {
+      document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [chainMoviesLoading, fromStats, chainBridgeMovies.length, chainCastMovies.length]);
 
   if (loading) {
     return (
@@ -127,8 +147,11 @@ export default function ActorDetailPage() {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12">
         <p className="text-red-400">{t('failedLoadActorDetails')}</p>
-        <Link to="/" className="text-indigo-400 hover:text-indigo-300 mt-2 inline-block">
-          {t('backToChain')}
+        <Link
+          to={cameFromStatsPage ? '/stats' : '/'}
+          className="text-indigo-400 hover:text-indigo-300 mt-2 inline-block"
+        >
+          &larr; {t(cameFromStatsPage ? 'navigateBackToStats' : 'backToChain')}
         </Link>
       </div>
     );
@@ -139,8 +162,11 @@ export default function ActorDetailPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <Link to="/" className="text-sm text-indigo-400 hover:text-indigo-300 mb-4 inline-block">
-        &larr; {t('backToChain')}
+      <Link
+        to={cameFromStatsPage ? '/stats' : '/'}
+        className="text-sm text-indigo-400 hover:text-indigo-300 mb-4 inline-block"
+      >
+        &larr; {t(cameFromStatsPage ? 'navigateBackToStats' : 'backToChain')}
       </Link>
 
       <div className="flex flex-col sm:flex-row gap-6 mb-8">
@@ -186,8 +212,49 @@ export default function ActorDetailPage() {
         </div>
       )}
 
-      <MoviePosterGrid title={t('actorYourChainBridge')} movies={chainBridgeMovies} api={api} t={t} />
-      <MoviePosterGrid title={t('actorYourChainCast')} movies={chainCastMovies} api={api} t={t} />
+      {castSectionFirst ? (
+        <>
+          <div id="actor-chain-cast" className="scroll-mt-24">
+            <MoviePosterGrid
+              title={t('actorYourChainCast')}
+              movies={chainCastMovies}
+              api={api}
+              t={t}
+              className="mb-10"
+            />
+          </div>
+          <div id="actor-chain-bridge" className="scroll-mt-24">
+            <MoviePosterGrid
+              title={t('actorYourChainBridge')}
+              movies={chainBridgeMovies}
+              api={api}
+              t={t}
+              className="mb-10"
+            />
+          </div>
+        </>
+      ) : (
+        <>
+          <div id="actor-chain-bridge" className="scroll-mt-24">
+            <MoviePosterGrid
+              title={t('actorYourChainBridge')}
+              movies={chainBridgeMovies}
+              api={api}
+              t={t}
+              className="mb-10"
+            />
+          </div>
+          <div id="actor-chain-cast" className="scroll-mt-24">
+            <MoviePosterGrid
+              title={t('actorYourChainCast')}
+              movies={chainCastMovies}
+              api={api}
+              t={t}
+              className="mb-10"
+            />
+          </div>
+        </>
+      )}
 
       {movies.length > 0 && (
         <div>

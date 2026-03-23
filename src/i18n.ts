@@ -77,6 +77,7 @@ const resources = {
         },
       },
       backToChain: 'Back to chain',
+      navigateBackToStats: 'Navigate back to stats',
       noPoster: 'No Poster',
       noPhoto: 'No Photo',
       na: 'N/A',
@@ -226,6 +227,9 @@ const resources = {
         'The greatest number of movies you reached in a single chain (personal best length).',
       statExplainMoreAchievements:
         'How many achievement badges you have unlocked in this browser (chain length, decades, first note, etc.).',
+      statAchievementsModalTitle: 'Unlocked achievements',
+      statAchievementsModalClose: 'Close',
+      statAchievementsModalEmpty: 'No achievements unlocked yet.',
       statExplainMoreFirstNote:
         'Whether you have saved at least one text note on a movie in a chain.',
       yes: 'Yes',
@@ -294,6 +298,7 @@ const resources = {
         },
       },
       backToChain: 'Назад к цепочке',
+      navigateBackToStats: 'Назад к статистике',
       noPoster: 'Нет постера',
       noPhoto: 'Нет фото',
       na: 'Н/Д',
@@ -448,6 +453,9 @@ const resources = {
         'Максимальное число фильмов в одной цепочке за всё время (личный рекорд по длине).',
       statExplainMoreAchievements:
         'Сколько достижений открыто в этом браузере (длина цепочки, десятилетия, первая заметка и т.д.).',
+      statAchievementsModalTitle: 'Открытые достижения',
+      statAchievementsModalClose: 'Закрыть',
+      statAchievementsModalEmpty: 'Пока нет открытых достижений.',
       statExplainMoreFirstNote:
         'Была ли сохранена хотя бы одна текстовая заметка к фильму в цепочке.',
       yes: 'Да',

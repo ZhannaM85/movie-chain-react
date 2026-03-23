@@ -34,6 +34,17 @@ export function getBridgeMovieIdsForActor(
   return Array.from(new Set([...fromProfile, ...fromLinks]));
 }
 
+function castSnapshotHasActor(castMap: Record<string, string> | undefined, actorIdStr: string): boolean {
+  if (!castMap) return false;
+  if (castMap[actorIdStr] != null) return true;
+  const n = Number(actorIdStr);
+  if (!Number.isFinite(n)) return false;
+  for (const k of Object.keys(castMap)) {
+    if (Number(k) === n) return true;
+  }
+  return false;
+}
+
 /** Chain movies whose stored cast snapshot includes this actor (current chain only). */
 export function getCastMovieIdsForActorInChain(
   profile: GamificationProfile,
@@ -45,7 +56,7 @@ export function getCastMovieIdsForActorInChain(
   const seen = new Set<number>();
   for (const link of links) {
     const mid = String(link.movie.id);
-    if (snap[mid]?.[actorIdStr] && !seen.has(link.movie.id)) {
+    if (castSnapshotHasActor(snap[mid], actorIdStr) && !seen.has(link.movie.id)) {
       seen.add(link.movie.id);
       out.push(link.movie.id);
     }
