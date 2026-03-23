@@ -26,6 +26,10 @@ export function loadGamificationProfile(): GamificationProfile {
         parsed.actorBridgeCounts && typeof parsed.actorBridgeCounts === 'object'
           ? parsed.actorBridgeCounts
           : {},
+      actorBridgeMovieIds:
+        parsed.actorBridgeMovieIds && typeof parsed.actorBridgeMovieIds === 'object'
+          ? parsed.actorBridgeMovieIds
+          : {},
       actorCastAppearanceCounts:
         parsed.actorCastAppearanceCounts && typeof parsed.actorCastAppearanceCounts === 'object'
           ? parsed.actorCastAppearanceCounts
