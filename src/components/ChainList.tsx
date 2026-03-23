@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
@@ -6,20 +6,12 @@ import { useTranslation } from 'react-i18next';
 import { buildChainRecap } from '../gamification/chainRecap';
 import ChainWatchedDateField from './ChainWatchedDateField';
 
-interface ChainListProps {
-  /**
-   * Actor / movie pick UI when prepending or picking the next step (e.g. mobile home).
-   * Chain entries scroll; prepend banner and “+” sit in a fixed footer at the bottom.
-   */
-  pickStepPanel?: ReactNode;
-}
-
 /**
  * Sidebar list that summarizes the current movie chain with quick navigation.
  *
  * @returns {JSX.Element | null} The chain list, or null if there is no chain.
  */
-export default function ChainList({ pickStepPanel }: ChainListProps) {
+export default function ChainList() {
   const api = useMovieApiForChain();
   const { links, undoLast, gamificationProfile, startPrependToChain, prependMode, cancelPrepend } =
     useChainContext();
@@ -29,7 +21,7 @@ export default function ChainList({ pickStepPanel }: ChainListProps) {
   if (links.length === 0) return null;
 
   return (
-    <div className="flex flex-col min-h-0 flex-1 h-full max-h-full overflow-hidden">
+    <div className="flex w-full min-w-0 flex-col md:min-h-0 md:flex-1 md:h-full md:max-h-full md:overflow-hidden">
       <div className="mb-3 px-1 space-y-1.5 shrink-0">
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-gray-500">
           <span title={t('challengePointsTooltip')}>
@@ -57,13 +49,7 @@ export default function ChainList({ pickStepPanel }: ChainListProps) {
         )}
       </div>
 
-      {pickStepPanel != null && (
-        <div className="mb-3 max-h-[min(45vh,22rem)] min-h-0 shrink-0 overflow-y-auto border-b border-gray-800 px-1 pb-3">
-          {pickStepPanel}
-        </div>
-      )}
-
-      <div className="flex-1 min-h-0 overflow-y-auto space-y-1 pr-1">
+      <div className="space-y-1 pr-1 md:flex-1 md:min-h-0 md:overflow-y-auto">
         {links
           .map((link, chainIndex) => ({ link, chainIndex }))
           .reverse()

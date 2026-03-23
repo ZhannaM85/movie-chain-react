@@ -114,6 +114,8 @@ const resources = {
       useKinopoisk: 'Use Kinopoisk',
       useKinopoiskOff: 'TMDB',
       pickActorToContinue: 'Pick an actor to continue the chain',
+      collapseActorsAria: 'Collapse actor list',
+      expandActorsAria: 'Expand actor list',
       pickActorToPrepend:
         'Pick an actor from the first movie who also appears in the older film you will add',
       prependToChainBanner: 'Adding a movie before the first in your chain (older history).',
@@ -327,6 +329,8 @@ const resources = {
       useKinopoisk: 'Кинопоиск',
       useKinopoiskOff: 'TMDB',
       pickActorToContinue: 'Выберите актера, чтобы продолжить цепочку',
+      collapseActorsAria: 'Свернуть список актёров',
+      expandActorsAria: 'Развернуть список актёров',
       pickActorToPrepend:
         'Выберите актёра из первого фильма, который также снимался в более раннем фильме, который вы добавите',
       prependToChainBanner: 'Добавление фильма перед первым в цепочке (более ранняя история).',

@@ -33,7 +33,7 @@ export default function HomePage() {
  * Renders the current movie, user comment, and the next-step controls for the chain.
  *
  * @param {{ movieId: number }} props - The props containing the current movie ID.
- * @returns {JSX.Element} The chain view for the current movie.
+ * @returns {JSX.Element} The rendered chain view for the current movie.
  */
 function ChainView({ movieId }: { movieId: number }) {
   const api = useMovieApiForChain();
@@ -51,35 +51,16 @@ function ChainView({ movieId }: { movieId: number }) {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
-      <div className="flex gap-6">
-        {/* Sidebar — chain only; pick steps stay in main on md+ (wide picker) */}
-        <aside className="hidden md:block w-72 lg:w-80 xl:w-96 flex-shrink-0">
-          <div className="sticky top-20 h-[calc(100vh-5rem)] flex flex-col min-h-0 overflow-hidden">
+    <div className="max-w-7xl mx-auto py-6 px-0 md:px-4">
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Mobile: order-1 = current movie + actors first; desktop: chain left. Chain is full-bleed width on small screens. */}
+        <aside className="order-2 md:order-1 w-full min-w-0 max-w-full md:w-72 lg:w-80 xl:w-96 shrink-0">
+          <div className="flex flex-col w-full md:overflow-hidden md:h-[calc(100vh-5rem)] md:sticky md:top-20 min-h-0">
             <ChainList />
           </div>
         </aside>
 
-        {/* Main content */}
-        <div className="flex-1 min-w-0 space-y-6">
-          {/* Mobile: pickers inline with chain only when prepending; otherwise pickers below the list */}
-          <div className="md:hidden flex flex-col gap-4 min-h-0">
-            {prependMode ? (
-              <div className="flex flex-col h-[min(80vh,40rem)] min-h-0">
-                <ChainList pickStepPanel={pickStepPanel} />
-              </div>
-            ) : (
-              <>
-                <div className="flex flex-col h-[min(80vh,40rem)] min-h-0">
-                  <ChainList />
-                </div>
-                {pickStepPanel != null && (
-                  <div className="border-t border-gray-800 pt-4">{pickStepPanel}</div>
-                )}
-              </>
-            )}
-          </div>
-
+        <div className="order-1 md:order-2 md:flex-1 min-w-0 w-full flex flex-col gap-6 px-4 md:px-0">
           {loading ? (
             <div className="flex items-center gap-2 text-gray-400 py-8">
               <span className="inline-block w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
@@ -87,13 +68,19 @@ function ChainView({ movieId }: { movieId: number }) {
             </div>
           ) : movie ? (
             <>
-              <MovieCard movie={movie} />
-              <UserComment chainIndex={chainIndex} />
+              <div className="order-1">
+                <MovieCard movie={movie} />
+              </div>
+              <div className="order-3 md:order-2">
+                <UserComment chainIndex={chainIndex} />
+              </div>
             </>
           ) : null}
 
           {pickStepPanel != null && (
-            <div className="hidden md:block border-t border-gray-800 pt-6">{pickStepPanel}</div>
+            <div className="order-2 md:order-3 border-t border-gray-800 pt-4 md:pt-6">
+              {pickStepPanel}
+            </div>
           )}
         </div>
       </div>
