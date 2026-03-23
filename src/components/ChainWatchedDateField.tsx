@@ -33,6 +33,8 @@ interface ChainWatchedDateFieldProps {
   showUnsetHint?: boolean;
   /** Optional wrapper for layout (e.g. flex row on chain page). */
   className?: string;
+  /** In compact (sidebar) mode, align date row with title (`start`) or to the right (`end`). */
+  compactContentAlign?: 'start' | 'end';
 }
 
 /**
@@ -46,6 +48,7 @@ export default function ChainWatchedDateField({
   inputClassName,
   showUnsetHint = true,
   className,
+  compactContentAlign = 'end',
 }: ChainWatchedDateFieldProps) {
   const { links, updateLoggedDate } = useChainContext();
   const { t, i18n } = useTranslation();
@@ -91,17 +94,32 @@ export default function ChainWatchedDateField({
     : null;
 
   const baseRow = compact
-    ? 'flex flex-row items-center gap-1 justify-end min-w-0'
+    ? 'flex flex-row items-center gap-1 min-w-0 ' +
+      (compactContentAlign === 'start' ? 'justify-start' : 'justify-end')
     : 'flex flex-wrap items-center gap-2';
+
+  const compactInnerAlign =
+    compactContentAlign === 'start' ? 'justify-start' : 'justify-end';
 
   if (!editing) {
     return (
       <div className={className ?? baseRow}>
         <span className={labelClassName}>{t('loggedDateShort')}</span>
-        <div className={compact ? 'flex items-center gap-1 min-w-0 justify-end' : 'flex items-center gap-2 flex-wrap'}>
+        <div
+          className={
+            compact
+              ? `flex items-center gap-1 min-w-0 ${compactInnerAlign}`
+              : 'flex items-center gap-2 flex-wrap'
+          }
+        >
           {link.loggedDate && shortDateForSidebar ? (
             compact ? (
-              <span className="text-[10px] text-emerald-500/90 truncate" title={link.loggedDate}>
+              <span
+                className={`text-[10px] text-emerald-500/90 ${
+                  compactContentAlign === 'start' ? 'break-words text-left' : 'truncate'
+                }`}
+                title={link.loggedDate}
+              >
                 {t('chainWatchedOn', { date: shortDateForSidebar })}
               </span>
             ) : (
