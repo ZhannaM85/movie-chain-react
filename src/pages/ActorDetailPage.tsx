@@ -7,6 +7,24 @@ import { useTranslation } from 'react-i18next';
 import type { Movie } from '../types/movie';
 import { getBridgeMovieIdsForActor, getCastMovieIdsForActorInChain } from '../gamification/actorStats';
 
+function ActorDetailsChevron({ expanded }: { expanded: boolean }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={`w-5 h-5 transition-transform shrink-0 ${expanded ? '' : '-rotate-90'}`}
+      aria-hidden
+    >
+      <path
+        fillRule="evenodd"
+        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
 function MoviePosterGrid({
   title,
   movies,
@@ -79,6 +97,16 @@ export default function ActorDetailPage() {
   const [chainBridgeMovies, setChainBridgeMovies] = useState<Movie[]>([]);
   const [chainCastMovies, setChainCastMovies] = useState<Movie[]>([]);
   const [chainMoviesLoading, setChainMoviesLoading] = useState(false);
+  const [actorDetailsOpen, setActorDetailsOpen] = useState(false);
+
+  const hasExpandableActorDetails =
+    Boolean(actor?.biography?.trim()) ||
+    Boolean(actor?.birthday) ||
+    Boolean(actor?.place_of_birth);
+
+  useEffect(() => {
+    setActorDetailsOpen(false);
+  }, [id]);
 
   useEffect(() => {
     const unique = Array.from(new Set([...bridgeMovieIds, ...castMovieIds]));
@@ -182,26 +210,49 @@ export default function ActorDetailPage() {
           </div>
         )}
 
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <h1 className="text-3xl font-bold text-white mb-2">{actor.name}</h1>
 
-          <div className="flex flex-wrap gap-4 text-sm text-gray-400 mb-4">
-            {actor.birthday && (
-              <span>
-                {t('born')}:{' '}
-                {new Date(actor.birthday).toLocaleDateString(i18n.language, {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </span>
-            )}
-            {actor.place_of_birth && <span>{actor.place_of_birth}</span>}
-          </div>
-
-          {actor.biography && (
-            <p className="text-gray-300 leading-relaxed text-sm">{actor.biography}</p>
-          )}
+          {hasExpandableActorDetails ? (
+            <>
+              <button
+                type="button"
+                className="flex items-center gap-2 w-full sm:w-auto max-w-full text-left text-sm text-indigo-400 hover:text-indigo-300 py-1.5 -ml-1 px-1 rounded-lg hover:bg-gray-800/60 transition-colors"
+                onClick={() => setActorDetailsOpen((o) => !o)}
+                aria-expanded={actorDetailsOpen}
+                aria-controls="actor-details-panel"
+                id="actor-details-toggle"
+              >
+                <ActorDetailsChevron expanded={actorDetailsOpen} />
+                <span>{t('actorDetailsToggle')}</span>
+              </button>
+              {actorDetailsOpen ? (
+                <div
+                  id="actor-details-panel"
+                  role="region"
+                  aria-labelledby="actor-details-toggle"
+                  className="mt-3 space-y-3"
+                >
+                  <div className="flex flex-wrap gap-4 text-sm text-gray-400">
+                    {actor.birthday && (
+                      <span>
+                        {t('born')}:{' '}
+                        {new Date(actor.birthday).toLocaleDateString(i18n.language, {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </span>
+                    )}
+                    {actor.place_of_birth && <span>{actor.place_of_birth}</span>}
+                  </div>
+                  {actor.biography ? (
+                    <p className="text-gray-300 leading-relaxed text-sm whitespace-pre-wrap">{actor.biography}</p>
+                  ) : null}
+                </div>
+              ) : null}
+            </>
+          ) : null}
         </div>
       </div>
 
