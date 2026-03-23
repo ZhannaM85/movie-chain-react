@@ -8,8 +8,8 @@ import ChainWatchedDateField from './ChainWatchedDateField';
 
 interface ChainListProps {
   /**
-   * Actor / movie pick UI shown directly under the “+” (e.g. mobile home).
-   * Chain entries render below in a scrollable region.
+   * Actor / movie pick UI when prepending or picking the next step (e.g. mobile home).
+   * Chain entries scroll; prepend banner and “+” sit in a fixed footer at the bottom.
    */
   pickStepPanel?: ReactNode;
 }
@@ -56,31 +56,6 @@ export default function ChainList({ pickStepPanel }: ChainListProps) {
           </button>
         )}
       </div>
-
-      <div className="shrink-0 flex items-center gap-2 pl-1 pb-2">
-        <button
-          type="button"
-          onClick={() => startPrependToChain()}
-          className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-dashed border-gray-600 text-lg font-medium text-indigo-400 hover:bg-gray-800/80 hover:border-indigo-500/50 transition-colors"
-          title={t('addMovieBeforeChain')}
-          aria-label={t('addMovieBeforeChain')}
-        >
-          +
-        </button>
-      </div>
-
-      {prependMode && (
-        <div className="shrink-0 rounded-lg border border-indigo-500/40 bg-indigo-950/30 px-3 py-2.5 mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-indigo-200/90">{t('prependToChainBanner')}</p>
-          <button
-            type="button"
-            onClick={() => cancelPrepend()}
-            className="text-sm shrink-0 px-3 py-1.5 rounded-md border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors self-start sm:self-auto"
-          >
-            {t('cancel')}
-          </button>
-        </div>
-      )}
 
       {pickStepPanel != null && (
         <div className="mb-3 max-h-[min(45vh,22rem)] min-h-0 shrink-0 overflow-y-auto border-b border-gray-800 px-1 pb-3">
@@ -139,7 +114,22 @@ export default function ChainList({ pickStepPanel }: ChainListProps) {
             </div>
           </div>
         ))}
-        <div className="shrink-0 flex items-center gap-2 pl-1 pt-2 pb-1">
+      </div>
+
+      <div className="shrink-0 flex flex-col gap-2 pt-2 mt-1 border-t border-gray-800/70 px-1">
+        {prependMode && (
+          <div className="rounded-lg border border-indigo-500/40 bg-indigo-950/30 px-3 py-2.5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-indigo-200/90">{t('prependToChainBanner')}</p>
+            <button
+              type="button"
+              onClick={() => cancelPrepend()}
+              className="text-sm shrink-0 px-3 py-1.5 rounded-md border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors self-start sm:self-auto"
+            >
+              {t('cancel')}
+            </button>
+          </div>
+        )}
+        <div className="flex items-center gap-2 pl-1 pb-1">
           <button
             type="button"
             onClick={() => startPrependToChain()}

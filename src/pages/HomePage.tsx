@@ -54,7 +54,7 @@ function ChainView({ movieId }: { movieId: number }) {
     <div className="max-w-7xl mx-auto px-4 py-6">
       <div className="flex gap-6">
         {/* Sidebar — chain only; pick steps stay in main on md+ (wide picker) */}
-        <aside className="hidden md:block w-56 flex-shrink-0">
+        <aside className="hidden md:block w-72 lg:w-80 xl:w-96 flex-shrink-0">
           <div className="sticky top-20 h-[calc(100vh-5rem)] flex flex-col min-h-0 overflow-hidden">
             <ChainList />
           </div>
@@ -62,7 +62,7 @@ function ChainView({ movieId }: { movieId: number }) {
 
         {/* Main content */}
         <div className="flex-1 min-w-0 space-y-6">
-          {/* Mobile: under “+” only when prepending; otherwise pickers below the list (usual) */}
+          {/* Mobile: pickers inline with chain only when prepending; otherwise pickers below the list */}
           <div className="md:hidden flex flex-col gap-4 min-h-0">
             {prependMode ? (
               <div className="flex flex-col h-[min(80vh,40rem)] min-h-0">
