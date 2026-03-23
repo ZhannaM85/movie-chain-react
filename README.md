@@ -1,5 +1,7 @@
 # Movie Chain App
 
+![Movie Chain — link films through shared actors](.github/github-banner.png)
+
 A React learning project where movies are chained together through shared actors. Start with any movie, pick an actor from it, then pick one of their other movies — and keep going!
 
 ## Live Demo
