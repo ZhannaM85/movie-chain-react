@@ -41,7 +41,7 @@ function ChainView({ movieId }: { movieId: number }) {
   const { currentStep, links, selectedActorId, prependMode } = useChainContext();
   const { movie, loading } = useMovieDetails(movieId, api);
   const chainIndex = prependMode ? 0 : links.length - 1;
-  useSyncCastAppearances(movieId, movie?.credits?.cast, true);
+  useSyncCastAppearances(movieId, movie?.credits?.cast, true, movie?.credits?.id);
 
   let pickStepPanel: ReactNode = null;
   if (currentStep === 'pick-actor' && movie?.credits) {

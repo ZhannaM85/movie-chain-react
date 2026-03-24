@@ -25,7 +25,7 @@ export default function MovieDetailPage() {
 
   const chainIndex = links.findIndex((l) => l.movie.id === movieId);
   const isInChain = movieId != null && chainIndex >= 0;
-  useSyncCastAppearances(movieId ?? undefined, movie?.credits?.cast, isInChain);
+  useSyncCastAppearances(movieId ?? undefined, movie?.credits?.cast, isInChain, movie?.credits?.id);
 
   if (loading) {
     return (
