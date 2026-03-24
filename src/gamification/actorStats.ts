@@ -1,5 +1,9 @@
 import type { ChainLink, MovieCredits } from '../types/movie';
 import type { GamificationProfile } from './types';
+import type { MovieApi } from '../services/movieApi';
+
+/** Same billed-cast window as `castAppearances.ts` (snapshots / merge). */
+const MAX_CAST_PER_MOVIE_STATS = 200;
 
 /** True if full credits include this person id (authoritative vs. local cast snapshots). */
 export function creditsIncludeActor(credits: MovieCredits | undefined, actorId: number): boolean {
@@ -22,6 +26,63 @@ export function getTopActorBridges(profile: GamificationProfile, limit = 10): Ac
 
 export function getTopCastAppearances(profile: GamificationProfile, limit = 12): ActorBridgeRank[] {
   return Object.entries(profile.actorCastAppearanceCounts)
+    .map(([id, v]) => ({ id, name: v.name, count: v.count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit);
+}
+
+/** Unique film ids in chain order (each film once). */
+export function uniqueChainMovieIds(links: ChainLink[]): number[] {
+  const seen = new Set<number>();
+  const out: number[] = [];
+  for (const l of links) {
+    if (!seen.has(l.movie.id)) {
+      seen.add(l.movie.id);
+      out.push(l.movie.id);
+    }
+  }
+  return out;
+}
+
+/**
+ * Full-cast leaderboard for the current chain from live API credits (matches actor page verification).
+ */
+export async function fetchTopCastAppearancesFromApi(
+  links: ChainLink[],
+  api: MovieApi,
+  limit = 12
+): Promise<ActorBridgeRank[]> {
+  const ids = uniqueChainMovieIds(links);
+  if (ids.length === 0) return [];
+
+  const creditResults = await Promise.all(
+    ids.map(async (mid) => {
+      try {
+        return await api.getMovieCredits(mid);
+      } catch {
+        return null;
+      }
+    })
+  );
+
+  const byActor: Record<string, { name: string; count: number }> = {};
+  for (const credits of creditResults) {
+    if (!credits?.cast?.length) continue;
+    const slice = credits.cast.slice(0, MAX_CAST_PER_MOVIE_STATS);
+    const seenInMovie = new Set<number>();
+    for (const actor of slice) {
+      if (!actor?.id || seenInMovie.has(actor.id)) continue;
+      seenInMovie.add(actor.id);
+      const idStr = String(actor.id);
+      const prev = byActor[idStr];
+      byActor[idStr] = {
+        name: prev?.name ?? actor.name,
+        count: (prev?.count ?? 0) + 1,
+      };
+    }
+  }
+
+  return Object.entries(byActor)
     .map(([id, v]) => ({ id, name: v.name, count: v.count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, limit);

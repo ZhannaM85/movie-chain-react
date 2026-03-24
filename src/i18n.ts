@@ -195,8 +195,9 @@ const resources = {
       topActorsSectionTitle: 'Top bridge actors',
       topActorsEmpty: 'Play more chains — we will count which actors you pick most often to link films.',
       topCastSectionTitle: 'Top actors (full cast)',
+      statsTopCastLoading: 'Loading cast stats…',
       topCastSectionHint:
-        'Actors from the full credits of films currently in your chain (including small roles). Each film counts once when we load its cast while that film is in the chain. Removing a film from the chain removes it from this count.',
+        'Counts come from live cast lists for each film currently in your chain (including small roles, up to the first 200 billed cast). Each film counts once per actor. They refresh when you open this page.',
       topCastEmpty:
         'Open movies from your chain so we can read full credits. Your top “screen time” actors will show up here.',
       actorCastMovies_one: 'in {{count}} movie',
@@ -223,7 +224,7 @@ const resources = {
       statExplainTopBridge:
         'Actors you chose as the shared connection between two consecutive movies in a chain. We count how often each actor was selected as that link.',
       statExplainTopCast:
-        'We store the full cast of each chain film when you open it (or play from home). The number here is how many of your current chain films include that actor in the credits. Undoing or resetting removes those films from the count.',
+        'These numbers are computed from the database cast lists for the films in your current chain (not from old cached data). Each film counts once if that actor appears in its credits. Change your chain or revisit this page to refresh.',
       statExplainMoreLongestChain:
         'The greatest number of movies you reached in a single chain (personal best length).',
       statExplainMoreAchievements:
@@ -418,8 +419,9 @@ const resources = {
       topActorsSectionTitle: 'Частые «мосты» — актёры',
       topActorsEmpty: 'Играйте дольше — мы покажем, каких актёров вы чаще выбираете в качестве связки.',
       topCastSectionTitle: 'Топ актёров (полные титры)',
+      statsTopCastLoading: 'Загрузка статистики по составу…',
       topCastSectionHint:
-        'Актёры из полных титров фильмов, которые сейчас в цепочке (включая эпизодические роли). Каждый фильм учитывается один раз при загрузке состава, пока фильм в цепочке. Если убрать фильм из цепочки, он перестаёт учитываться.',
+        'Счётчики считаются по актуальным спискам актёров для каждого фильма в текущей цепочке (включая эпизодические роли, до первых 200 в титрах). Каждый фильм учитывается один раз на актёра. Обновляются при открытии этой страницы.',
       topCastEmpty:
         'Откройте фильмы из цепочки, чтобы загрузить полный состав — здесь появятся самые частые по числу ваших фильмов.',
       actorCastMovies_one: 'в {{count}} фильме',
@@ -450,7 +452,7 @@ const resources = {
       statExplainTopBridge:
         'Актёры, которых вы выбирали как общую связь между двумя соседними фильмами в цепочке. Считаем, сколько раз каждый актёр был такой связкой.',
       statExplainTopCast:
-        'Мы сохраняем полный состав каждого фильма из цепочки, когда вы его открываете (или играете с главной). Число — сколько из фильмов текущей цепочки включают этого актёра в титрах. Отмена или сброс убирают эти фильмы из счёта.',
+        'Числа считаются по спискам актёров из базы для фильмов текущей цепочки (не из устаревшего кэша). Каждый фильм учитывается один раз, если актёр есть в титрах. Измените цепочку или снова откройте страницу, чтобы обновить.',
       statExplainMoreLongestChain:
         'Максимальное число фильмов в одной цепочке за всё время (личный рекорд по длине).',
       statExplainMoreAchievements:
