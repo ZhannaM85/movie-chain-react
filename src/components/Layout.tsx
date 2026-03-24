@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useChainContext } from '../context/ChainContext';
 import { useMovieApiForChain, useMovieApiPreference } from '../context/MovieApiContext';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +9,11 @@ import GamificationToasts from './GamificationToasts';
 
 /** Set to `true` to show the Kinopoisk / TMDB preference switch in the header again. */
 const SHOW_KINOPOISK_TOGGLE = false;
+
+/** Shared box + border; `inline-flex` is separate so responsive `hidden` / `max-sm:hidden` is not overridden. */
+const headerToolbarChromeBase =
+  'h-9 shrink-0 rounded-md border border-gray-700 bg-gray-800 items-center justify-center';
+const headerToolbarChrome = `${headerToolbarChromeBase} inline-flex`;
 
 /**
  * Main application shell with header, navigation, and responsive layout around the page content.
@@ -23,11 +28,28 @@ export default function Layout({ children }: { children: ReactNode }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const { t, i18n } = useTranslation();
 
+  const confirmAndStartNewChain = useCallback(() => {
+    const recap = buildChainRecap(links);
+    const msg =
+      links.length === 0
+        ? t('confirmNewChain')
+        : t('confirmNewChainRecap', {
+            length: recap.length,
+            difficulty: recap.totalDifficulty,
+            actors: recap.uniqueActors,
+            decades: recap.distinctDecades,
+          });
+    if (window.confirm(msg)) {
+      resetChain();
+    }
+    setMobileNavOpen(false);
+  }, [links, t, resetChain]);
+
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 overflow-x-hidden">
       <header className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between relative">
-          <div className="flex items-center gap-3 sm:gap-4">
+        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-4 relative">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             <Link
               to="/"
               className="text-xl font-bold tracking-tight text-white hover:text-indigo-400 transition-colors"
@@ -59,7 +81,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             {/* Mobile hamburger */}
             <button
               type="button"
-              className="sm:hidden inline-flex items-center justify-center w-9 h-9 rounded-md border border-gray-700 text-gray-300 hover:bg-gray-800 hover:border-gray-600 transition-colors"
+              className={`sm:hidden ${headerToolbarChrome} w-9 p-0 text-gray-300 hover:bg-gray-800/90 hover:border-gray-600 transition-colors`}
               onClick={() => setMobileNavOpen((open) => !open)}
               aria-label={t('navHome')}
             >
@@ -110,35 +132,34 @@ export default function Layout({ children }: { children: ReactNode }) {
             )}
             {gamificationProfile.currentStreak > 0 && (
               <span
-                className="hidden sm:inline text-xs px-2 py-0.5 rounded-md bg-amber-950/50 border border-amber-800/60 text-amber-200/90"
+                className="hidden sm:inline-flex h-9 shrink-0 items-center justify-center rounded-md border border-amber-800/60 bg-amber-950/50 px-2.5 text-xs text-amber-200/90 whitespace-nowrap"
                 title={t('streakTooltip')}
               >
                 {t('streakLabel', { count: gamificationProfile.currentStreak })}
               </span>
             )}
             <span
-              className="text-xs px-2 py-0.5 rounded-md bg-gray-800 border border-gray-700 text-gray-400"
+              className={`${headerToolbarChrome} px-2.5 text-xs font-medium text-gray-400`}
               title={api.source === 'kinopoisk' ? t('dataSourceKinopoisk') : t('dataSourceTmdb')}
             >
               {api.source === 'kinopoisk' ? t('dataSourceKinopoisk') : t('dataSourceTmdb')}
             </span>
-            <label className="flex items-center gap-2 text-xs text-gray-400">
-              <select
-                value={i18n.language}
-                onChange={(e) => {
-                  void i18n.changeLanguage(e.target.value);
-                  setMobileNavOpen(false);
-                }}
-                className="rounded-md border border-gray-700 bg-gray-800 px-2 py-1 text-xs text-gray-200"
-              >
-                <option value="en-US">English</option>
-                <option value="ru-RU">Русский</option>
-              </select>
-            </label>
+            <select
+              aria-label={t('language')}
+              value={i18n.language}
+              onChange={(e) => {
+                void i18n.changeLanguage(e.target.value);
+                setMobileNavOpen(false);
+              }}
+              className="h-9 shrink-0 max-w-[7.25rem] cursor-pointer rounded-md border border-gray-700 bg-gray-800 px-2 py-0 text-xs text-gray-200 outline-none transition-colors hover:border-gray-600 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900"
+            >
+              <option value="en-US">English</option>
+              <option value="ru-RU">Русский</option>
+            </select>
             {links.length > 0 && (
               <Link
                 to="/chain"
-                className="text-xs sm:text-sm text-gray-400 hover:text-indigo-400 transition-colors whitespace-nowrap shrink-0"
+                className={`${headerToolbarChrome} px-2 text-xs sm:text-sm text-gray-400 hover:border-gray-600 hover:text-indigo-400 transition-colors whitespace-nowrap`}
                 title={t('chainCount', { count: links.length })}
                 aria-label={t('chainCount', { count: links.length })}
                 onClick={() => setMobileNavOpen(false)}
@@ -150,40 +171,12 @@ export default function Layout({ children }: { children: ReactNode }) {
             {links.length > 0 && (
               <button
                 type="button"
-                onClick={() => {
-                  const recap = buildChainRecap(links);
-                  const msg =
-                    links.length === 0
-                      ? t('confirmNewChain')
-                      : t('confirmNewChainRecap', {
-                          length: recap.length,
-                          difficulty: recap.totalDifficulty,
-                          actors: recap.uniqueActors,
-                          decades: recap.distinctDecades,
-                        });
-                  if (window.confirm(msg)) {
-                    resetChain();
-                  }
-                  setMobileNavOpen(false);
-                }}
-                className="inline-flex items-center justify-center shrink-0 rounded-md bg-gray-800 hover:bg-red-900/50 hover:text-red-300 text-gray-300 transition-colors h-9 w-9 sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 text-sm"
+                onClick={confirmAndStartNewChain}
+                className={`max-sm:hidden sm:inline-flex ${headerToolbarChromeBase} px-3 text-sm text-gray-300 transition-colors hover:border-red-800/80 hover:bg-red-950/40 hover:text-red-300`}
                 title={t('newChain')}
                 aria-label={t('newChain')}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-5 h-5 sm:hidden"
-                  aria-hidden
-                >
-                  <path d="M12 5v14M5 12h14" />
-                </svg>
-                <span className="hidden sm:inline">{t('newChain')}</span>
+                {t('newChain')}
               </button>
             )}
           </div>
@@ -217,7 +210,36 @@ export default function Layout({ children }: { children: ReactNode }) {
           </div>
         </div>
       )}
-      <main className="min-w-0">{children}</main>
+      <main
+        className={
+          links.length > 0 ? 'min-w-0 pb-[5.5rem] sm:pb-0' : 'min-w-0'
+        }
+      >
+        {children}
+      </main>
+      {links.length > 0 && (
+        <button
+          type="button"
+          onClick={confirmAndStartNewChain}
+          className="sm:hidden fixed right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full border border-red-900/55 bg-red-950/90 text-red-100 shadow-lg shadow-black/50 backdrop-blur-sm transition hover:border-red-700 hover:bg-red-900/80 active:scale-95 bottom-[max(1rem,env(safe-area-inset-bottom))]"
+          title={t('newChain')}
+          aria-label={t('newChain')}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.25}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-7 h-7"
+            aria-hidden
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </button>
+      )}
       <GamificationToasts />
     </div>
   );
