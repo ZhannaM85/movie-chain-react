@@ -1,5 +1,11 @@
-import type { ChainLink } from '../types/movie';
+import type { ChainLink, MovieCredits } from '../types/movie';
 import type { GamificationProfile } from './types';
+
+/** True if full credits include this person id (authoritative vs. local cast snapshots). */
+export function creditsIncludeActor(credits: MovieCredits | undefined, actorId: number): boolean {
+  if (!credits?.cast?.length) return false;
+  return credits.cast.some((a) => a.id === actorId);
+}
 
 export interface ActorBridgeRank {
   id: string;

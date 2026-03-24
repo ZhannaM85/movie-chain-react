@@ -26,10 +26,15 @@ export function useMovieDetails(movieId: number | null, api: MovieApi): UseMovie
     if (movieId === null) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setMovie(null);
+      setLoading(false);
+      setError(null);
       return;
     }
 
     let cancelled = false;
+    // Drop previous film immediately so callers never merge credits with a stale id (race when navigating between movies).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMovie(null);
     setLoading(true);
     setError(null);
 
@@ -50,5 +55,9 @@ export function useMovieDetails(movieId: number | null, api: MovieApi): UseMovie
     };
   }, [movieId, api, i18n.resolvedLanguage, i18n.language]);
 
-  return { movie, loading, error };
+  const movieMatchesId =
+    movie != null && movieId != null && movie.id === movieId;
+  const movieForUi = movieMatchesId ? movie : null;
+
+  return { movie: movieForUi, loading, error };
 }
