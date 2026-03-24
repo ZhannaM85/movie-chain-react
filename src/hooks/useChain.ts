@@ -50,11 +50,13 @@ function loadState(): ChainState {
         ...parsed,
         source: parsed.source ?? 'tmdb',
         dailyChallengeDate: parsed.dailyChallengeDate ?? null,
+        selectedActorName: parsed.selectedActorName ?? null,
         prependMode: false,
         ...(hadPersistedPrepend
           ? {
               currentStep: 'pick-actor',
               selectedActorId: null,
+              selectedActorName: null,
               excludedActorId: tail?.connectingActorId ?? null,
             }
           : {}),
@@ -67,6 +69,7 @@ function loadState(): ChainState {
     links: [],
     currentStep: 'start',
     selectedActorId: null,
+    selectedActorName: null,
     excludedActorId: null,
     prependMode: false,
     dailyChallengeDate: null,
@@ -130,6 +133,7 @@ export function useChain() {
       ],
       currentStep: 'pick-actor',
       selectedActorId: null,
+      selectedActorName: null,
       excludedActorId: null,
       prependMode: false,
       dailyChallengeDate: options?.dailyChallenge ? utcDateString() : null,
@@ -151,6 +155,7 @@ export function useChain() {
         prependMode: true,
         currentStep: 'pick-actor',
         selectedActorId: null,
+        selectedActorName: null,
         excludedActorId: null,
       };
     });
@@ -164,6 +169,7 @@ export function useChain() {
       prependMode: false,
       currentStep: 'pick-actor',
       selectedActorId: null,
+      selectedActorName: null,
     }));
   }, []);
 
@@ -172,6 +178,7 @@ export function useChain() {
       ...prev,
       currentStep: 'pick-movie',
       selectedActorId: actorId,
+      selectedActorName: actorName,
     }));
     sessionStorage.setItem(
       PENDING_ACTOR_KEY,
@@ -193,6 +200,9 @@ export function useChain() {
         } catch {
           actorName = null;
         }
+      }
+      if (actorName == null && prev.selectedActorName != null) {
+        actorName = prev.selectedActorName;
       }
       const day = normalizeLoggedDateForHeatmap(loggedDate);
       const prependMode = prev.prependMode === true && prev.links.length > 0;
@@ -263,6 +273,7 @@ export function useChain() {
         currentStep: 'pick-actor',
         excludedActorId: tail.connectingActorId ?? null,
         selectedActorId: null,
+        selectedActorName: null,
       };
     });
   }, []);
@@ -334,6 +345,7 @@ export function useChain() {
         links: [],
         currentStep: 'start',
         selectedActorId: null,
+        selectedActorName: null,
         excludedActorId: null,
         prependMode: false,
         dailyChallengeDate: null,
@@ -347,6 +359,7 @@ export function useChain() {
       ...prev,
       currentStep: 'pick-actor',
       selectedActorId: null,
+      selectedActorName: null,
     }));
   }, []);
 
@@ -368,6 +381,7 @@ export function useChain() {
           links: [],
           currentStep: 'start',
           selectedActorId: null,
+          selectedActorName: null,
           excludedActorId: null,
           prependMode: false,
           dailyChallengeDate: null,
@@ -392,6 +406,7 @@ export function useChain() {
         prependMode: false,
         currentStep: 'pick-actor',
         selectedActorId: null,
+        selectedActorName: null,
         excludedActorId: prevLink?.connectingActorId ?? null,
       };
     });
