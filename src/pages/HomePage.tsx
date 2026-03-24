@@ -52,10 +52,12 @@ function ChainView({ movieId }: { movieId: number }) {
 
   return (
     <div className="max-w-7xl mx-auto py-6 px-0 md:px-4">
-      <div className="flex flex-col md:flex-row gap-6">
+      {/* md:items-start: when main is tall, do not stretch the chain column. */}
+      <div className="flex flex-col md:flex-row md:items-start gap-6">
         {/* Mobile: order-1 = current movie + actors first; desktop: chain left. Chain is full-bleed width on small screens. */}
         <aside className="order-2 md:order-1 w-full min-w-0 max-w-full md:w-72 lg:w-80 xl:w-96 shrink-0">
-          <div className="flex flex-col w-full md:overflow-hidden md:h-[calc(100vh-5rem)] md:sticky md:top-20 min-h-0">
+          {/* No fixed height / inner scroll on md — one page scrollbar; sticky keeps a short chain visible beside long main. */}
+          <div className="flex flex-col w-full md:sticky md:top-20 min-h-0">
             <ChainList prependPanel={prependMode ? pickStepPanel : undefined} />
           </div>
         </aside>
