@@ -46,10 +46,12 @@ export default function Layout({ children }: { children: ReactNode }) {
   }, [links, t, resetChain]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 overflow-x-hidden">
-      <header className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-4 relative">
-          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+    <div className="min-h-screen bg-gray-950 text-gray-100">
+      {/* Mobile: fixed bar (reliable vs overflow-x + sticky). Desktop: sm:contents + sticky header. */}
+      <div className="max-sm:fixed max-sm:inset-x-0 max-sm:top-0 max-sm:z-50 max-sm:bg-gray-900/95 max-sm:backdrop-blur max-sm:border-b max-sm:border-gray-800 sm:contents">
+        <header className="relative z-50 bg-gray-900/95 backdrop-blur border-b border-gray-800 max-sm:border-b-0 sm:sticky sm:top-0">
+          <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-2 sm:gap-4 relative">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             <Link
               to="/"
               className="text-xl font-bold tracking-tight text-white hover:text-indigo-400 transition-colors"
@@ -78,7 +80,8 @@ export default function Layout({ children }: { children: ReactNode }) {
                 {t('navAbout')}
               </Link>
             </nav>
-            {/* Mobile hamburger */}
+          </div>
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0 min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <button
               type="button"
               className={`sm:hidden ${headerToolbarChrome} w-9 p-0 text-gray-300 hover:bg-gray-800/90 hover:border-gray-600 transition-colors`}
@@ -92,8 +95,6 @@ export default function Layout({ children }: { children: ReactNode }) {
                 <span className="block w-4 h-[2px] bg-current" />
               </span>
             </button>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-4 shrink-0 min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {SHOW_KINOPOISK_TOGGLE && hasKinopoiskKey && (
               <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
                 <span className="hidden sm:inline">{t('useKinopoisk')}</span>
@@ -180,40 +181,40 @@ export default function Layout({ children }: { children: ReactNode }) {
               </button>
             )}
           </div>
-        </div>
-      </header>
-      {/* Mobile dropdown nav */}
-      {mobileNavOpen && (
-        <div className="sm:hidden bg-gray-900 border-b border-gray-800">
-          <div className="max-w-7xl mx-auto px-4 py-2 flex flex-col gap-1 text-sm">
-            <Link
-              to="/"
-              className="py-1 text-gray-300 hover:text-indigo-300 transition-colors"
-              onClick={() => setMobileNavOpen(false)}
-            >
-              {t('navHome')}
-            </Link>
-            <Link
-              to="/stats"
-              className="py-1 text-gray-300 hover:text-indigo-300 transition-colors"
-              onClick={() => setMobileNavOpen(false)}
-            >
-              {t('navStats')}
-            </Link>
-            <Link
-              to="/about"
-              className="py-1 text-gray-300 hover:text-indigo-300 transition-colors"
-              onClick={() => setMobileNavOpen(false)}
-            >
-              {t('navAbout')}
-            </Link>
           </div>
-        </div>
-      )}
+        </header>
+        {mobileNavOpen && (
+          <div className="sm:hidden absolute top-full left-0 right-0 z-50 bg-gray-900/98 backdrop-blur border-b border-gray-800 shadow-lg">
+            <div className="max-w-7xl mx-auto px-4 py-2 flex flex-col gap-1 text-sm">
+              <Link
+                to="/"
+                className="py-1 text-gray-300 hover:text-indigo-300 transition-colors"
+                onClick={() => setMobileNavOpen(false)}
+              >
+                {t('navHome')}
+              </Link>
+              <Link
+                to="/stats"
+                className="py-1 text-gray-300 hover:text-indigo-300 transition-colors"
+                onClick={() => setMobileNavOpen(false)}
+              >
+                {t('navStats')}
+              </Link>
+              <Link
+                to="/about"
+                className="py-1 text-gray-300 hover:text-indigo-300 transition-colors"
+                onClick={() => setMobileNavOpen(false)}
+              >
+                {t('navAbout')}
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
       <main
-        className={
+        className={`overflow-x-hidden ${
           links.length > 0 ? 'min-w-0 pb-[5.5rem] sm:pb-0' : 'min-w-0'
-        }
+        } max-sm:pt-14`}
       >
         {children}
       </main>
