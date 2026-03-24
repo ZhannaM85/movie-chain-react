@@ -33,7 +33,7 @@ export default function ChainList({ prependPanel }: ChainListProps) {
   if (links.length === 0) return null;
 
   return (
-    <div className="flex w-full min-w-0 flex-col md:min-h-0 md:flex-1 md:h-full md:max-h-full md:overflow-hidden">
+    <div className="flex w-full min-w-0 flex-col">
       <div className="mb-3 px-1 space-y-1.5 shrink-0">
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-gray-500">
           <span title={t('challengePointsTooltip')}>
@@ -61,7 +61,7 @@ export default function ChainList({ prependPanel }: ChainListProps) {
         )}
       </div>
 
-      <div className="space-y-1 pr-1 md:flex-1 md:min-h-0 md:overflow-y-auto">
+      <div className="space-y-1 pr-1">
         {links
           .map((link, chainIndex) => ({ link, chainIndex }))
           .reverse()
