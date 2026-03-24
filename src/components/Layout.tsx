@@ -10,9 +10,10 @@ import GamificationToasts from './GamificationToasts';
 /** Set to `true` to show the Kinopoisk / TMDB preference switch in the header again. */
 const SHOW_KINOPOISK_TOGGLE = false;
 
-/** One height + chrome for header pills / icon buttons (mobile toolbar alignment). */
-const headerToolbarChrome =
-  'h-9 shrink-0 rounded-md border border-gray-700 bg-gray-800 inline-flex items-center justify-center';
+/** Shared box + border; `inline-flex` is separate so responsive `hidden` / `max-sm:hidden` is not overridden. */
+const headerToolbarChromeBase =
+  'h-9 shrink-0 rounded-md border border-gray-700 bg-gray-800 items-center justify-center';
+const headerToolbarChrome = `${headerToolbarChromeBase} inline-flex`;
 
 /**
  * Main application shell with header, navigation, and responsive layout around the page content.
@@ -131,7 +132,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             )}
             {gamificationProfile.currentStreak > 0 && (
               <span
-                className="hidden sm:inline text-xs px-2 py-0.5 rounded-md bg-amber-950/50 border border-amber-800/60 text-amber-200/90"
+                className="hidden sm:inline-flex h-9 shrink-0 items-center justify-center rounded-md border border-amber-800/60 bg-amber-950/50 px-2.5 text-xs text-amber-200/90 whitespace-nowrap"
                 title={t('streakTooltip')}
               >
                 {t('streakLabel', { count: gamificationProfile.currentStreak })}
@@ -167,6 +168,17 @@ export default function Layout({ children }: { children: ReactNode }) {
                 <span className="hidden sm:inline">{t('chainCount', { count: links.length })}</span>
               </Link>
             )}
+            {links.length > 0 && (
+              <button
+                type="button"
+                onClick={confirmAndStartNewChain}
+                className={`max-sm:hidden sm:inline-flex ${headerToolbarChromeBase} px-3 text-sm text-gray-300 transition-colors hover:border-red-800/80 hover:bg-red-950/40 hover:text-red-300`}
+                title={t('newChain')}
+                aria-label={t('newChain')}
+              >
+                {t('newChain')}
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -198,12 +210,18 @@ export default function Layout({ children }: { children: ReactNode }) {
           </div>
         </div>
       )}
-      <main className={links.length > 0 ? 'min-w-0 pb-[5.5rem]' : 'min-w-0'}>{children}</main>
+      <main
+        className={
+          links.length > 0 ? 'min-w-0 pb-[5.5rem] sm:pb-0' : 'min-w-0'
+        }
+      >
+        {children}
+      </main>
       {links.length > 0 && (
         <button
           type="button"
           onClick={confirmAndStartNewChain}
-          className="fixed right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full border border-red-900/55 bg-red-950/90 text-red-100 shadow-lg shadow-black/50 backdrop-blur-sm transition hover:border-red-700 hover:bg-red-900/80 active:scale-95 bottom-[max(1rem,env(safe-area-inset-bottom))]"
+          className="sm:hidden fixed right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full border border-red-900/55 bg-red-950/90 text-red-100 shadow-lg shadow-black/50 backdrop-blur-sm transition hover:border-red-700 hover:bg-red-900/80 active:scale-95 bottom-[max(1rem,env(safe-area-inset-bottom))]"
           title={t('newChain')}
           aria-label={t('newChain')}
         >
