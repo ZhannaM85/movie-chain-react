@@ -232,9 +232,14 @@ const resources = {
         'The greatest number of movies you reached in a single chain (personal best length).',
       statExplainMoreAchievements:
         'How many achievement badges you have unlocked in this browser (chain length, decades, first note, etc.).',
-      statAchievementsModalTitle: 'Unlocked achievements',
+      statAchievementsModalTitle: 'Achievements',
       statAchievementsModalClose: 'Close',
       statAchievementsModalEmpty: 'No achievements unlocked yet.',
+      achievementLocked: 'Locked',
+      achievementSectionUnlocked: 'Unlocked',
+      achievementSectionLocked: 'Not yet unlocked',
+      achievementSectionUnlockedEmpty: 'None yet — build longer chains, span decades, or add a note.',
+      achievementSectionLockedEmpty: "You've unlocked every standard achievement. Nice work!",
       statExplainMoreFirstNote:
         'Whether you have saved at least one text note on a movie in a chain.',
       yes: 'Yes',
@@ -463,9 +468,15 @@ const resources = {
         'Максимальное число фильмов в одной цепочке за всё время (личный рекорд по длине).',
       statExplainMoreAchievements:
         'Сколько достижений открыто в этом браузере (длина цепочки, десятилетия, первая заметка и т.д.).',
-      statAchievementsModalTitle: 'Открытые достижения',
+      statAchievementsModalTitle: 'Достижения',
       statAchievementsModalClose: 'Закрыть',
       statAchievementsModalEmpty: 'Пока нет открытых достижений.',
+      achievementLocked: 'Закрыто',
+      achievementSectionUnlocked: 'Открыто',
+      achievementSectionLocked: 'Ещё не открыто',
+      achievementSectionUnlockedEmpty:
+        'Пока нет — удлиняйте цепочку, охватывайте десятилетия или добавьте заметку.',
+      achievementSectionLockedEmpty: 'Все стандартные достижения открыты — отличная работа!',
       statExplainMoreFirstNote:
         'Была ли сохранена хотя бы одна текстовая заметка к фильму в цепочке.',
       yes: 'Да',
