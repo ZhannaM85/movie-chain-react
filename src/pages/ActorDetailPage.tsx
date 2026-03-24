@@ -4,8 +4,8 @@ import { useActorDetails } from '../hooks/useActorDetails';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
 import { useTranslation } from 'react-i18next';
-import type { Movie } from '../types/movie';
-import { getBridgeMovieIdsForActor, getCastMovieIdsForActorInChain } from '../gamification/actorStats';
+import type { Movie, MovieCredits } from '../types/movie';
+import { getBridgeMovieIdsForActor, creditsIncludeActor } from '../gamification/actorStats';
 
 function ActorDetailsChevron({ expanded }: { expanded: boolean }) {
   return (
@@ -89,10 +89,18 @@ export default function ActorDetailPage() {
     () => getBridgeMovieIdsForActor(gamificationProfile, actorIdStr, links),
     [gamificationProfile, actorIdStr, links]
   );
-  const castMovieIds = useMemo(
-    () => getCastMovieIdsForActorInChain(gamificationProfile, actorIdStr, links),
-    [gamificationProfile, actorIdStr, links]
-  );
+  /** Chain film ids in order (each film once) — cast section uses live API credits, not stored snapshots. */
+  const orderedChainMovieIds = useMemo(() => {
+    const seen = new Set<number>();
+    const out: number[] = [];
+    for (const l of links) {
+      if (!seen.has(l.movie.id)) {
+        seen.add(l.movie.id);
+        out.push(l.movie.id);
+      }
+    }
+    return out;
+  }, [links]);
 
   const [chainBridgeMovies, setChainBridgeMovies] = useState<Movie[]>([]);
   const [chainCastMovies, setChainCastMovies] = useState<Movie[]>([]);
@@ -109,8 +117,8 @@ export default function ActorDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    const unique = Array.from(new Set([...bridgeMovieIds, ...castMovieIds]));
-    if (unique.length === 0) {
+    const unique = Array.from(new Set([...bridgeMovieIds, ...orderedChainMovieIds]));
+    if (unique.length === 0 || personId == null) {
       setChainBridgeMovies([]);
       setChainCastMovies([]);
       return;
@@ -123,8 +131,8 @@ export default function ActorDetailPage() {
       unique.map(async (mid) => {
         try {
           const d = await api.getMovieDetails(mid);
-          const { credits: _c, ...movie } = d;
-          return movie as Movie;
+          const { credits, ...movie } = d;
+          return { movie: movie as Movie, credits };
         } catch {
           return null;
         }
@@ -133,11 +141,17 @@ export default function ActorDetailPage() {
       .then((results) => {
         if (cancelled) return;
         const byId = new Map<number, Movie>();
-        for (const m of results) {
-          if (m) byId.set(m.id, m);
+        const creditsById = new Map<number, MovieCredits>();
+        for (const r of results) {
+          if (!r) continue;
+          byId.set(r.movie.id, r.movie);
+          creditsById.set(r.movie.id, r.credits);
         }
         setChainBridgeMovies(bridgeMovieIds.map((i) => byId.get(i)).filter((m): m is Movie => m != null));
-        setChainCastMovies(castMovieIds.map((i) => byId.get(i)).filter((m): m is Movie => m != null));
+        const verifiedCastIds = orderedChainMovieIds.filter((mid) =>
+          creditsIncludeActor(creditsById.get(mid), personId)
+        );
+        setChainCastMovies(verifiedCastIds.map((i) => byId.get(i)).filter((m): m is Movie => m != null));
       })
       .finally(() => {
         if (!cancelled) setChainMoviesLoading(false);
@@ -146,7 +160,7 @@ export default function ActorDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [api, bridgeMovieIds, castMovieIds]);
+  }, [api, bridgeMovieIds, orderedChainMovieIds, personId]);
 
   useEffect(() => {
     if (chainMoviesLoading) return;
@@ -186,7 +200,7 @@ export default function ActorDetailPage() {
   }
 
   const showChainSpinner =
-    chainMoviesLoading && (bridgeMovieIds.length > 0 || castMovieIds.length > 0);
+    chainMoviesLoading && (bridgeMovieIds.length > 0 || orderedChainMovieIds.length > 0);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
