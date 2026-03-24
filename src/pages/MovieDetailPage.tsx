@@ -150,10 +150,17 @@ function MovieCastSection({
                 </svg>
               </div>
             )}
-            <div className="p-2">
-              <p className="text-sm font-medium text-gray-200 truncate">{actor.name}</p>
+            <div className="p-2 min-w-0">
+              <p className="text-sm font-medium text-gray-200 line-clamp-2 break-words" title={actor.name}>
+                {actor.name}
+              </p>
               {actor.character && (
-                <p className="text-xs text-gray-500 truncate">{t('asCharacter', { character: actor.character })}</p>
+                <p
+                  className="text-xs text-gray-500 line-clamp-2 break-words mt-0.5"
+                  title={actor.character}
+                >
+                  {t('asCharacter', { character: actor.character })}
+                </p>
               )}
             </div>
           </Link>

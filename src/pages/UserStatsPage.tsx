@@ -1,8 +1,13 @@
 import { useMemo, useState, useEffect, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useChainContext } from '../context/ChainContext';
+import { useMovieApiForChain } from '../context/MovieApiContext';
 import ActivityHeatmap from '../components/ActivityHeatmap';
-import { getTopActorBridges, getTopCastAppearances } from '../gamification/actorStats';
+import {
+  getTopActorBridges,
+  fetchTopCastAppearancesFromApi,
+  type ActorBridgeRank,
+} from '../gamification/actorStats';
 import { ACHIEVEMENT_IDS } from '../gamification/types';
 import { useTranslation } from 'react-i18next';
 import { useMatchMedia } from '../hooks/useMatchMedia';
@@ -13,7 +18,33 @@ import { mergeMoviesAddedByDateWithChainLinks } from '../gamification/heatmap';
  */
 export default function UserStatsPage() {
   const { gamificationProfile: p, links } = useChainContext();
+  const api = useMovieApiForChain();
   const { t } = useTranslation();
+
+  const chainMovieIdsKey = useMemo(() => links.map((l) => l.movie.id).join(','), [links]);
+
+  const [topCastActors, setTopCastActors] = useState<ActorBridgeRank[]>([]);
+  const [topCastLoading, setTopCastLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (links.length === 0) {
+      setTopCastActors([]);
+      setTopCastLoading(false);
+      return;
+    }
+    setTopCastLoading(true);
+    fetchTopCastAppearancesFromApi(links, api, 12)
+      .then((rows) => {
+        if (!cancelled) setTopCastActors(rows);
+      })
+      .finally(() => {
+        if (!cancelled) setTopCastLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [api, chainMovieIdsKey]);
 
   const heatmapCounts = useMemo(
     () => mergeMoviesAddedByDateWithChainLinks(p.moviesAddedByDate, links),
@@ -21,7 +52,6 @@ export default function UserStatsPage() {
   );
 
   const topActors = useMemo(() => getTopActorBridges(p, 12), [p]);
-  const topCastActors = useMemo(() => getTopCastAppearances(p, 12), [p]);
 
   const busiestDay = useMemo(() => {
     let bestDate: string | null = null;
@@ -113,7 +143,12 @@ export default function UserStatsPage() {
             <ExplainableSectionTitle title={t('topCastSectionTitle')} explanation={t('statExplainTopCast')} />
           </div>
           <p className="text-xs text-gray-600 mb-3">{t('topCastSectionHint')}</p>
-          {topCastActors.length === 0 ? (
+          {topCastLoading ? (
+            <div className="flex items-center gap-2 text-sm text-gray-500 py-2">
+              <span className="inline-block w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+              {t('statsTopCastLoading')}
+            </div>
+          ) : topCastActors.length === 0 ? (
             <p className="text-sm text-gray-600">{t('topCastEmpty')}</p>
           ) : (
             <ul className="space-y-2">

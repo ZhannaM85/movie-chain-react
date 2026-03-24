@@ -60,6 +60,8 @@ export interface ChainState {
   links: ChainLink[];
   currentStep: 'pick-actor' | 'pick-movie' | 'start';
   selectedActorId: number | null;
+  /** Mirrors the last pick-actor choice; used if sessionStorage is missing when a movie is added. */
+  selectedActorName: string | null;
   excludedActorId: number | null;
   /** When true, pick actor/movie to insert a link before the current first movie. */
   prependMode?: boolean;

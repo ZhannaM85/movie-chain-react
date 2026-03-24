@@ -5,6 +5,8 @@ import { useChainContext } from '../context/ChainContext';
 import { useTranslation } from 'react-i18next';
 import { buildChainRecap } from '../gamification/chainRecap';
 import ChainWatchedDateField from './ChainWatchedDateField';
+import { useResolvedBridgeActors } from '../hooks/useResolvedBridgeActors';
+import BridgeActorLabel from './BridgeActorLabel';
 
 interface ChainListProps {
   /**
@@ -25,6 +27,8 @@ export default function ChainList({ prependPanel }: ChainListProps) {
     useChainContext();
   const { t } = useTranslation();
   const recap = useMemo(() => buildChainRecap(links), [links]);
+  const { resolved: resolvedBridges, status: bridgeResolveStatus, needsInference } =
+    useResolvedBridgeActors(links, api);
 
   if (links.length === 0) return null;
 
@@ -61,7 +65,30 @@ export default function ChainList({ prependPanel }: ChainListProps) {
         {links
           .map((link, chainIndex) => ({ link, chainIndex }))
           .reverse()
-          .map(({ link, chainIndex }) => (
+          .map(({ link, chainIndex }) => {
+            const hasStoredBridge =
+              link.connectingActorId != null || link.connectingActorName != null;
+            const inferred =
+              chainIndex > 0 && !hasStoredBridge ? resolvedBridges[chainIndex] : undefined;
+            const bridgePending =
+              chainIndex > 0 &&
+              !hasStoredBridge &&
+              !(chainIndex in resolvedBridges) &&
+              (bridgeResolveStatus === 'loading' ||
+                (bridgeResolveStatus === 'idle' && needsInference));
+            const showBridgeRow =
+              chainIndex > 0 &&
+              (hasStoredBridge ||
+                (chainIndex in resolvedBridges && inferred != null) ||
+                bridgePending);
+            const effectiveActorId = hasStoredBridge
+              ? link.connectingActorId ?? null
+              : inferred?.id ?? null;
+            const effectiveActorName = hasStoredBridge
+              ? link.connectingActorName ?? null
+              : inferred?.name ?? null;
+
+            return (
           <div key={`${link.movie.id}-${chainIndex}`}>
             <div className="flex items-start gap-1.5 p-1.5 rounded-md hover:bg-gray-800/70 transition-colors group">
               <span className="text-xs text-gray-600 w-5 text-right flex-shrink-0 pt-0.5">
@@ -100,14 +127,31 @@ export default function ChainList({ prependPanel }: ChainListProps) {
                 />
               </div>
             </div>
-            {chainIndex > 0 && link.connectingActorName && (
-              <div className="flex items-center gap-1.5 py-1 pl-3">
-                <div className="w-px h-3 bg-gray-700" />
-                <span className="text-xs text-indigo-400">{link.connectingActorName}</span>
+            {showBridgeRow && (
+              <div className="flex items-center gap-1.5 py-1 pl-3 min-w-0">
+                <div className="w-px h-3 bg-gray-700 shrink-0" />
+                {bridgePending ? (
+                  <span className="text-[10px] text-gray-500 truncate">{t('bridgeActorResolving')}</span>
+                ) : effectiveActorId != null ? (
+                  <Link
+                    to={`/actor/${effectiveActorId}`}
+                    className="text-xs text-indigo-400 hover:text-indigo-300 truncate"
+                  >
+                    <BridgeActorLabel
+                      actorId={effectiveActorId}
+                      explicitName={effectiveActorName}
+                      api={api}
+                      compact
+                    />
+                  </Link>
+                ) : (
+                  <span className="text-xs text-indigo-400 truncate">{effectiveActorName}</span>
+                )}
               </div>
             )}
           </div>
-        ))}
+            );
+          })}
       </div>
 
       <div className="shrink-0 flex flex-col gap-2 pt-2 mt-1 border-t border-gray-800/70 px-1">

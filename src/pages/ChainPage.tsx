@@ -5,6 +5,8 @@ import { useChainContext } from '../context/ChainContext';
 import { useTranslation } from 'react-i18next';
 import { buildChainRecap } from '../gamification/chainRecap';
 import ChainWatchedDateField from '../components/ChainWatchedDateField';
+import { useResolvedBridgeActors } from '../hooks/useResolvedBridgeActors';
+import BridgeActorLabel from '../components/BridgeActorLabel';
 
 /**
  * Dedicated page that visualizes the full movie chain with connecting actors.
@@ -17,6 +19,8 @@ export default function ChainPage() {
   const { links, resetChain, undoLast, gamificationProfile, startPrependToChain } = useChainContext();
   const { t, i18n } = useTranslation();
   const recap = useMemo(() => buildChainRecap(links), [links]);
+  const { resolved: resolvedBridges, status: bridgeResolveStatus, needsInference } =
+    useResolvedBridgeActors(links, api);
 
   if (links.length === 0) {
     return (
@@ -94,7 +98,30 @@ export default function ChainPage() {
         {links
           .map((link, chainIndex) => ({ link, chainIndex }))
           .reverse()
-          .map(({ link, chainIndex }) => (
+          .map(({ link, chainIndex }) => {
+            const hasStoredBridge =
+              link.connectingActorId != null || link.connectingActorName != null;
+            const inferred =
+              chainIndex > 0 && !hasStoredBridge ? resolvedBridges[chainIndex] : undefined;
+            const bridgePending =
+              chainIndex > 0 &&
+              !hasStoredBridge &&
+              !(chainIndex in resolvedBridges) &&
+              (bridgeResolveStatus === 'loading' ||
+                (bridgeResolveStatus === 'idle' && needsInference));
+            const showBridgeRow =
+              chainIndex > 0 &&
+              (hasStoredBridge ||
+                (chainIndex in resolvedBridges && inferred != null) ||
+                bridgePending);
+            const effectiveActorId = hasStoredBridge
+              ? link.connectingActorId ?? null
+              : inferred?.id ?? null;
+            const effectiveActorName = hasStoredBridge
+              ? link.connectingActorName ?? null
+              : inferred?.name ?? null;
+
+            return (
           <div key={`${link.movie.id}-${chainIndex}`}>
             <div className="rounded-xl bg-gray-800/60 border border-gray-700/50 hover:border-indigo-500/40 hover:bg-gray-800/80 transition-all overflow-hidden">
               <Link to={`/movie/${link.movie.id}`} className="flex gap-4 p-4 group">
@@ -158,22 +185,36 @@ export default function ChainPage() {
                 <ChainWatchedDateField chainIndex={chainIndex} idPrefix="chain-page" />
               </div>
             </div>
-            {chainIndex > 0 && link.connectingActorName && (
-              <div className="flex items-center gap-3 py-3 pl-6">
-                <div className="w-px h-6 bg-indigo-500/40" />
-                <Link
-                  to={link.connectingActorId ? `/actor/${link.connectingActorId}` : '#'}
-                  className="flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
-                >
-                  {link.connectingActorId && (
-                    <ActorAvatar actorId={link.connectingActorId} api={api} />
-                  )}
-                  <span>{link.connectingActorName}</span>
-                </Link>
+            {showBridgeRow && (
+              <div className="flex items-center gap-3 py-3 pl-6 min-w-0">
+                <div className="w-px h-6 bg-indigo-500/40 shrink-0" />
+                {bridgePending ? (
+                  <span className="flex items-center gap-2 text-sm text-gray-500">
+                    <span className="inline-block w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+                    {t('bridgeActorResolving')}
+                  </span>
+                ) : (
+                  <Link
+                    to={effectiveActorId != null ? `/actor/${effectiveActorId}` : '#'}
+                    className="flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 transition-colors min-w-0"
+                  >
+                    {effectiveActorId != null && (
+                      <ActorAvatar actorId={effectiveActorId} api={api} />
+                    )}
+                    {effectiveActorId != null && (
+                      <BridgeActorLabel
+                        actorId={effectiveActorId}
+                        explicitName={effectiveActorName}
+                        api={api}
+                      />
+                    )}
+                  </Link>
+                )}
               </div>
             )}
           </div>
-        ))}
+            );
+          })}
         <div className="mt-4 flex items-center">
           <button
             type="button"

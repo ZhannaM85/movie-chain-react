@@ -63,6 +63,7 @@ describe('useChain', () => {
     expect(result.current.links).toEqual([]);
     expect(result.current.currentStep).toBe('start');
     expect(result.current.selectedActorId).toBeNull();
+    expect(result.current.selectedActorName).toBeNull();
     expect(result.current.excludedActorId).toBeNull();
   });
 
@@ -99,6 +100,7 @@ describe('useChain', () => {
     act(() => result.current.selectActor(42, 'Jane Doe'));
     expect(result.current.currentStep).toBe('pick-movie');
     expect(result.current.selectedActorId).toBe(42);
+    expect(result.current.selectedActorName).toBe('Jane Doe');
     expect(sessionStorageMock.setItem).toHaveBeenCalledWith(
       PENDING_ACTOR_KEY,
       JSON.stringify({ name: 'Jane Doe', popularity: null })
@@ -121,6 +123,19 @@ describe('useChain', () => {
     expect(result.current.currentStep).toBe('pick-actor');
     expect(result.current.excludedActorId).toBe(42);
     expect(result.current.selectedActorId).toBeNull();
+    expect(result.current.selectedActorName).toBeNull();
+  });
+
+  it('addMovie uses selectedActorName when pending session storage was cleared', async () => {
+    const movie2: Movie = { ...minimalMovie, id: 2, title: 'Second' };
+    const { result } = renderHook(() => useChain());
+    act(() => result.current.startChain(minimalMovie));
+    await flushMicrotasks();
+    act(() => result.current.selectActor(42, 'Jane Doe'));
+    act(() => sessionStorageMock.removeItem(PENDING_ACTOR_KEY));
+    act(() => result.current.addMovie(movie2));
+    await flushMicrotasks();
+    expect(result.current.links[1].connectingActorName).toBe('Jane Doe');
   });
 
   it('updateComment updates comment at index', async () => {
@@ -151,6 +166,7 @@ describe('useChain', () => {
     act(() => result.current.selectActor(1, 'Actor'));
     act(() => result.current.cancelActorSelection());
     expect(result.current.selectedActorId).toBeNull();
+    expect(result.current.selectedActorName).toBeNull();
     expect(result.current.currentStep).toBe('pick-actor');
     expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(PENDING_ACTOR_KEY);
   });
