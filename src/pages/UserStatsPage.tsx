@@ -116,22 +116,21 @@ export default function UserStatsPage() {
           ) : (
             <ul className="space-y-2">
               {topActors.map((a, i) => (
-                <li
-                  key={a.id}
-                  className="flex items-center justify-between gap-3 rounded-lg bg-gray-800/50 border border-gray-800 px-3 py-2"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-xs text-gray-600 w-5 flex-shrink-0">{i + 1}</span>
-                    <Link
-                      to={`/actor/${a.id}?from=bridge`}
-                      className="text-sm text-indigo-400 hover:text-indigo-300 truncate"
-                    >
-                      {a.name}
-                    </Link>
-                  </div>
-                  <span className="text-xs text-gray-500 flex-shrink-0 tabular-nums">
-                    {t('actorBridgeTimes', { count: a.count })}
-                  </span>
+                <li key={a.id}>
+                  <Link
+                    to={`/actor/${a.id}?from=bridge`}
+                    className="group flex items-center justify-between gap-3 rounded-lg bg-gray-800/50 border border-gray-800 px-3 py-2 w-full min-w-0 text-left no-underline hover:border-indigo-500/50 hover:bg-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0f]"
+                  >
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="text-xs text-gray-600 w-5 flex-shrink-0">{i + 1}</span>
+                      <span className="text-sm text-indigo-400 group-hover:text-indigo-300 truncate">
+                        {a.name}
+                      </span>
+                    </div>
+                    <span className="text-xs text-gray-500 flex-shrink-0 tabular-nums">
+                      {t('actorBridgeTimes', { count: a.count })}
+                    </span>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -153,22 +152,19 @@ export default function UserStatsPage() {
           ) : (
             <ul className="space-y-2">
               {topCastActors.map((a, i) => (
-                <li
-                  key={a.id}
-                  className="flex items-center justify-between gap-3 rounded-lg bg-gray-800/50 border border-gray-800 px-3 py-2"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-xs text-gray-600 w-5 flex-shrink-0">{i + 1}</span>
-                    <Link
-                      to={`/actor/${a.id}?from=cast`}
-                      className="text-sm text-indigo-400 hover:text-indigo-300 truncate"
-                    >
-                      {a.name}
-                    </Link>
-                  </div>
-                  <span className="text-xs text-gray-500 flex-shrink-0 tabular-nums">
-                    {t('actorCastMovies', { count: a.count })}
-                  </span>
+                <li key={a.id}>
+                  <Link
+                    to={`/actor/${a.id}?from=cast`}
+                    className="group flex items-center justify-between gap-3 rounded-lg bg-gray-800/50 border border-gray-800 px-3 py-2 w-full min-w-0 text-left no-underline hover:border-indigo-500/50 hover:bg-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0f]"
+                  >
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="text-xs text-gray-600 w-5 flex-shrink-0">{i + 1}</span>
+                      <span className="text-sm text-indigo-400 group-hover:text-indigo-300 truncate">{a.name}</span>
+                    </div>
+                    <span className="text-xs text-gray-500 flex-shrink-0 tabular-nums">
+                      {t('actorCastMovies', { count: a.count })}
+                    </span>
+                  </Link>
                 </li>
               ))}
             </ul>
