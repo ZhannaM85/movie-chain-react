@@ -116,22 +116,21 @@ export default function UserStatsPage() {
           ) : (
             <ul className="space-y-2">
               {topActors.map((a, i) => (
-                <li
-                  key={a.id}
-                  className="flex items-center justify-between gap-3 rounded-lg bg-gray-800/50 border border-gray-800 px-3 py-2"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-xs text-gray-600 w-5 flex-shrink-0">{i + 1}</span>
-                    <Link
-                      to={`/actor/${a.id}?from=bridge`}
-                      className="text-sm text-indigo-400 hover:text-indigo-300 truncate"
-                    >
-                      {a.name}
-                    </Link>
-                  </div>
-                  <span className="text-xs text-gray-500 flex-shrink-0 tabular-nums">
-                    {t('actorBridgeTimes', { count: a.count })}
-                  </span>
+                <li key={a.id}>
+                  <Link
+                    to={`/actor/${a.id}?from=bridge`}
+                    className="group flex items-center justify-between gap-3 rounded-lg bg-gray-800/50 border border-gray-800 px-3 py-2 w-full min-w-0 text-left no-underline hover:border-indigo-500/50 hover:bg-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0f]"
+                  >
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="text-xs text-gray-600 w-5 flex-shrink-0">{i + 1}</span>
+                      <span className="text-sm text-indigo-400 group-hover:text-indigo-300 truncate">
+                        {a.name}
+                      </span>
+                    </div>
+                    <span className="text-xs text-gray-500 flex-shrink-0 tabular-nums">
+                      {t('actorBridgeTimes', { count: a.count })}
+                    </span>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -153,22 +152,19 @@ export default function UserStatsPage() {
           ) : (
             <ul className="space-y-2">
               {topCastActors.map((a, i) => (
-                <li
-                  key={a.id}
-                  className="flex items-center justify-between gap-3 rounded-lg bg-gray-800/50 border border-gray-800 px-3 py-2"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-xs text-gray-600 w-5 flex-shrink-0">{i + 1}</span>
-                    <Link
-                      to={`/actor/${a.id}?from=cast`}
-                      className="text-sm text-indigo-400 hover:text-indigo-300 truncate"
-                    >
-                      {a.name}
-                    </Link>
-                  </div>
-                  <span className="text-xs text-gray-500 flex-shrink-0 tabular-nums">
-                    {t('actorCastMovies', { count: a.count })}
-                  </span>
+                <li key={a.id}>
+                  <Link
+                    to={`/actor/${a.id}?from=cast`}
+                    className="group flex items-center justify-between gap-3 rounded-lg bg-gray-800/50 border border-gray-800 px-3 py-2 w-full min-w-0 text-left no-underline hover:border-indigo-500/50 hover:bg-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0f]"
+                  >
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="text-xs text-gray-600 w-5 flex-shrink-0">{i + 1}</span>
+                      <span className="text-sm text-indigo-400 group-hover:text-indigo-300 truncate">{a.name}</span>
+                    </div>
+                    <span className="text-xs text-gray-500 flex-shrink-0 tabular-nums">
+                      {t('actorCastMovies', { count: a.count })}
+                    </span>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -202,11 +198,22 @@ export default function UserStatsPage() {
   );
 }
 
-function sortUnlockedAchievementIds(unlockedIds: string[]): string[] {
-  const set = new Set(unlockedIds);
-  const ordered = ACHIEVEMENT_IDS.filter((id) => set.has(id));
-  const rest = unlockedIds.filter((id) => !(ACHIEVEMENT_IDS as readonly string[]).includes(id));
-  return [...ordered, ...rest];
+function AchievementLockIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+      aria-hidden
+    >
+      <path
+        fillRule="evenodd"
+        d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
 }
 
 function UnlockedAchievementsModal({
@@ -219,7 +226,19 @@ function UnlockedAchievementsModal({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
-  const sorted = useMemo(() => sortUnlockedAchievementIds(unlockedIds), [unlockedIds]);
+  const unlockedSet = useMemo(() => new Set(unlockedIds), [unlockedIds]);
+  const extraUnlockedIds = useMemo(
+    () => unlockedIds.filter((id) => !(ACHIEVEMENT_IDS as readonly string[]).includes(id)),
+    [unlockedIds]
+  );
+  const unlockedDefined = useMemo(
+    () => ACHIEVEMENT_IDS.filter((id) => unlockedSet.has(id)),
+    [unlockedSet]
+  );
+  const lockedDefined = useMemo(
+    () => ACHIEVEMENT_IDS.filter((id) => !unlockedSet.has(id)),
+    [unlockedSet]
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -253,27 +272,96 @@ function UnlockedAchievementsModal({
             {t('statAchievementsModalClose')}
           </button>
         </div>
-        <div className="overflow-y-auto px-4 py-3 flex-1 min-h-0">
-          {sorted.length === 0 ? (
-            <p className="text-sm text-gray-500">{t('statAchievementsModalEmpty')}</p>
-          ) : (
-            <ul className="space-y-3">
-              {sorted.map((id) => (
-                <li
-                  key={id}
-                  className="rounded-lg border border-gray-800 bg-gray-800/40 px-3 py-2"
-                >
-                  <p className="text-sm font-medium text-gray-200">
-                    {t(`achievement.${id}.title`, { defaultValue: id })}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {t(`achievement.${id}.desc`, { defaultValue: '' })}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          )}
-          <p className="text-xs text-gray-600 mt-4 pt-3 border-t border-gray-800 leading-relaxed">{explanation}</p>
+        <div className="overflow-y-auto px-4 py-3 flex-1 min-h-0 space-y-6">
+          <section aria-labelledby="achievements-unlocked-heading">
+            <h3
+              id="achievements-unlocked-heading"
+              className="text-[11px] font-semibold uppercase tracking-wider text-emerald-500/90 mb-2"
+            >
+              {t('achievementSectionUnlocked')}
+            </h3>
+            {unlockedDefined.length === 0 && extraUnlockedIds.length === 0 ? (
+              <p className="text-sm text-gray-500 py-1">{t('achievementSectionUnlockedEmpty')}</p>
+            ) : (
+              <ul className="space-y-2">
+                {unlockedDefined.map((id) => (
+                  <li
+                    key={id}
+                    className="rounded-lg border border-emerald-900/50 bg-emerald-950/20 px-3 py-2.5"
+                  >
+                    <div className="flex items-start gap-2">
+                      <span className="text-emerald-400/90 mt-0.5 shrink-0" aria-hidden>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-gray-100">
+                          {t(`achievement.${id}.title`, { defaultValue: id })}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {t(`achievement.${id}.desc`, { defaultValue: '' })}
+                        </p>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+                {extraUnlockedIds.map((id) => (
+                  <li
+                    key={id}
+                    className="rounded-lg border border-emerald-900/50 bg-emerald-950/20 px-3 py-2.5"
+                  >
+                    <p className="text-sm font-medium text-gray-100">
+                      {t(`achievement.${id}.title`, { defaultValue: id })}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {t(`achievement.${id}.desc`, { defaultValue: '' })}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section aria-labelledby="achievements-locked-heading">
+            <h3
+              id="achievements-locked-heading"
+              className="text-[11px] font-semibold uppercase tracking-wider text-amber-600/90 mb-2"
+            >
+              {t('achievementSectionLocked')}
+            </h3>
+            {lockedDefined.length === 0 ? (
+              <p className="text-sm text-gray-500 py-1">{t('achievementSectionLockedEmpty')}</p>
+            ) : (
+              <ul className="space-y-2">
+                {lockedDefined.map((id) => (
+                  <li
+                    key={id}
+                    className="rounded-lg border border-dashed border-amber-900/40 bg-gray-950/80 px-3 py-2.5"
+                  >
+                    <div className="flex items-start gap-2">
+                      <AchievementLockIcon className="w-4 h-4 text-amber-600/80 shrink-0 mt-0.5" />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-sm font-medium text-gray-400">{t(`achievement.${id}.title`, { defaultValue: id })}</p>
+                          <span className="text-[10px] font-medium uppercase tracking-wide text-amber-600/90 shrink-0">
+                            {t('achievementLocked')}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">{t(`achievement.${id}.desc`, { defaultValue: '' })}</p>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <p className="text-xs text-gray-600 pt-2 border-t border-gray-800 leading-relaxed">{explanation}</p>
         </div>
       </div>
     </div>
