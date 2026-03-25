@@ -1,10 +1,11 @@
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
 import { useTranslation } from 'react-i18next';
 import { buildChainRecap } from '../gamification/chainRecap';
 import ChainWatchedDateField from './ChainWatchedDateField';
+import ConfirmDialog from './ConfirmDialog';
 import { useResolvedBridgeActors } from '../hooks/useResolvedBridgeActors';
 import BridgeActorLabel from './BridgeActorLabel';
 
@@ -23,9 +24,17 @@ interface ChainListProps {
  */
 export default function ChainList({ prependPanel }: ChainListProps) {
   const api = useMovieApiForChain();
-  const { links, undoLast, gamificationProfile, startPrependToChain, prependMode, cancelPrepend } =
-    useChainContext();
+  const {
+    links,
+    undoLast,
+    removeFirst,
+    gamificationProfile,
+    startPrependToChain,
+    prependMode,
+    cancelPrepend,
+  } = useChainContext();
   const { t } = useTranslation();
+  const [confirmAction, setConfirmAction] = useState<null | 'undoLast' | 'removeFirst'>(null);
   const recap = useMemo(() => buildChainRecap(links), [links]);
   const { resolved: resolvedBridges, status: bridgeResolveStatus, needsInference } =
     useResolvedBridgeActors(links, api);
@@ -53,7 +62,8 @@ export default function ChainList({ prependPanel }: ChainListProps) {
         </Link>
         {links.length > 1 && (
           <button
-            onClick={undoLast}
+            type="button"
+            onClick={() => setConfirmAction('undoLast')}
             className="text-xs text-gray-500 hover:text-red-400 transition-colors"
           >
             {t('undo')}
@@ -88,6 +98,9 @@ export default function ChainList({ prependPanel }: ChainListProps) {
               ? link.connectingActorName ?? null
               : inferred?.name ?? null;
 
+            /** Forward index 0 = first movie in the chain (oldest); UI list is reversed so this row is last visually. */
+            const isOldestInChain = chainIndex === 0;
+
             return (
           <div key={`${link.movie.id}-${chainIndex}`}>
             <div className="flex items-start gap-1.5 p-1.5 rounded-md hover:bg-gray-800/70 transition-colors group">
@@ -108,14 +121,26 @@ export default function ChainList({ prependPanel }: ChainListProps) {
                 </Link>
               )}
               <div className="min-w-0 flex-1 flex flex-col gap-0.5">
-                <Link to={`/movie/${link.movie.id}`} className="min-w-0 block">
-                  <p className="text-sm text-gray-300 group-hover:text-white line-clamp-2 break-words">
-                    {link.movie.title}
-                  </p>
-                  <p className="text-xs text-gray-600 mt-0.5">
-                    {link.movie.release_date ? new Date(link.movie.release_date).getFullYear() : ''}
-                  </p>
-                </Link>
+                <div className="flex items-start gap-1 min-w-0">
+                  <Link to={`/movie/${link.movie.id}`} className="min-w-0 block flex-1">
+                    <p className="text-sm text-gray-300 group-hover:text-white line-clamp-2 break-words">
+                      {link.movie.title}
+                    </p>
+                    <p className="text-xs text-gray-600 mt-0.5">
+                      {link.movie.release_date ? new Date(link.movie.release_date).getFullYear() : ''}
+                    </p>
+                  </Link>
+                  {isOldestInChain && (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmAction('removeFirst')}
+                      className="shrink-0 text-[10px] text-gray-500 hover:text-red-400 transition-colors px-0.5 py-0.5"
+                      title={t('removeFirstFromChain')}
+                    >
+                      {t('removeFirstFromChain')}
+                    </button>
+                  )}
+                </div>
                 <ChainWatchedDateField
                   chainIndex={chainIndex}
                   idPrefix="chain-sidebar"
@@ -182,6 +207,33 @@ export default function ChainList({ prependPanel }: ChainListProps) {
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmAction === 'undoLast'}
+        title={t('confirmUndoLastTitle')}
+        message={t('confirmUndoLastBody')}
+        confirmLabel={t('confirmRemoveMovie')}
+        cancelLabel={t('cancel')}
+        confirmDanger
+        onCancel={() => setConfirmAction(null)}
+        onConfirm={() => {
+          setConfirmAction(null);
+          undoLast();
+        }}
+      />
+      <ConfirmDialog
+        open={confirmAction === 'removeFirst'}
+        title={t('confirmRemoveFirstTitle')}
+        message={t('confirmRemoveFirstBody')}
+        confirmLabel={t('confirmRemoveMovie')}
+        cancelLabel={t('cancel')}
+        confirmDanger
+        onCancel={() => setConfirmAction(null)}
+        onConfirm={() => {
+          setConfirmAction(null);
+          removeFirst();
+        }}
+      />
     </div>
   );
 }

@@ -218,4 +218,46 @@ describe('useChain', () => {
     // First link has connectingActorId null, so excludedActorId is null after undoing second
     expect(result.current.excludedActorId).toBeNull();
   });
+
+  it('removeFirst with two links drops oldest and clears bridge on new head', async () => {
+    const movie2: Movie = { ...minimalMovie, id: 2, title: 'Second' };
+    const { result } = renderHook(() => useChain());
+    act(() => result.current.startChain(minimalMovie));
+    await flushMicrotasks();
+    act(() => result.current.selectActor(1, 'A'));
+    act(() => result.current.addMovie(movie2));
+    await flushMicrotasks();
+    expect(result.current.links[0].entryKind).toBe('start');
+    expect(result.current.links[1].connectingActorId).toBe(1);
+    act(() => result.current.removeFirst());
+    await flushMicrotasks();
+    expect(result.current.links).toHaveLength(1);
+    expect(result.current.links[0].movie.id).toBe(2);
+    expect(result.current.links[0].connectingActorId).toBeNull();
+    expect(result.current.links[0].connectingActorName).toBeNull();
+    expect(result.current.links[0].stepDifficulty).toBeUndefined();
+    expect(result.current.excludedActorId).toBeNull();
+  });
+
+  it('removeFirst with one link clears chain like undoLast', async () => {
+    const { result } = renderHook(() => useChain());
+    act(() => result.current.startChain(minimalMovie));
+    await flushMicrotasks();
+    act(() => result.current.removeFirst());
+    await flushMicrotasks();
+    expect(result.current.links).toEqual([]);
+    expect(result.current.currentStep).toBe('start');
+  });
+
+  it('startChain sets entryKind start and append link sets entryKind append', async () => {
+    const movie2: Movie = { ...minimalMovie, id: 2, title: 'Second' };
+    const { result } = renderHook(() => useChain());
+    act(() => result.current.startChain(minimalMovie));
+    await flushMicrotasks();
+    expect(result.current.links[0].entryKind).toBe('start');
+    act(() => result.current.selectActor(1, 'A'));
+    act(() => result.current.addMovie(movie2));
+    await flushMicrotasks();
+    expect(result.current.links[1].entryKind).toBe('append');
+  });
 });

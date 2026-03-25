@@ -125,6 +125,120 @@ export function incrementActorBridge(
   };
 }
 
+/**
+ * Undoes one `incrementActorBridge` for the given destination film (first matching id in the list).
+ */
+export function decrementActorBridge(
+  profile: GamificationProfile,
+  actorId: number,
+  bridgeToMovieId: number
+): GamificationProfile {
+  const key = String(actorId);
+  const prevIds = profile.actorBridgeMovieIds[key];
+  if (!prevIds?.length) return profile;
+
+  const idx = prevIds.indexOf(bridgeToMovieId);
+  if (idx < 0) return profile;
+
+  const nextIds = [...prevIds.slice(0, idx), ...prevIds.slice(idx + 1)];
+  const prevCount = profile.actorBridgeCounts[key];
+  const count = (prevCount?.count ?? 0) - 1;
+
+  const actorBridgeMovieIds = { ...profile.actorBridgeMovieIds };
+  const actorBridgeCounts = { ...profile.actorBridgeCounts };
+
+  if (nextIds.length === 0) {
+    delete actorBridgeMovieIds[key];
+  } else {
+    actorBridgeMovieIds[key] = nextIds;
+  }
+
+  if (count <= 0 || !prevCount) {
+    delete actorBridgeCounts[key];
+  } else {
+    actorBridgeCounts[key] = { name: prevCount.name, count };
+  }
+
+  return { ...profile, actorBridgeMovieIds, actorBridgeCounts };
+}
+
+function effectiveFirstEntryKind(first: ChainLink | undefined): 'start' | 'prepend' | 'append' {
+  if (first?.entryKind != null) return first.entryKind;
+  return 'start';
+}
+
+/**
+ * Reverses `afterAddMovie` / daily for removing the **last** link (tail).
+ */
+export function reverseAfterRemoveLast(profile: GamificationProfile, linksBefore: ChainLink[]): GamificationProfile {
+  if (linksBefore.length === 0) return profile;
+  const L = linksBefore[linksBefore.length - 1];
+  let next = {
+    ...profile,
+    totalLinksAddedAllTime: Math.max(0, profile.totalLinksAddedAllTime - 1),
+    totalChallengePointsAllTime: Math.max(
+      0,
+      profile.totalChallengePointsAllTime - (L.stepDifficulty ?? 0)
+    ),
+  };
+  if (L.connectingActorId != null && L.connectingActorName) {
+    next = decrementActorBridge(next, L.connectingActorId, L.movie.id);
+  }
+  if (L.loggedDate?.trim()) {
+    next = decrementDailyMovies(next, L.loggedDate.trim());
+  }
+  return next;
+}
+
+/**
+ * Reverses gamification when removing the **first** link.
+ * - Single link: only reverses heatmap entry from `recordStartMovie` (streak not inverted).
+ * - Two+ links: reverses the step onto the old second film and how the first link entered (`start` vs `prepend`).
+ */
+export function reverseAfterRemoveFirst(profile: GamificationProfile, linksBefore: ChainLink[]): GamificationProfile {
+  if (linksBefore.length === 0) return profile;
+  const removed = linksBefore[0];
+
+  if (linksBefore.length === 1) {
+    let next = profile;
+    if (removed.loggedDate?.trim()) {
+      next = decrementDailyMovies(next, removed.loggedDate.trim());
+    }
+    return next;
+  }
+
+  const second = linksBefore[1];
+  const kind = effectiveFirstEntryKind(removed);
+
+  let next: GamificationProfile = {
+    ...profile,
+    totalChallengePointsAllTime: Math.max(
+      0,
+      profile.totalChallengePointsAllTime - (second.stepDifficulty ?? 0)
+    ),
+  };
+
+  if (kind === 'prepend') {
+    next = {
+      ...next,
+      totalLinksAddedAllTime: Math.max(0, next.totalLinksAddedAllTime - 1),
+    };
+  }
+
+  const actor = second.connectingActorId;
+  const actorName = second.connectingActorName;
+  if (actor != null && actorName) {
+    const bridgeToMovieId = kind === 'prepend' ? removed.movie.id : second.movie.id;
+    next = decrementActorBridge(next, actor, bridgeToMovieId);
+  }
+
+  if ((kind === 'start' || kind === 'prepend') && removed.loggedDate?.trim()) {
+    next = decrementDailyMovies(next, removed.loggedDate.trim());
+  }
+
+  return next;
+}
+
 const applyStreak = (profile: GamificationProfile): GamificationProfile => {
   const today = utcDateString();
   if (profile.lastStreakDate === today) {
