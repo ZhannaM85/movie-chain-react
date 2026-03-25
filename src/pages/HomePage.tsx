@@ -52,17 +52,8 @@ function ChainView({ movieId }: { movieId: number }) {
 
   return (
     <div className="max-w-7xl mx-auto py-6 px-0 md:px-4">
-      {/* md:items-start: when main is tall, do not stretch the chain column. */}
-      <div className="flex flex-col md:flex-row md:items-start gap-6">
-        {/* Mobile: order-1 = current movie + actors first; desktop: chain left. Chain is full-bleed width on small screens. */}
-        <aside className="order-2 md:order-1 w-full min-w-0 max-w-full md:w-72 lg:w-80 xl:w-96 shrink-0">
-          {/* No fixed height / inner scroll on md — one page scrollbar; sticky keeps a short chain visible beside long main. */}
-          <div className="flex flex-col w-full md:sticky md:top-20 min-h-0">
-            <ChainList prependPanel={prependMode ? pickStepPanel : undefined} />
-          </div>
-        </aside>
-
-        <div className="order-1 md:order-2 md:flex-1 min-w-0 w-full flex flex-col gap-6 px-4 md:px-0">
+      <div className="flex flex-col gap-6">
+        <div className="order-1 min-w-0 w-full flex flex-col gap-6 px-4 md:px-0 md:sticky md:top-20 md:z-10 md:self-start md:w-full md:bg-gray-950 md:pb-2 md:shadow-[0_12px_24px_-8px_rgba(0,0,0,0.45)]">
           {loading ? (
             <div className="flex items-center gap-2 text-gray-400 py-8">
               <span className="inline-block w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
@@ -73,22 +64,24 @@ function ChainView({ movieId }: { movieId: number }) {
               <div className="order-1">
                 <MovieCard movie={movie} />
               </div>
-              <div className="order-3 md:order-2">
+              <div className="order-3">
                 <UserComment chainIndex={chainIndex} />
               </div>
             </>
           ) : null}
 
-          {pickStepPanel != null && (
-            <div
-              className={`order-2 md:order-3 border-t border-gray-800 pt-4 md:pt-6 ${
-                prependMode ? 'hidden md:block' : ''
-              }`}
-            >
+          {pickStepPanel != null && !prependMode && (
+            <div className="order-2 border-t border-gray-800 pt-4 md:pt-6">
               {pickStepPanel}
             </div>
           )}
         </div>
+
+        <aside className="order-2 w-full min-w-0 max-w-full shrink-0">
+          <div className="flex flex-col w-full min-h-0">
+            <ChainList prependPickPanel={prependMode ? pickStepPanel : undefined} />
+          </div>
+        </aside>
       </div>
     </div>
   );

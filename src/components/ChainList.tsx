@@ -10,11 +10,8 @@ import { useResolvedBridgeActors } from '../hooks/useResolvedBridgeActors';
 import BridgeActorLabel from './BridgeActorLabel';
 
 interface ChainListProps {
-  /**
-   * When prepending on small screens, render pick-actor / pick-movie UI next to the chain footer
-   * so users do not have to scroll back to the movie card.
-   */
-  prependPanel?: ReactNode;
+  /** When prepending, pick-actor / pick-movie UI is shown here (by the banner) instead of only at the top of the page. */
+  prependPickPanel?: ReactNode;
 }
 
 /**
@@ -22,7 +19,7 @@ interface ChainListProps {
  *
  * @returns {JSX.Element | null} The chain list, or null if there is no chain.
  */
-export default function ChainList({ prependPanel }: ChainListProps) {
+export default function ChainList({ prependPickPanel }: ChainListProps) {
   const api = useMovieApiForChain();
   const {
     links,
@@ -192,8 +189,10 @@ export default function ChainList({ prependPanel }: ChainListProps) {
             </button>
           </div>
         )}
-        {prependMode && prependPanel != null && (
-          <div className="md:hidden w-full min-w-0 px-1 pb-1">{prependPanel}</div>
+        {prependMode && prependPickPanel != null && (
+          <div className="w-full min-w-0 px-1 pb-2 border-t border-gray-800/80 pt-3 mt-1">
+            {prependPickPanel}
+          </div>
         )}
         <div className="flex items-center gap-2 pl-1 pb-1">
           <button
