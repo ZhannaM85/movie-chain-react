@@ -150,6 +150,14 @@ const resources = {
       linkedMovies_one: '{{count}} movie linked together',
       linkedMovies_other: '{{count}} movies linked together',
       undoLast: 'Undo Last',
+      removeFirstFromChain: 'Remove oldest',
+      confirmUndoLastTitle: 'Remove the latest movie?',
+      confirmUndoLastBody:
+        'The most recently added film will be removed from the chain. Your saved stats (including bridge actors) will be updated. You cannot remove a movie from the middle of the chain.',
+      confirmRemoveFirstTitle: 'Remove the first movie?',
+      confirmRemoveFirstBody:
+        'The oldest film in the chain will be removed. Your saved stats (including bridge actors) will be updated. You cannot remove a movie from the middle of the chain.',
+      confirmRemoveMovie: 'Remove',
       aboutTitle: 'About Movie Chain',
       aboutIntro:
         'Movie Chain is a small learning project where you build a path of movies that are all connected through the actors who star in them.',
@@ -384,6 +392,14 @@ const resources = {
       linkedMovies_many: '{{count}} фильмов связаны',
       linkedMovies_other: '{{count}} фильма связаны',
       undoLast: 'Отменить последний',
+      removeFirstFromChain: 'Убрать первый',
+      confirmUndoLastTitle: 'Убрать последний фильм?',
+      confirmUndoLastBody:
+        'Самый недавно добавленный фильм будет удалён из цепочки. Сохранённая статистика (в том числе актёры-мосты) будет пересчитана. Удалять фильмы из середины цепочки нельзя.',
+      confirmRemoveFirstTitle: 'Убрать первый фильм?',
+      confirmRemoveFirstBody:
+        'Самый старый фильм в цепочке будет удалён. Сохранённая статистика (в том числе актёры-мосты) будет пересчитана. Удалять фильмы из середины цепочки нельзя.',
+      confirmRemoveMovie: 'Убрать',
       aboutTitle: 'О Movie Chain',
       aboutIntro:
         'Movie Chain - это небольшой учебный проект, где вы строите путь из фильмов, связанных между собой актерами, которые в них снимаются.',
