@@ -7,9 +7,12 @@ import { useChainContext } from '../context/ChainContext';
 import UserComment from '../components/UserComment';
 import ChainWatchedDateField from '../components/ChainWatchedDateField';
 import ChallengePointsInline from '../components/ChallengePointsInline';
+import MovieOverviewClamp from '../components/MovieOverviewClamp';
 import { useTranslation } from 'react-i18next';
 import type { Movie, MovieCredits } from '../types/movie';
 import type { MovieApi } from '../services/movieApi';
+
+type MovieWithCredits = Movie & { credits: MovieCredits };
 
 /**
  * Page that shows full details for a movie, including cast and any chain comment.
@@ -51,6 +54,35 @@ export default function MovieDetailPage() {
 
   const year = movie.release_date ? new Date(movie.release_date).getFullYear() : t('na');
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '—';
+
+  return (
+    <MovieDetailOverview
+      movie={movie}
+      year={year}
+      rating={rating}
+      chainIndex={chainIndex}
+      chainChallengePoints={chainChallengePoints}
+      api={api}
+    />
+  );
+}
+
+function MovieDetailOverview({
+  movie,
+  year,
+  rating,
+  chainIndex,
+  chainChallengePoints,
+  api,
+}: {
+  movie: MovieWithCredits;
+  year: string | number;
+  rating: string;
+  chainIndex: number;
+  chainChallengePoints: number | null | undefined;
+  api: MovieApi;
+}) {
+  const { t } = useTranslation();
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -99,7 +131,14 @@ export default function MovieDetailPage() {
             </div>
           )}
 
-          <p className="text-gray-300 leading-relaxed">{movie.overview}</p>
+          {movie.overview && (
+            <MovieOverviewClamp
+              overview={movie.overview}
+              className="text-gray-300 leading-relaxed"
+              resetKey={movie.id}
+              showLink={false}
+            />
+          )}
 
           {chainIndex >= 0 && (
             <div className="mt-4 rounded-lg border border-gray-700/50 bg-gray-800/40 p-3">
@@ -120,7 +159,7 @@ function MovieCastSection({
   movie,
   api,
 }: {
-  movie: Movie & { credits: MovieCredits };
+  movie: MovieWithCredits;
   api: MovieApi;
 }) {
   const { t } = useTranslation();

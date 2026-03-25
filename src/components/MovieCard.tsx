@@ -3,6 +3,7 @@ import type { Movie } from '../types/movie';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useTranslation } from 'react-i18next';
 import ChallengePointsInline from './ChallengePointsInline';
+import MovieOverviewClamp from './MovieOverviewClamp';
 
 interface MovieCardProps {
   movie: Movie;
@@ -78,12 +79,14 @@ export default function MovieCard({ movie, showLink = true, challengePoints }: M
             ))}
           </div>
         )}
-        {showLink ? (
-          <Link to={toMovie} className="block text-sm text-gray-400 line-clamp-3 hover:text-gray-300">
-            {movie.overview}
-          </Link>
-        ) : (
-          <p className="text-sm text-gray-400 line-clamp-3">{movie.overview}</p>
+        {movie.overview && (
+          <MovieOverviewClamp
+            overview={movie.overview}
+            className="text-sm text-gray-400"
+            resetKey={movie.id}
+            linkTo={showLink ? toMovie : undefined}
+            showLink={showLink}
+          />
         )}
       </div>
     </div>

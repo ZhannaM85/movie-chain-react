@@ -9,6 +9,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import { useResolvedBridgeActors } from '../hooks/useResolvedBridgeActors';
 import BridgeActorLabel from '../components/BridgeActorLabel';
 import ChallengePointsInline from '../components/ChallengePointsInline';
+import MovieOverviewClamp from '../components/MovieOverviewClamp';
 
 /**
  * Dedicated page that visualizes the full movie chain with connecting actors.
@@ -195,9 +196,14 @@ export default function ChainPage() {
                     )}
                   </div>
                   {link.movie.overview && (
-                    <Link to={`/movie/${link.movie.id}`} className="mt-2 block">
-                      <p className="text-sm text-gray-500 line-clamp-2">{link.movie.overview}</p>
-                    </Link>
+                    <div className="mt-2 min-w-0">
+                      <MovieOverviewClamp
+                        overview={link.movie.overview}
+                        className="text-sm text-gray-500"
+                        resetKey={`${link.movie.id}-${chainIndex}`}
+                        linkTo={`/movie/${link.movie.id}`}
+                      />
+                    </div>
                   )}
                   {link.comment && (
                     <div className="mt-2 text-sm text-indigo-300/80 italic">
