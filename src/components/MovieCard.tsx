@@ -22,22 +22,38 @@ export default function MovieCard({ movie, showLink = true, challengePoints }: M
   const { t } = useTranslation();
   const year = movie.release_date ? new Date(movie.release_date).getFullYear() : t('na');
   const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '—';
+  const toMovie = `/movie/${movie.id}`;
 
-  const content = (
-    <div className="flex gap-4 bg-gray-800/60 rounded-xl p-4 border border-gray-700/50">
-      {movie.poster_path ? (
-        <img
-          src={api.posterUrl(movie.poster_path, 'w185')}
-          alt={movie.title}
-          className="w-28 sm:w-36 rounded-lg object-cover flex-shrink-0"
-        />
+  const poster =
+    movie.poster_path ? (
+      <img
+        src={api.posterUrl(movie.poster_path, 'w185')}
+        alt={movie.title}
+        className="w-28 sm:w-36 rounded-lg object-cover flex-shrink-0"
+      />
+    ) : (
+      <div className="w-28 sm:w-36 aspect-[2/3] rounded-lg bg-gray-700 flex items-center justify-center text-gray-500 text-xs flex-shrink-0">
+        {t('noPoster')}
+      </div>
+    );
+
+  return (
+    <div className="flex gap-4 bg-gray-800/60 rounded-xl p-4 border border-gray-700/50 hover:border-indigo-500/40 transition-colors">
+      {showLink ? (
+        <Link to={toMovie} className="flex-shrink-0">
+          {poster}
+        </Link>
       ) : (
-        <div className="w-28 sm:w-36 aspect-[2/3] rounded-lg bg-gray-700 flex items-center justify-center text-gray-500 text-xs flex-shrink-0">
-          {t('noPoster')}
-        </div>
+        poster
       )}
       <div className="flex-1 min-w-0">
-        <h2 className="text-xl font-bold text-white mb-1">{movie.title}</h2>
+        {showLink ? (
+          <Link to={toMovie} className="block mb-1">
+            <h2 className="text-xl font-bold text-white">{movie.title}</h2>
+          </Link>
+        ) : (
+          <h2 className="text-xl font-bold text-white mb-1">{movie.title}</h2>
+        )}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-400 mb-3">
           <span>{year}</span>
           <ChallengePointsInline points={challengePoints} />
@@ -47,7 +63,11 @@ export default function MovieCard({ movie, showLink = true, challengePoints }: M
             </svg>
             {rating}
           </span>
-          {movie.runtime && <span>{movie.runtime} {t('min')}</span>}
+          {movie.runtime && (
+            <span>
+              {movie.runtime} {t('min')}
+            </span>
+          )}
         </div>
         {movie.genres && movie.genres.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-3">
@@ -58,17 +78,14 @@ export default function MovieCard({ movie, showLink = true, challengePoints }: M
             ))}
           </div>
         )}
-        <p className="text-sm text-gray-400 line-clamp-3">{movie.overview}</p>
+        {showLink ? (
+          <Link to={toMovie} className="block text-sm text-gray-400 line-clamp-3 hover:text-gray-300">
+            {movie.overview}
+          </Link>
+        ) : (
+          <p className="text-sm text-gray-400 line-clamp-3">{movie.overview}</p>
+        )}
       </div>
     </div>
   );
-
-  if (showLink) {
-    return (
-      <Link to={`/movie/${movie.id}`} className="block hover:ring-2 hover:ring-indigo-500/40 rounded-xl transition-all">
-        {content}
-      </Link>
-    );
-  }
-  return content;
 }
