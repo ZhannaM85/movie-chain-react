@@ -4,6 +4,7 @@ import type { ChainLink } from '../types/movie';
 import type { MovieApi } from '../services/movieApi';
 import ChainWatchedDateField from './ChainWatchedDateField';
 import BridgeActorLabel from './BridgeActorLabel';
+import ChallengePointsInline from './ChallengePointsInline';
 
 export interface ChainGridMovieCardProps {
   link: ChainLink;
@@ -87,7 +88,12 @@ export default function ChainGridMovieCard({
           >
             {movie.title}
           </Link>
-          {year !== '' && <p className="text-xs text-gray-500 mt-0.5">{year}</p>}
+          {(year !== '' || link.stepDifficulty != null) && (
+            <p className="text-xs text-gray-500 mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              {year !== '' && <span>{year}</span>}
+              <ChallengePointsInline points={link.stepDifficulty} className="text-gray-500" />
+            </p>
+          )}
         </div>
 
         <ChainWatchedDateField

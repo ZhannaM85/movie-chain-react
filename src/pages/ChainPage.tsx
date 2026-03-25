@@ -8,6 +8,7 @@ import ChainWatchedDateField from '../components/ChainWatchedDateField';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { useResolvedBridgeActors } from '../hooks/useResolvedBridgeActors';
 import BridgeActorLabel from '../components/BridgeActorLabel';
+import ChallengePointsInline from '../components/ChallengePointsInline';
 
 /**
  * Dedicated page that visualizes the full movie chain with connecting actors.
@@ -180,6 +181,7 @@ export default function ChainPage() {
                         ? new Date(link.movie.release_date).getFullYear()
                         : t('na')}
                     </span>
+                    <ChallengePointsInline points={link.stepDifficulty} />
                     {link.movie.vote_average > 0 && (
                       <span className="flex items-center gap-1">
                         <svg className="w-3.5 h-3.5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">

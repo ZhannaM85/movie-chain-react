@@ -37,7 +37,8 @@ const resources = {
       streakLabel_other: '{{count}} day streak',
       streakTooltip: 'Consecutive days you played (UTC)',
       challengePointsShort: '{{points}} pts',
-      challengePointsTooltip: 'Challenge points — obscure picks score higher',
+      challengePointsTooltip:
+        'Points for this chain step (0–21): fewer votes on the movie, lower movie popularity, and a less famous connecting actor each add points. 21 is a “max difficulty” step.',
       bestChainShort: 'Best: {{count}}',
       bestChainTooltip: 'Longest chain you have built',
       bridgeActorNameFallback: 'Actor #{{id}}',
@@ -276,7 +277,8 @@ const resources = {
       streakLabel_other: 'Серия {{count}} дня',
       streakTooltip: 'Дни подряд с игрой (UTC)',
       challengePointsShort: '{{points}} очк.',
-      challengePointsTooltip: 'Очки сложности — за неочевидные фильмы и актёров',
+      challengePointsTooltip:
+        'Очки за этот шаг цепочки (0–21): меньше голосов у фильма, ниже популярность фильма и менее известный выбранный актёр-связка — больше очков. 21 — максимум за один шаг.',
       bestChainShort: 'Рекорд: {{count}}',
       bestChainTooltip: 'Самая длинная цепочка',
       bridgeActorNameFallback: 'Актёр №{{id}}',
