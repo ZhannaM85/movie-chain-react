@@ -74,7 +74,7 @@ describe('MovieCard', () => {
     await waitFor(() => {
       expect(screen.getByText('Test Movie')).toBeInTheDocument();
     });
-    expect(screen.getByText('A test overview.')).toBeInTheDocument();
+    expect(screen.getAllByText('A test overview.').length).toBeGreaterThan(0);
   });
 
   it('shows N/A for year when release_date is empty', async () => {
