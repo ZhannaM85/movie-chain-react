@@ -1,7 +1,7 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import type { Movie } from '../types/movie';
 import type { Actor } from '../types/movie';
-import { localDateString } from '../lib/dateUtils';
+import { defaultPastLinkLoggedDateFromHeadLink, localDateString } from '../lib/dateUtils';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
 import { Link } from 'react-router-dom';
@@ -18,7 +18,19 @@ export default function MovieSuggestions() {
   const api = useMovieApiForChain();
   const { selectedActorId, addMovie, links, cancelActorSelection, prependMode } = useChainContext();
   const { t, i18n } = useTranslation();
-  const [loggedDateForPastLink, setLoggedDateForPastLink] = useState(() => localDateString());
+  const [loggedDateForPastLink, setLoggedDateForPastLink] = useState(() =>
+    prependMode === true ? defaultPastLinkLoggedDateFromHeadLink(links[0]) : localDateString()
+  );
+  const prevPrependRef = useRef(false);
+
+  /** When entering prepend mode, default the date to the former chain head (not today). */
+  useEffect(() => {
+    if (prependMode === true && !prevPrependRef.current) {
+      setLoggedDateForPastLink(defaultPastLinkLoggedDateFromHeadLink(links[0]));
+    }
+    prevPrependRef.current = prependMode === true;
+  }, [prependMode, links]);
+
   const [actor, setActor] = useState<Actor | null>(null);
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
