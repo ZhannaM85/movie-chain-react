@@ -42,6 +42,9 @@ export interface ActorMovieCredits {
   cast: Movie[];
 }
 
+/** How this link was first added to the chain (for reversing gamification when removing an end). */
+export type ChainLinkEntryKind = 'start' | 'prepend' | 'append';
+
 export interface ChainLink {
   movie: Movie;
   connectingActorId: number | null;
@@ -51,6 +54,8 @@ export interface ChainLink {
   loggedDate?: string | null;
   /** Difficulty points for this step (set when linking via a shared actor). */
   stepDifficulty?: number;
+  /** Set when the link is created; older saves omit — first link defaults to `start`. */
+  entryKind?: ChainLinkEntryKind;
 }
 
 export type MovieSource = 'tmdb' | 'kinopoisk';

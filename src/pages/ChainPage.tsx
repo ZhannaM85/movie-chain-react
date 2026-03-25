@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
 import { useTranslation } from 'react-i18next';
 import { buildChainRecap } from '../gamification/chainRecap';
 import ChainWatchedDateField from '../components/ChainWatchedDateField';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { useResolvedBridgeActors } from '../hooks/useResolvedBridgeActors';
 import BridgeActorLabel from '../components/BridgeActorLabel';
 
@@ -16,8 +17,10 @@ import BridgeActorLabel from '../components/BridgeActorLabel';
 export default function ChainPage() {
   const api = useMovieApiForChain();
   const navigate = useNavigate();
-  const { links, resetChain, undoLast, gamificationProfile, startPrependToChain } = useChainContext();
+  const { links, resetChain, undoLast, removeFirst, gamificationProfile, startPrependToChain } =
+    useChainContext();
   const { t, i18n } = useTranslation();
+  const [confirmAction, setConfirmAction] = useState<null | 'undoLast' | 'removeFirst'>(null);
   const recap = useMemo(() => buildChainRecap(links), [links]);
   const { resolved: resolvedBridges, status: bridgeResolveStatus, needsInference } =
     useResolvedBridgeActors(links, api);
@@ -69,7 +72,8 @@ export default function ChainPage() {
         <div className="flex items-center gap-2">
           {links.length > 1 && (
             <button
-              onClick={undoLast}
+              type="button"
+              onClick={() => setConfirmAction('undoLast')}
               className="text-sm px-3 py-1.5 rounded-md bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors"
             >
               {t('undoLast')}
@@ -120,11 +124,27 @@ export default function ChainPage() {
             const effectiveActorName = hasStoredBridge
               ? link.connectingActorName ?? null
               : inferred?.name ?? null;
+            /** Forward index 0 = oldest link; reversed list shows it at the bottom. */
+            const isOldestInChain = chainIndex === 0;
+
+            let removeOldestControl: ReactNode = null;
+            if (isOldestInChain) {
+              removeOldestControl = (
+                <button
+                  type="button"
+                  onClick={() => setConfirmAction('removeFirst')}
+                  className="text-xs shrink-0 px-2 py-1 rounded-md border border-gray-600 text-gray-400 hover:text-red-300 hover:border-red-500/40 transition-colors"
+                >
+                  {t('removeFirstFromChain')}
+                </button>
+              );
+            }
 
             return (
           <div key={`${link.movie.id}-${chainIndex}`}>
             <div className="rounded-xl bg-gray-800/60 border border-gray-700/50 hover:border-indigo-500/40 hover:bg-gray-800/80 transition-all overflow-hidden">
-              <Link to={`/movie/${link.movie.id}`} className="flex gap-4 p-4 group">
+              <div className="flex gap-4 p-4 group">
+                <Link to={`/movie/${link.movie.id}`} className="flex gap-4 flex-1 min-w-0">
                 <span className="text-lg font-bold text-gray-600 w-8 text-right flex-shrink-0 pt-1">
                   {links.length - chainIndex}
                 </span>
@@ -180,7 +200,11 @@ export default function ChainPage() {
                     </div>
                   )}
                 </div>
-              </Link>
+                </Link>
+                {removeOldestControl != null && (
+                  <div className="flex flex-col justify-start pt-1">{removeOldestControl}</div>
+                )}
+              </div>
               <div className="px-4 pb-4 pt-2 border-t border-gray-700/40 bg-gray-900/15">
                 <ChainWatchedDateField chainIndex={chainIndex} idPrefix="chain-page" />
               </div>
@@ -230,6 +254,33 @@ export default function ChainPage() {
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmAction === 'undoLast'}
+        title={t('confirmUndoLastTitle')}
+        message={t('confirmUndoLastBody')}
+        confirmLabel={t('confirmRemoveMovie')}
+        cancelLabel={t('cancel')}
+        confirmDanger
+        onCancel={() => setConfirmAction(null)}
+        onConfirm={() => {
+          setConfirmAction(null);
+          undoLast();
+        }}
+      />
+      <ConfirmDialog
+        open={confirmAction === 'removeFirst'}
+        title={t('confirmRemoveFirstTitle')}
+        message={t('confirmRemoveFirstBody')}
+        confirmLabel={t('confirmRemoveMovie')}
+        cancelLabel={t('cancel')}
+        confirmDanger
+        onCancel={() => setConfirmAction(null)}
+        onConfirm={() => {
+          setConfirmAction(null);
+          removeFirst();
+        }}
+      />
     </div>
   );
 }

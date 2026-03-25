@@ -11,6 +11,8 @@ import {
   ensureDailyCountsFromLinks,
   finalizeChainReset,
   recordStartMovie,
+  reverseAfterRemoveFirst,
+  reverseAfterRemoveLast,
   utcDateString,
 } from '../gamification/profile';
 import { loadGamificationProfile, saveGamificationProfile } from '../gamification/storage';
@@ -129,6 +131,7 @@ export function useChain() {
           connectingActorName: null,
           comment: '',
           loggedDate: logged,
+          entryKind: 'start',
         },
       ],
       currentStep: 'pick-actor',
@@ -220,6 +223,7 @@ export function useChain() {
             connectingActorName: null,
             comment: '',
             loggedDate: day,
+            entryKind: 'prepend',
           },
           {
             ...first,
@@ -241,6 +245,7 @@ export function useChain() {
             comment: '',
             loggedDate: day,
             stepDifficulty,
+            entryKind: 'append',
           },
         ];
         newLinkIndex = newLinks.length - 1;
@@ -365,17 +370,15 @@ export function useChain() {
 
   const undoLast = useCallback(() => {
     setState((prev) => {
+      if (prev.links.length === 0) return prev;
+      const linksBefore = prev.links;
       if (prev.links.length <= 1) {
-        const only = prev.links[0];
-        const onlyDay = only?.loggedDate;
         queueMicrotask(() => {
-          if (onlyDay) {
-            setGamificationProfile((p) => {
-              const next = decrementDailyMovies(p, onlyDay);
-              saveGamificationProfile(next);
-              return next;
-            });
-          }
+          setGamificationProfile((p) => {
+            const next = reverseAfterRemoveFirst(p, linksBefore);
+            saveGamificationProfile(next);
+            return next;
+          });
         });
         return {
           links: [],
@@ -387,16 +390,12 @@ export function useChain() {
           dailyChallengeDate: null,
         };
       }
-      const removed = prev.links[prev.links.length - 1];
-      const removedDay = removed.loggedDate;
       queueMicrotask(() => {
-        if (removedDay) {
-          setGamificationProfile((p) => {
-            const next = decrementDailyMovies(p, removedDay);
-            saveGamificationProfile(next);
-            return next;
-          });
-        }
+        setGamificationProfile((p) => {
+          const next = reverseAfterRemoveLast(p, linksBefore);
+          saveGamificationProfile(next);
+          return next;
+        });
       });
       const links = prev.links.slice(0, -1);
       const prevLink = links.length >= 2 ? links[links.length - 1] : null;
@@ -408,6 +407,58 @@ export function useChain() {
         selectedActorId: null,
         selectedActorName: null,
         excludedActorId: prevLink?.connectingActorId ?? null,
+      };
+    });
+  }, []);
+
+  const removeFirst = useCallback(() => {
+    setState((prev) => {
+      if (prev.links.length === 0) return prev;
+      const linksBefore = prev.links;
+      if (prev.links.length === 1) {
+        queueMicrotask(() => {
+          setGamificationProfile((p) => {
+            const next = reverseAfterRemoveFirst(p, linksBefore);
+            saveGamificationProfile(next);
+            return next;
+          });
+        });
+        return {
+          ...prev,
+          links: [],
+          currentStep: 'start',
+          selectedActorId: null,
+          selectedActorName: null,
+          excludedActorId: null,
+          prependMode: false,
+          dailyChallengeDate: null,
+        };
+      }
+      queueMicrotask(() => {
+        setGamificationProfile((p) => {
+          const next = reverseAfterRemoveFirst(p, linksBefore);
+          saveGamificationProfile(next);
+          return next;
+        });
+      });
+      const [, ...rest] = prev.links;
+      const formerSecond = rest[0];
+      const normalizedFirst: typeof formerSecond = {
+        ...formerSecond,
+        connectingActorId: null,
+        connectingActorName: null,
+      };
+      delete normalizedFirst.stepDifficulty;
+      const links = [normalizedFirst, ...rest.slice(1)];
+      const tail = links[links.length - 1];
+      return {
+        ...prev,
+        links,
+        prependMode: false,
+        currentStep: 'pick-actor',
+        selectedActorId: null,
+        selectedActorName: null,
+        excludedActorId: tail?.connectingActorId ?? null,
       };
     });
   }, []);
@@ -427,6 +478,7 @@ export function useChain() {
     updateLoggedDate,
     resetChain,
     undoLast,
+    removeFirst,
     cancelActorSelection,
   };
 }
