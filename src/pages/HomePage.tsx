@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useMemo } from 'react';
 import { useChainContext } from '../context/ChainContext';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import StartScreen from '../components/StartScreen';
@@ -10,6 +11,7 @@ import UserComment from '../components/UserComment';
 import { useMovieDetails } from '../hooks/useMovieDetails';
 import { useSyncCastAppearances } from '../hooks/useSyncCastAppearances';
 import { useTranslation } from 'react-i18next';
+import { findHeroChainIndexByLastWatched } from '../lib/chainHero';
 
 /**
  * Main page that either shows the start screen or the active chain view.
@@ -19,33 +21,45 @@ import { useTranslation } from 'react-i18next';
 export default function HomePage() {
   const { links, currentStep, prependMode } = useChainContext();
 
+  const heroChainIndex = useMemo(() => findHeroChainIndexByLastWatched(links), [links]);
+  const pickChainIndex = prependMode ? 0 : Math.max(0, links.length - 1);
+
   if (currentStep === 'start' || links.length === 0) {
     return <StartScreen />;
   }
 
-  const currentLink = prependMode ? links[0] : links[links.length - 1];
-  const currentMovieId = currentLink.movie.id;
-
-  return <ChainView movieId={currentMovieId} />;
+  return <ChainView heroChainIndex={heroChainIndex} pickChainIndex={pickChainIndex} />;
 }
 
 /**
  * Renders the current movie, user comment, and the next-step controls for the chain.
  *
- * @param {{ movieId: number }} props - The props containing the current movie ID.
- * @returns {JSX.Element} The rendered chain view for the current movie.
+ * Hero uses {@link findHeroChainIndexByLastWatched}; pick step uses `pickChainIndex` (prepend head or tail).
  */
-function ChainView({ movieId }: { movieId: number }) {
+function ChainView({
+  heroChainIndex,
+  pickChainIndex,
+}: {
+  heroChainIndex: number;
+  pickChainIndex: number;
+}) {
   const api = useMovieApiForChain();
   const { t } = useTranslation();
   const { currentStep, links, selectedActorId, prependMode } = useChainContext();
-  const { movie, loading } = useMovieDetails(movieId, api);
-  const chainIndex = prependMode ? 0 : links.length - 1;
-  useSyncCastAppearances(movieId, movie?.credits?.cast, true, movie?.credits?.id);
+  const heroMovieId = links[heroChainIndex].movie.id;
+  const pickMovieId = links[pickChainIndex].movie.id;
+  const sameMovieForHeroAndPick = heroMovieId === pickMovieId;
+
+  const heroDetails = useMovieDetails(heroMovieId, api);
+  const pickDetails = useMovieDetails(sameMovieForHeroAndPick ? null : pickMovieId, api);
+  const pickMovie = sameMovieForHeroAndPick ? heroDetails.movie : pickDetails.movie;
+  const loading = heroDetails.loading;
+
+  useSyncCastAppearances(pickMovieId, pickMovie?.credits?.cast, true, pickMovie?.credits?.id);
 
   let pickStepPanel: ReactNode = null;
-  if (currentStep === 'pick-actor' && movie?.credits) {
-    pickStepPanel = <ActorPicker credits={movie.credits} />;
+  if (currentStep === 'pick-actor' && pickMovie?.credits) {
+    pickStepPanel = <ActorPicker credits={pickMovie.credits} />;
   } else if (currentStep === 'pick-movie') {
     pickStepPanel = <MovieSuggestions key={selectedActorId ?? 'none'} />;
   }
@@ -59,13 +73,13 @@ function ChainView({ movieId }: { movieId: number }) {
               <span className="inline-block w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
               {t('loadingMovieDetails')}
             </div>
-          ) : movie ? (
+          ) : heroDetails.movie ? (
             <>
               <div className="order-1">
-                <MovieCard movie={movie} />
+                <MovieCard movie={heroDetails.movie} />
               </div>
               <div className="order-3">
-                <UserComment chainIndex={chainIndex} />
+                <UserComment chainIndex={heroChainIndex} />
               </div>
             </>
           ) : null}
