@@ -152,7 +152,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 void i18n.changeLanguage(e.target.value);
                 setMobileNavOpen(false);
               }}
-              className="h-9 shrink-0 max-w-[7.25rem] cursor-pointer rounded-md border border-gray-700 bg-gray-800 px-2 py-0 text-xs text-gray-200 outline-none transition-colors hover:border-gray-600 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900"
+              className="h-9 shrink-0 max-w-[7.25rem] cursor-pointer rounded-md border border-gray-700 bg-gray-800 px-2 py-0 text-base text-gray-200 outline-none transition-colors hover:border-gray-600 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900"
             >
               <option value="en-US">English</option>
               <option value="ru-RU">Русский</option>

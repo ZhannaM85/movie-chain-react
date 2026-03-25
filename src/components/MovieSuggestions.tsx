@@ -136,7 +136,7 @@ export default function MovieSuggestions() {
               type="date"
               value={loggedDateForPastLink}
               onChange={(e) => setLoggedDateForPastLink(e.target.value)}
-              className="box-border w-full min-w-0 px-2 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="box-border w-full min-w-0 px-2 py-2 rounded-lg bg-gray-800 border border-gray-700 text-base text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
         </div>
@@ -148,12 +148,12 @@ export default function MovieSuggestions() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={t('searchFilmography')}
-          className="w-full sm:max-w-sm px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+          className="w-full sm:max-w-sm px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-base text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
         />
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortOption)}
-          className="px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition cursor-pointer"
+          className="px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-base text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition cursor-pointer"
         >
           <option value="popularity">{t('sortPopularity')}</option>
           <option value="title-asc">{t('sortTitleAsc')}</option>
