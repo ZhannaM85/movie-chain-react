@@ -100,9 +100,11 @@ export default function ChainList({ prependPickPanel }: ChainListProps) {
     <div className="flex w-full min-w-0 flex-col">
       <div className="mb-3 px-1 space-y-1.5 shrink-0">
         <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-gray-500">
-          <span title={t('challengePointsTooltip')}>
-            {t('challengePointsShort', { points: recap.totalDifficulty })}
-          </span>
+          <ChallengePointsInline
+            points={recap.totalDifficulty}
+            variant="total"
+            className="text-[11px] text-gray-500"
+          />
           <span title={t('bestChainTooltip')}>
             {t('bestChainShort', { count: gamificationProfile.longestChainEver })}
           </span>
@@ -148,10 +150,12 @@ export default function ChainList({ prependPickPanel }: ChainListProps) {
               )}
               <div className="min-w-0 flex-1 flex flex-col gap-0.5">
                 <div className="flex items-start gap-1 min-w-0">
-                  <Link to={`/movie/${link.movie.id}`} className="min-w-0 block flex-1">
-                    <p className="text-sm text-gray-300 group-hover:text-white line-clamp-2 break-words">
-                      {link.movie.title}
-                    </p>
+                  <div className="min-w-0 flex-1 flex flex-col gap-0.5">
+                    <Link to={`/movie/${link.movie.id}`} className="min-w-0 block">
+                      <p className="text-sm text-gray-300 group-hover:text-white line-clamp-2 break-words">
+                        {link.movie.title}
+                      </p>
+                    </Link>
                     {(link.movie.release_date || link.stepDifficulty != null) && (
                       <p className="text-xs text-gray-600 mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
                         {link.movie.release_date ? (
@@ -160,7 +164,7 @@ export default function ChainList({ prependPickPanel }: ChainListProps) {
                         <ChallengePointsInline points={link.stepDifficulty} className="text-gray-600" />
                       </p>
                     )}
-                  </Link>
+                  </div>
                   {isOldestInChain && (
                     <button
                       type="button"
