@@ -1,4 +1,6 @@
 import { normalizeLoggedDateForHeatmap } from '../lib/dateUtils';
+import { mergeMoviesAddedByDateWithChainLinks } from './heatmap';
+import { computeStreakMetricsFromDailyCounts } from './streakFromHeatmap';
 import type { ChainLink } from '../types/movie';
 import type { GamificationProfile } from './types';
 
@@ -23,13 +25,6 @@ function countDistinctDecades(links: ChainLink[]): number {
     if (Number.isFinite(y)) decades.add(Math.floor(y / 10) * 10);
   }
   return decades.size;
-}
-
-function withLongestStreakEver(profile: GamificationProfile): GamificationProfile {
-  return {
-    ...profile,
-    longestStreakEver: Math.max(profile.longestStreakEver, profile.currentStreak),
-  };
 }
 
 export function incrementDailyMovies(
@@ -239,39 +234,36 @@ export function reverseAfterRemoveFirst(profile: GamificationProfile, linksBefor
   return next;
 }
 
-const applyStreak = (profile: GamificationProfile): GamificationProfile => {
-  const today = utcDateString();
-  if (profile.lastStreakDate === today) {
-    return withLongestStreakEver(profile);
+/**
+ * Sets {@link GamificationProfile.currentStreak} / {@link GamificationProfile.longestStreakEver} from the same
+ * merged per-day counts as the stats heatmap (storage + current chain logged dates).
+ */
+export function syncProfileStreakFromHeatmapData(
+  profile: GamificationProfile,
+  links: ChainLink[]
+): GamificationProfile {
+  const merged = mergeMoviesAddedByDateWithChainLinks(profile.moviesAddedByDate, links);
+  const m = computeStreakMetricsFromDailyCounts(merged);
+  const longestEver = Math.max(profile.longestStreakEver, m.longestConsecutiveEver);
+  if (
+    profile.currentStreak === m.currentStreak &&
+    profile.longestStreakEver === longestEver &&
+    profile.lastStreakDate === m.lastActivityDate
+  ) {
+    return profile;
   }
-
-  const yesterday = new Date();
-  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-  const yStr = utcDateString(yesterday);
-
-  let nextStreak = profile.currentStreak;
-  if (profile.lastStreakDate === null) {
-    nextStreak = 1;
-  } else if (profile.lastStreakDate === yStr) {
-    nextStreak = profile.currentStreak + 1;
-  } else {
-    nextStreak = 1;
-  }
-
-  return withLongestStreakEver({
+  return {
     ...profile,
-    lastStreakDate: today,
-    currentStreak: nextStreak,
-  });
-};
+    currentStreak: m.currentStreak,
+    longestStreakEver: longestEver,
+    lastStreakDate: m.lastActivityDate,
+  };
+}
 
-export { applyStreak };
-
-/** Streak + one movie logged for the chosen calendar day (starting a chain). */
+/** One movie logged for the chosen calendar day (starting a chain). */
 export function recordStartMovie(profile: GamificationProfile, loggedDateForHeatmap: string): GamificationProfile {
-  let next = applyStreak(profile);
-  next = incrementDailyMovies(next, 1, loggedDateForHeatmap);
-  return next;
+  let next = incrementDailyMovies(profile, 1, loggedDateForHeatmap);
+  return syncProfileStreakFromHeatmapData(next, []);
 }
 
 export interface AfterAddMovieResult {
@@ -304,7 +296,6 @@ export function afterAddMovie(
     longestChainEver: Math.max(profile.longestChainEver, newLength),
     totalChallengePointsAllTime: profile.totalChallengePointsAllTime + stepPoints,
   };
-  next = applyStreak(next);
   next = incrementDailyMovies(next, 1, newMovieLink.loggedDate ?? undefined);
   if (stepLink?.connectingActorId != null && stepLink.connectingActorName) {
     next = incrementActorBridge(
@@ -314,6 +305,7 @@ export function afterAddMovie(
       newMovieLink.movie.id
     );
   }
+  next = syncProfileStreakFromHeatmapData(next, linksAfterAdd);
 
   const newAchievements: string[] = [];
   const pushAch = (id: string) => {
@@ -344,7 +336,6 @@ export function afterFirstNote(profile: GamificationProfile): AfterFirstNoteResu
   }
 
   let next = { ...profile, hasWrittenNoteBefore: true };
-  next = applyStreak(next);
 
   const newAchievements: string[] = [];
   if (!next.unlockedAchievementIds.includes('first_note')) {

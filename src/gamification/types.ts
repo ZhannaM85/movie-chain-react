@@ -12,13 +12,14 @@ export interface GamificationProfile {
   longestChainEver: number;
   totalLinksAddedAllTime: number;
   unlockedAchievementIds: string[];
+  /** Latest local YYYY-MM-DD with heatmap activity; kept in sync with streak computation. */
   lastStreakDate: string | null;
   currentStreak: number;
-  /** Max consecutive UTC days with any chain activity (play streak) */
+  /** Max consecutive local calendar days with ≥1 movie on the heatmap (historical best). */
   longestStreakEver: number;
   /** Total challenge points earned across all sessions */
   totalChallengePointsAllTime: number;
-  /** Movies added to a chain per UTC day (start + each link) — for activity heatmap */
+  /** Movies added to a chain per calendar day (start + each link) — for activity heatmap */
   moviesAddedByDate: Record<string, number>;
   /** Count of times each actor was chosen as the bridge to the next film (key = TMDB/KP id string) */
   actorBridgeCounts: Record<string, { name: string; count: number }>;

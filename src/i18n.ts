@@ -35,7 +35,7 @@ const resources = {
         'Start a new chain? Your current run: {{length}} movies, {{difficulty}} challenge points, {{actors}} unique connecting actors, {{decades}} decades spanned.',
       streakLabel_one: '{{count}} day streak',
       streakLabel_other: '{{count}} day streak',
-      streakTooltip: 'Consecutive days you played (UTC)',
+      streakTooltip: 'Consecutive local calendar days you played',
       challengePointsShort: '{{points}} pts',
       challengePointsTooltip:
         'Points for this chain step (0–21): fewer votes on the movie, lower movie popularity, and a less famous connecting actor each add points. 21 is a “max difficulty” step.',
@@ -189,7 +189,7 @@ const resources = {
       statChallengePointsTotal: 'Challenge points (all time)',
       statLongestStreak: 'Longest streak',
       statCurrentStreak: 'Current streak',
-      statDaysUtc: 'UTC calendar days',
+      statDaysUtc: 'Local calendar days',
       heatmapSectionTitle: 'Movies per day',
       heatmapDayEmpty: '{{date}}: no movies',
       heatmapDayMovies: '{{date}}: {{count}} movies',
@@ -226,9 +226,9 @@ const resources = {
       statExplainChallengePoints:
         'Sum of difficulty points from every chain step where you picked a connecting actor and the next movie. Higher scores favor lower vote counts on the movie you step into, lower movie popularity, and lower popularity on the connecting actor. The first movie in a chain has no step score.',
       statExplainLongestStreak:
-        'Your longest run of consecutive UTC calendar days on which you had activity that counts toward the streak (typically adding a movie).',
+        'Your longest run of consecutive local calendar days that have at least one movie counted on the heatmap (same per-day counts as “Movies per day”).',
       statExplainCurrentStreak:
-        'How many consecutive UTC days you have played up to now. It goes up when you add a movie today after playing yesterday (UTC); it resets to 1 if you missed a UTC day.',
+        'How many consecutive local calendar days with at least one logged movie, counting backward from your most recent activity day until a gap. Matches the heatmap.',
       heatmapSectionExplain:
         'Each cell is one local calendar day. Columns are weeks; earlier weeks appear to the left of later weeks. The color shows how many movies count toward that day using each link’s “logged date” (defaults to today when you add the film). Darker green means more movies.',
       statExplainBusiestDay:
@@ -275,7 +275,7 @@ const resources = {
       streakLabel_few: 'Серия {{count}} дня',
       streakLabel_many: 'Серия {{count}} дней',
       streakLabel_other: 'Серия {{count}} дня',
-      streakTooltip: 'Дни подряд с игрой (UTC)',
+      streakTooltip: 'Дни подряд с игрой (локальный календарь)',
       challengePointsShort: '{{points}} очк.',
       challengePointsTooltip:
         'Очки за этот шаг цепочки (0–21): меньше голосов у фильма, ниже популярность фильма и менее известный выбранный актёр-связка — больше очков. 21 — максимум за один шаг.',
@@ -430,7 +430,7 @@ const resources = {
       statChallengePointsTotal: 'Очки сложности (всего)',
       statLongestStreak: 'Самая длинная серия',
       statCurrentStreak: 'Текущая серия',
-      statDaysUtc: 'дни по UTC',
+      statDaysUtc: 'локальные календарные дни',
       heatmapSectionTitle: 'Фильмов за день',
       heatmapDayEmpty: '{{date}}: нет фильмов',
       heatmapDayMovies: '{{date}}: {{count}} фильм.',
@@ -471,9 +471,9 @@ const resources = {
       statExplainChallengePoints:
         'Сумма очков сложности за каждый шаг цепочки, где вы выбрали связующего актёра и следующий фильм. Больше очков за более «сложные» шаги: меньше голосов у фильма, к которому вы переходите, ниже популярность фильма и ниже популярность актёра-связки. У первого фильма в цепочке нет шаговых очков.',
       statExplainLongestStreak:
-        'Самая длинная серия подряд идущих календарных дней UTC, когда у вас была активность, учитываемая в серии (обычно добавление фильма).',
+        'Самая длинная серия подряд идущих календарных дней, в которые на теплокарте есть хотя бы один учтённый фильм (те же счётчики, что и «фильмов в день»).',
       statExplainCurrentStreak:
-        'Сколько подряд календарных дней UTC вы играли до сегодня. Растёт, если сегодня добавили фильм после вчерашней игры (UTC); сбрасывается, если пропустили день UTC.',
+        'Сколько подряд календарных дней с хотя бы одним залогированным фильмом, считая назад от последнего дня с активностью до разрыва. Совпадает с теплокартой.',
       heatmapSectionExplain:
         'Каждая ячейка — один календарный день в вашем часовом поясе. Столбцы — недели; более ранние недели слева от более поздних. Цвет показывает, сколько фильмов учтено за этот день по полю «день» у звена (по умолчанию — день добавления). Темнее зелёный — больше фильмов.',
       statExplainBusiestDay:
