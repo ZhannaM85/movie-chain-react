@@ -8,21 +8,32 @@ import ChainWatchedDateField from './ChainWatchedDateField';
 import ConfirmDialog from './ConfirmDialog';
 import { useResolvedBridgeActors } from '../hooks/useResolvedBridgeActors';
 import BridgeActorLabel from './BridgeActorLabel';
+import ChainGridMovieCard from './ChainGridMovieCard';
+import type { ChainLink } from '../types/movie';
 
 interface ChainListProps {
-  /**
-   * When prepending on small screens, render pick-actor / pick-movie UI next to the chain footer
-   * so users do not have to scroll back to the movie card.
-   */
-  prependPanel?: ReactNode;
+  /** When prepending, pick-actor / pick-movie UI is shown here (by the banner) instead of only at the top of the page. */
+  prependPickPanel?: ReactNode;
 }
+
+type ChainListEntryResolved = {
+  key: string;
+  link: ChainLink;
+  chainIndex: number;
+  sequenceNumber: number;
+  showBridgeRow: boolean;
+  effectiveActorId: number | null;
+  effectiveActorName: string | null;
+  bridgePending: boolean;
+  isOldestInChain: boolean;
+};
 
 /**
  * Sidebar list that summarizes the current movie chain with quick navigation.
  *
  * @returns {JSX.Element | null} The chain list, or null if there is no chain.
  */
-export default function ChainList({ prependPanel }: ChainListProps) {
+export default function ChainList({ prependPickPanel }: ChainListProps) {
   const api = useMovieApiForChain();
   const {
     links,
@@ -38,6 +49,49 @@ export default function ChainList({ prependPanel }: ChainListProps) {
   const recap = useMemo(() => buildChainRecap(links), [links]);
   const { resolved: resolvedBridges, status: bridgeResolveStatus, needsInference } =
     useResolvedBridgeActors(links, api);
+
+  const chainEntries = useMemo((): ChainListEntryResolved[] => {
+    if (links.length === 0) return [];
+    return links
+      .map((link, chainIndex) => ({ link, chainIndex }))
+      .reverse()
+      .map(({ link, chainIndex }) => {
+        const hasStoredBridge =
+          link.connectingActorId != null || link.connectingActorName != null;
+        const inferred =
+          chainIndex > 0 && !hasStoredBridge ? resolvedBridges[chainIndex] : undefined;
+        const bridgePending =
+          chainIndex > 0 &&
+          !hasStoredBridge &&
+          !(chainIndex in resolvedBridges) &&
+          (bridgeResolveStatus === 'loading' ||
+            (bridgeResolveStatus === 'idle' && needsInference));
+        const showBridgeRow =
+          chainIndex > 0 &&
+          (hasStoredBridge ||
+            (chainIndex in resolvedBridges && inferred != null) ||
+            bridgePending);
+        const effectiveActorId = hasStoredBridge
+          ? link.connectingActorId ?? null
+          : inferred?.id ?? null;
+        const effectiveActorName = hasStoredBridge
+          ? link.connectingActorName ?? null
+          : inferred?.name ?? null;
+        const isOldestInChain = chainIndex === 0;
+
+        return {
+          key: `${link.movie.id}-${chainIndex}`,
+          link,
+          chainIndex,
+          sequenceNumber: links.length - chainIndex,
+          showBridgeRow,
+          effectiveActorId,
+          effectiveActorName,
+          bridgePending,
+          isOldestInChain,
+        };
+      });
+  }, [links, resolvedBridges, bridgeResolveStatus, needsInference]);
 
   if (links.length === 0) return null;
 
@@ -71,41 +125,12 @@ export default function ChainList({ prependPanel }: ChainListProps) {
         )}
       </div>
 
-      <div className="space-y-1 pr-1">
-        {links
-          .map((link, chainIndex) => ({ link, chainIndex }))
-          .reverse()
-          .map(({ link, chainIndex }) => {
-            const hasStoredBridge =
-              link.connectingActorId != null || link.connectingActorName != null;
-            const inferred =
-              chainIndex > 0 && !hasStoredBridge ? resolvedBridges[chainIndex] : undefined;
-            const bridgePending =
-              chainIndex > 0 &&
-              !hasStoredBridge &&
-              !(chainIndex in resolvedBridges) &&
-              (bridgeResolveStatus === 'loading' ||
-                (bridgeResolveStatus === 'idle' && needsInference));
-            const showBridgeRow =
-              chainIndex > 0 &&
-              (hasStoredBridge ||
-                (chainIndex in resolvedBridges && inferred != null) ||
-                bridgePending);
-            const effectiveActorId = hasStoredBridge
-              ? link.connectingActorId ?? null
-              : inferred?.id ?? null;
-            const effectiveActorName = hasStoredBridge
-              ? link.connectingActorName ?? null
-              : inferred?.name ?? null;
-
-            /** Forward index 0 = first movie in the chain (oldest); UI list is reversed so this row is last visually. */
-            const isOldestInChain = chainIndex === 0;
-
-            return (
-          <div key={`${link.movie.id}-${chainIndex}`}>
+      <div className="md:hidden space-y-1 pr-1">
+        {chainEntries.map(({ key, link, chainIndex, sequenceNumber, showBridgeRow, effectiveActorId, effectiveActorName, bridgePending, isOldestInChain }) => (
+          <div key={key}>
             <div className="flex items-start gap-1.5 p-1.5 rounded-md hover:bg-gray-800/70 transition-colors group">
               <span className="text-xs text-gray-600 w-5 text-right flex-shrink-0 pt-0.5">
-                {links.length - chainIndex}
+                {sequenceNumber}
               </span>
               {link.movie.poster_path ? (
                 <Link to={`/movie/${link.movie.id}`} className="flex-shrink-0">
@@ -175,8 +200,34 @@ export default function ChainList({ prependPanel }: ChainListProps) {
               </div>
             )}
           </div>
-            );
-          })}
+        ))}
+      </div>
+
+      <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pr-1">
+        {chainEntries.map((entry) => (
+          <ChainGridMovieCard
+            key={entry.key}
+            link={entry.link}
+            chainIndex={entry.chainIndex}
+            sequenceNumber={entry.sequenceNumber}
+            showBridgeRow={entry.showBridgeRow}
+            effectiveActorId={entry.effectiveActorId}
+            effectiveActorName={entry.effectiveActorName}
+            bridgePending={entry.bridgePending}
+            isOldestInChain={entry.isOldestInChain}
+            onRequestRemoveOldest={() => setConfirmAction('removeFirst')}
+            api={api}
+          />
+        ))}
+        <button
+          type="button"
+          onClick={() => startPrependToChain()}
+          className="rounded-lg border border-dashed border-gray-600 bg-gray-900/40 hover:bg-gray-800/80 hover:border-indigo-500/50 transition-colors flex flex-col items-center justify-center aspect-[2/3] min-h-[12rem] text-3xl font-medium text-indigo-400"
+          title={t('addMovieBeforeChainBottom')}
+          aria-label={t('addMovieBeforeChainBottom')}
+        >
+          +
+        </button>
       </div>
 
       <div className="shrink-0 flex flex-col gap-2 pt-2 mt-1 border-t border-gray-800/70 px-1">
@@ -192,10 +243,12 @@ export default function ChainList({ prependPanel }: ChainListProps) {
             </button>
           </div>
         )}
-        {prependMode && prependPanel != null && (
-          <div className="md:hidden w-full min-w-0 px-1 pb-1">{prependPanel}</div>
+        {prependMode && prependPickPanel != null && (
+          <div className="w-full min-w-0 px-1 pb-2 border-t border-gray-800/80 pt-3 mt-1">
+            {prependPickPanel}
+          </div>
         )}
-        <div className="flex items-center gap-2 pl-1 pb-1">
+        <div className="flex items-center gap-2 pl-1 pb-1 md:hidden">
           <button
             type="button"
             onClick={() => startPrependToChain()}
