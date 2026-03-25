@@ -48,12 +48,16 @@ const minimalMovie: Movie = {
   popularity: 0,
 };
 
-function renderWithRouter(movie: Movie, showLink = true) {
+function renderWithRouter(
+  movie: Movie,
+  showLink = true,
+  challengePoints?: number | null
+) {
   return render(
     <MemoryRouter>
       <MovieApiProvider>
         <ChainProvider>
-          <MovieCard movie={movie} showLink={showLink} />
+          <MovieCard movie={movie} showLink={showLink} challengePoints={challengePoints} />
         </ChainProvider>
       </MovieApiProvider>
     </MemoryRouter>
@@ -134,5 +138,11 @@ describe('MovieCard', () => {
   it('shows runtime when provided', async () => {
     renderWithRouter({ ...minimalMovie, runtime: 120 });
     await waitFor(() => expect(screen.getByText('120 min')).toBeInTheDocument());
+  });
+
+  it('shows challenge points when challengePoints is set', async () => {
+    renderWithRouter(minimalMovie, true, 7);
+    await waitFor(() => expect(screen.getByTitle(/points for this chain step/i)).toBeInTheDocument());
+    expect(screen.getByText('7 pts')).toBeInTheDocument();
   });
 });

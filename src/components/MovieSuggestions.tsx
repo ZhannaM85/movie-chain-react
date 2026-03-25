@@ -1,7 +1,7 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import type { Movie } from '../types/movie';
 import type { Actor } from '../types/movie';
-import { localDateString } from '../lib/dateUtils';
+import { defaultPastLinkLoggedDateFromHeadLink, localDateString } from '../lib/dateUtils';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
 import { Link } from 'react-router-dom';
@@ -18,7 +18,19 @@ export default function MovieSuggestions() {
   const api = useMovieApiForChain();
   const { selectedActorId, addMovie, links, cancelActorSelection, prependMode } = useChainContext();
   const { t, i18n } = useTranslation();
-  const [loggedDateForPastLink, setLoggedDateForPastLink] = useState(() => localDateString());
+  const [loggedDateForPastLink, setLoggedDateForPastLink] = useState(() =>
+    prependMode === true ? defaultPastLinkLoggedDateFromHeadLink(links[0]) : localDateString()
+  );
+  const prevPrependRef = useRef(false);
+
+  /** When entering prepend mode, default the date to the former chain head (not today). */
+  useEffect(() => {
+    if (prependMode === true && !prevPrependRef.current) {
+      setLoggedDateForPastLink(defaultPastLinkLoggedDateFromHeadLink(links[0]));
+    }
+    prevPrependRef.current = prependMode === true;
+  }, [prependMode, links]);
+
   const [actor, setActor] = useState<Actor | null>(null);
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
@@ -124,7 +136,7 @@ export default function MovieSuggestions() {
               type="date"
               value={loggedDateForPastLink}
               onChange={(e) => setLoggedDateForPastLink(e.target.value)}
-              className="box-border w-full min-w-0 px-2 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="box-border w-full min-w-0 px-2 py-2 rounded-lg bg-gray-800 border border-gray-700 text-base text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
         </div>
@@ -136,12 +148,12 @@ export default function MovieSuggestions() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={t('searchFilmography')}
-          className="w-full sm:max-w-sm px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+          className="w-full sm:max-w-sm px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-base text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
         />
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortOption)}
-          className="px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition cursor-pointer"
+          className="px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-base text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition cursor-pointer"
         >
           <option value="popularity">{t('sortPopularity')}</option>
           <option value="title-asc">{t('sortTitleAsc')}</option>

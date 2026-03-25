@@ -58,7 +58,7 @@ export default function ChainWatchedDateField({
 
   const id = `${idPrefix}-${chainIndex}`;
   const defaultInput =
-    'px-2 py-1 rounded-md bg-gray-900 border border-gray-700 text-xs text-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500';
+    'px-2 py-1 rounded-md bg-gray-900 border border-gray-700 text-base text-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500';
 
   const compact = labelClassName.includes('sr-only');
 

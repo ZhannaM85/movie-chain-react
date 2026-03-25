@@ -9,6 +9,7 @@ import ConfirmDialog from './ConfirmDialog';
 import { useResolvedBridgeActors } from '../hooks/useResolvedBridgeActors';
 import BridgeActorLabel from './BridgeActorLabel';
 import ChainGridMovieCard from './ChainGridMovieCard';
+import ChallengePointsInline from './ChallengePointsInline';
 import type { ChainLink } from '../types/movie';
 
 interface ChainListProps {
@@ -151,9 +152,14 @@ export default function ChainList({ prependPickPanel }: ChainListProps) {
                     <p className="text-sm text-gray-300 group-hover:text-white line-clamp-2 break-words">
                       {link.movie.title}
                     </p>
-                    <p className="text-xs text-gray-600 mt-0.5">
-                      {link.movie.release_date ? new Date(link.movie.release_date).getFullYear() : ''}
-                    </p>
+                    {(link.movie.release_date || link.stepDifficulty != null) && (
+                      <p className="text-xs text-gray-600 mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                        {link.movie.release_date ? (
+                          <span>{new Date(link.movie.release_date).getFullYear()}</span>
+                        ) : null}
+                        <ChallengePointsInline points={link.stepDifficulty} className="text-gray-600" />
+                      </p>
+                    )}
                   </Link>
                   {isOldestInChain && (
                     <button

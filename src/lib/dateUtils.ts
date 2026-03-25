@@ -16,3 +16,21 @@ export function normalizeLoggedDateForHeatmap(dateStr?: string | null): string {
   if (!t) return localDateString();
   return t;
 }
+
+/**
+ * Default logged day when prepending before the current head: the former first film’s
+ * logged date, else its release date (YYYY-MM-DD prefix), else today.
+ */
+export function defaultPastLinkLoggedDateFromHeadLink(
+  first: { loggedDate?: string | null; movie: { release_date: string } } | undefined
+): string {
+  if (!first) return localDateString();
+  const log = first.loggedDate?.trim();
+  if (log) return log;
+  const rd = first.movie.release_date?.trim();
+  if (rd) {
+    const m = rd.match(/^(\d{4}-\d{2}-\d{2})/);
+    if (m) return m[1];
+  }
+  return localDateString();
+}

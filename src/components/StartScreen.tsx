@@ -85,7 +85,7 @@ export default function StartScreen() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t('searchMoviePlaceholder')}
-          className="box-border w-full min-w-0 max-w-full px-4 py-3 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+          className="box-border w-full min-w-0 max-w-full px-4 py-3 rounded-lg bg-gray-800 border border-gray-700 text-base text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
         />
       </div>
 

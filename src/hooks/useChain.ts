@@ -11,6 +11,7 @@ import {
   ensureDailyCountsFromLinks,
   finalizeChainReset,
   recordStartMovie,
+  syncProfileStreakFromHeatmapData,
   reverseAfterRemoveFirst,
   reverseAfterRemoveLast,
   utcDateString,
@@ -101,6 +102,7 @@ export function useChain() {
     setGamificationProfile((p) => {
       let next = ensureDailyCountsFromLinks(p, state.links);
       next = rebuildActorCastAppearanceCounts(next, state.links);
+      next = syncProfileStreakFromHeatmapData(next, state.links);
       if (next === p) return p;
       saveGamificationProfile(next);
       return next;

@@ -76,7 +76,10 @@ function ChainView({
           ) : heroDetails.movie ? (
             <>
               <div className="order-1">
-                <MovieCard movie={heroDetails.movie} />
+                <MovieCard
+                  movie={heroDetails.movie}
+                  challengePoints={links[heroChainIndex].stepDifficulty}
+                />
               </div>
               <div className="order-3">
                 <UserComment chainIndex={heroChainIndex} />
