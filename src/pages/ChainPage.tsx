@@ -145,25 +145,28 @@ export default function ChainPage() {
           <div key={`${link.movie.id}-${chainIndex}`}>
             <div className="rounded-xl bg-gray-800/60 border border-gray-700/50 hover:border-indigo-500/40 hover:bg-gray-800/80 transition-all overflow-hidden">
               <div className="flex gap-4 p-4 group">
-                <Link to={`/movie/${link.movie.id}`} className="flex gap-4 flex-1 min-w-0">
                 <span className="text-lg font-bold text-gray-600 w-8 text-right flex-shrink-0 pt-1">
                   {links.length - chainIndex}
                 </span>
-                {link.movie.poster_path ? (
-                  <img
-                    src={api.posterUrl(link.movie.poster_path, 'w185')}
-                    alt={link.movie.title}
-                    className="w-20 sm:w-24 rounded-lg object-cover flex-shrink-0"
-                  />
-                ) : (
-                  <div className="w-20 sm:w-24 aspect-[2/3] rounded-lg bg-gray-700 flex items-center justify-center text-gray-500 text-xs flex-shrink-0">
-                    {t('noPoster')}
-                  </div>
-                )}
+                <Link to={`/movie/${link.movie.id}`} className="flex-shrink-0">
+                  {link.movie.poster_path ? (
+                    <img
+                      src={api.posterUrl(link.movie.poster_path, 'w185')}
+                      alt={link.movie.title}
+                      className="w-20 sm:w-24 rounded-lg object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-20 sm:w-24 aspect-[2/3] rounded-lg bg-gray-700 flex items-center justify-center text-gray-500 text-xs flex-shrink-0">
+                      {t('noPoster')}
+                    </div>
+                  )}
+                </Link>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-semibold text-gray-200 group-hover:text-white truncate">
-                    {link.movie.title}
-                  </h3>
+                  <Link to={`/movie/${link.movie.id}`} className="block">
+                    <h3 className="text-lg font-semibold text-gray-200 group-hover:text-white truncate">
+                      {link.movie.title}
+                    </h3>
+                  </Link>
                   {link.loggedDate && (
                     <p className="text-sm text-emerald-400/85 mt-1">
                       <time dateTime={link.loggedDate}>
@@ -192,9 +195,9 @@ export default function ChainPage() {
                     )}
                   </div>
                   {link.movie.overview && (
-                    <p className="text-sm text-gray-500 mt-2 line-clamp-2">
-                      {link.movie.overview}
-                    </p>
+                    <Link to={`/movie/${link.movie.id}`} className="mt-2 block">
+                      <p className="text-sm text-gray-500 line-clamp-2">{link.movie.overview}</p>
+                    </Link>
                   )}
                   {link.comment && (
                     <div className="mt-2 text-sm text-indigo-300/80 italic">
@@ -202,7 +205,6 @@ export default function ChainPage() {
                     </div>
                   )}
                 </div>
-                </Link>
                 {removeOldestControl != null && (
                   <div className="flex flex-col justify-start pt-1">{removeOldestControl}</div>
                 )}

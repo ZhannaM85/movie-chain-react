@@ -143,6 +143,8 @@ describe('MovieCard', () => {
   it('shows challenge points when challengePoints is set', async () => {
     renderWithRouter(minimalMovie, true, 7);
     await waitFor(() => expect(screen.getByTitle(/points for this chain step/i)).toBeInTheDocument());
-    expect(screen.getByText('7 pts')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /7 challenge points/i })
+    ).toBeInTheDocument();
   });
 });
