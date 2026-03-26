@@ -114,7 +114,7 @@ export default function ChallengePointsInline({
   const portalRoot = typeof document !== 'undefined' ? document.body : null;
 
   return (
-    <div className={`inline-flex align-middle ${className}`}>
+    <span className={`inline-flex align-middle ${className}`}>
       <button
         ref={buttonRef}
         type="button"
@@ -145,6 +145,6 @@ export default function ChallengePointsInline({
             portalRoot
           )
         : null}
-    </div>
+    </span>
   );
 }
