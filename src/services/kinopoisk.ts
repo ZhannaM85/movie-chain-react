@@ -239,8 +239,7 @@ export function createKinopoiskApi(): MovieApi {
     },
 
     async getActorDetails(personId: number): Promise<Actor> {
-      const cached = actorCache.get(personId);
-      if (cached) return cached;
+      /** Locale is baked into `mapKpStaffToActor` — do not reuse an id-only memory entry from another language. */
       const lsKey = `kp:${localeSegment()}:actor:${personId}`;
       const persisted = cacheGet<Actor>(lsKey);
       if (persisted) {
