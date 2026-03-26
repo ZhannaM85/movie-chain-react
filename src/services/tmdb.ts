@@ -108,6 +108,18 @@ export async function searchMovies(query: string): Promise<Movie[]> {
 }
 
 /**
+ * Fetches core movie fields for the current locale (no credits) — lighter than {@link getMovieDetails}.
+ */
+export async function getMovieLocaleSnapshot(movieId: number): Promise<Movie> {
+  const key = `tmdb:${localeSegment()}:movieSnapshot:${movieId}`;
+  const hit = cacheGet<Movie>(key);
+  if (hit) return hit;
+  const data = await fetchTmdb<Movie>(`/movie/${movieId}`);
+  cacheSet(key, data, TTL_ENTITY_MS);
+  return data;
+}
+
+/**
  * Fetches detailed information for a movie, including credits.
  *
  * @param {number} movieId - The TMDB movie identifier.

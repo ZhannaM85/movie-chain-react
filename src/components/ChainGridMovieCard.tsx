@@ -5,6 +5,7 @@ import type { MovieApi } from '../services/movieApi';
 import ChainWatchedDateField from './ChainWatchedDateField';
 import BridgeActorLabel from './BridgeActorLabel';
 import ChallengePointsInline from './ChallengePointsInline';
+import { useResolvedMovieTitle } from '../hooks/useResolvedMovieTitle';
 
 export interface ChainGridMovieCardProps {
   link: ChainLink;
@@ -36,6 +37,11 @@ export default function ChainGridMovieCard({
 }: ChainGridMovieCardProps) {
   const { t } = useTranslation();
   const movie = link.movie;
+  const { title: resolvedTitle, loading: titleLoading } = useResolvedMovieTitle(
+    movie.id,
+    movie.title,
+    api
+  );
   const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
 
   return (
@@ -44,7 +50,7 @@ export default function ChainGridMovieCard({
         {movie.poster_path ? (
           <img
             src={api.posterUrl(movie.poster_path, 'w342')}
-            alt={movie.title}
+            alt={resolvedTitle || movie.title}
             className="w-full aspect-[2/3] object-cover"
           />
         ) : (
@@ -86,7 +92,11 @@ export default function ChainGridMovieCard({
             to={`/movie/${movie.id}`}
             className="text-sm font-medium text-gray-200 hover:text-white line-clamp-2 break-words"
           >
-            {movie.title}
+            {titleLoading ? (
+              <span className="text-gray-500">{t('bridgeActorNameLoading')}</span>
+            ) : (
+              resolvedTitle
+            )}
           </Link>
           {(year !== '' || link.stepDifficulty != null) && (
             <p className="text-xs text-gray-500 mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">

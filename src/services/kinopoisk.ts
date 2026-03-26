@@ -133,8 +133,6 @@ const actorCache = new Map<number, Actor>();
 const MAX_FILMOGRAPHY_FETCH = 12;
 
 async function getFilmDetails(filmId: number): Promise<Movie> {
-  const cached = filmCache.get(filmId);
-  if (cached) return cached;
   const lsKey = `kp:${localeSegment()}:film:${filmId}`;
   const persisted = cacheGet<Movie>(lsKey);
   if (persisted) {
@@ -172,6 +170,10 @@ export function createKinopoiskApi(): MovieApi {
       const list = (data.items ?? []).map(mapKpFilmToMovie);
       cacheSet(key, list, TTL_LIST_MS);
       return list;
+    },
+
+    async getMovieLocaleSnapshot(movieId: number): Promise<Movie> {
+      return getFilmDetails(movieId);
     },
 
     async searchMovies(query: string): Promise<Movie[]> {
