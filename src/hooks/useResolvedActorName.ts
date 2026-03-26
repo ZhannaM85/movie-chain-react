@@ -3,7 +3,10 @@ import { useTranslation } from 'react-i18next';
 import type { MovieApi } from '../services/movieApi';
 
 /**
- * When we only have a person id (e.g. bridge link lost the name), fetch display name from the API.
+ * Resolves a bridge actor label for the current UI language.
+ * When we have a person id, always fetch from the API (TMDB/KP requests use i18n locale) so a name
+ * saved while another language was active does not stick after the user switches languages.
+ * `explicitName` is only a fallback when there is no id or the fetch fails.
  */
 export function useResolvedActorName(
   actorId: number | null,
@@ -14,8 +17,12 @@ export function useResolvedActorName(
   const [loading, setLoading] = useState(false);
   const [fetchedName, setFetchedName] = useState<string | null>(null);
 
-  const hasExplicit = explicitName != null && String(explicitName).trim() !== '';
-  const shouldFetch = actorId != null && !hasExplicit;
+  const trimmedExplicit =
+    explicitName != null && String(explicitName).trim() !== ''
+      ? String(explicitName).trim()
+      : null;
+
+  const shouldFetch = actorId != null;
 
   useEffect(() => {
     if (!shouldFetch) {
@@ -42,8 +49,8 @@ export function useResolvedActorName(
     };
   }, [actorId, shouldFetch, api, i18n.resolvedLanguage, i18n.language]);
 
-  if (hasExplicit) {
-    return { text: String(explicitName).trim(), loading: false };
+  if (!shouldFetch) {
+    return { text: trimmedExplicit ?? '', loading: false };
   }
   if (loading) {
     return { text: '', loading: true };
@@ -51,5 +58,5 @@ export function useResolvedActorName(
   if (fetchedName) {
     return { text: fetchedName, loading: false };
   }
-  return { text: '', loading: false };
+  return { text: trimmedExplicit ?? '', loading: false };
 }

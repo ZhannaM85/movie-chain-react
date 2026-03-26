@@ -10,6 +10,159 @@ import { useResolvedBridgeActors } from '../hooks/useResolvedBridgeActors';
 import BridgeActorLabel from '../components/BridgeActorLabel';
 import ChallengePointsInline from '../components/ChallengePointsInline';
 import MovieOverviewClamp from '../components/MovieOverviewClamp';
+import { useResolvedMovieTitle } from '../hooks/useResolvedMovieTitle';
+import type { MovieApi } from '../services/movieApi';
+import type { ChainLink } from '../types/movie';
+
+function ChainPageChainItem({
+  link,
+  chainIndex,
+  sequenceNumber,
+  showBridgeRow,
+  effectiveActorId,
+  effectiveActorName,
+  bridgePending,
+  isOldestInChain,
+  api,
+  onRequestRemoveFirst,
+}: {
+  link: ChainLink;
+  chainIndex: number;
+  sequenceNumber: number;
+  showBridgeRow: boolean;
+  effectiveActorId: number | null;
+  effectiveActorName: string | null;
+  bridgePending: boolean;
+  isOldestInChain: boolean;
+  api: MovieApi;
+  onRequestRemoveFirst: () => void;
+}) {
+  const { t, i18n } = useTranslation();
+  const { title: resolvedTitle, loading: titleLoading } = useResolvedMovieTitle(
+    link.movie.id,
+    link.movie.title,
+    api
+  );
+
+  const removeOldestControl: ReactNode = isOldestInChain ? (
+    <button
+      type="button"
+      onClick={onRequestRemoveFirst}
+      className="text-xs shrink-0 px-2 py-1 rounded-md border border-gray-600 text-gray-400 hover:text-red-300 hover:border-red-500/40 transition-colors"
+    >
+      {t('removeFirstFromChain')}
+    </button>
+  ) : null;
+
+  return (
+    <div>
+      <div className="rounded-xl bg-gray-800/60 border border-gray-700/50 hover:border-indigo-500/40 hover:bg-gray-800/80 transition-all overflow-hidden">
+        <div className="flex gap-4 p-4 group">
+          <span className="text-lg font-bold text-gray-600 w-8 text-right flex-shrink-0 pt-1">
+            {sequenceNumber}
+          </span>
+          <Link to={`/movie/${link.movie.id}`} className="flex-shrink-0">
+            {link.movie.poster_path ? (
+              <img
+                src={api.posterUrl(link.movie.poster_path, 'w185')}
+                alt={resolvedTitle || link.movie.title}
+                className="w-20 sm:w-24 rounded-lg object-cover flex-shrink-0"
+              />
+            ) : (
+              <div className="w-20 sm:w-24 aspect-[2/3] rounded-lg bg-gray-700 flex items-center justify-center text-gray-500 text-xs flex-shrink-0">
+                {t('noPoster')}
+              </div>
+            )}
+          </Link>
+          <div className="flex-1 min-w-0">
+            <Link to={`/movie/${link.movie.id}`} className="block">
+              <h3 className="text-lg font-semibold text-gray-200 group-hover:text-white truncate">
+                {titleLoading ? (
+                  <span className="text-gray-500">{t('bridgeActorNameLoading')}</span>
+                ) : (
+                  resolvedTitle
+                )}
+              </h3>
+            </Link>
+            {link.loggedDate && (
+              <p className="text-sm text-emerald-400/85 mt-1">
+                <time dateTime={link.loggedDate}>
+                  {t('chainWatchedOn', {
+                    date: new Intl.DateTimeFormat(i18n.language, {
+                      dateStyle: 'long',
+                    }).format(new Date(`${link.loggedDate}T12:00:00`)),
+                  })}
+                </time>
+              </p>
+            )}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-400 mt-1">
+              <span>
+                {link.movie.release_date
+                  ? new Date(link.movie.release_date).getFullYear()
+                  : t('na')}
+              </span>
+              <ChallengePointsInline points={link.stepDifficulty} />
+              {link.movie.vote_average > 0 && (
+                <span className="flex items-center gap-1">
+                  <svg className="w-3.5 h-3.5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  {link.movie.vote_average.toFixed(1)}
+                </span>
+              )}
+            </div>
+            {link.movie.overview && (
+              <div className="mt-2 min-w-0">
+                <MovieOverviewClamp
+                  overview={link.movie.overview}
+                  className="text-sm text-gray-500"
+                  resetKey={`${link.movie.id}-${chainIndex}`}
+                  linkTo={`/movie/${link.movie.id}`}
+                />
+              </div>
+            )}
+            {link.comment && (
+              <div className="mt-2 text-sm text-indigo-300/80 italic">
+                &ldquo;{link.comment}&rdquo;
+              </div>
+            )}
+          </div>
+          {removeOldestControl != null && (
+            <div className="flex flex-col justify-start pt-1">{removeOldestControl}</div>
+          )}
+        </div>
+        <div className="px-4 pb-4 pt-2 border-t border-gray-700/40 bg-gray-900/15">
+          <ChainWatchedDateField chainIndex={chainIndex} idPrefix="chain-page" />
+        </div>
+      </div>
+      {showBridgeRow && (
+        <div className="flex items-center gap-3 py-3 pl-6 min-w-0">
+          <div className="w-px h-6 bg-indigo-500/40 shrink-0" />
+          {bridgePending ? (
+            <span className="flex items-center gap-2 text-sm text-gray-500">
+              <span className="inline-block w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+              {t('bridgeActorResolving')}
+            </span>
+          ) : (
+            <Link
+              to={effectiveActorId != null ? `/actor/${effectiveActorId}` : '#'}
+              className="flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 transition-colors min-w-0"
+            >
+              {effectiveActorId != null && <ActorAvatar actorId={effectiveActorId} api={api} />}
+              {effectiveActorId != null && (
+                <BridgeActorLabel
+                  actorId={effectiveActorId}
+                  explicitName={effectiveActorName}
+                  api={api}
+                />
+              )}
+            </Link>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 /**
  * Dedicated page that visualizes the full movie chain with connecting actors.
@@ -21,7 +174,7 @@ export default function ChainPage() {
   const navigate = useNavigate();
   const { links, resetChain, undoLast, removeFirst, gamificationProfile, startPrependToChain } =
     useChainContext();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [confirmAction, setConfirmAction] = useState<null | 'undoLast' | 'removeFirst'>(null);
   const recap = useMemo(() => buildChainRecap(links), [links]);
   const { resolved: resolvedBridges, status: bridgeResolveStatus, needsInference } =
@@ -129,124 +282,20 @@ export default function ChainPage() {
             /** Forward index 0 = oldest link; reversed list shows it at the bottom. */
             const isOldestInChain = chainIndex === 0;
 
-            let removeOldestControl: ReactNode = null;
-            if (isOldestInChain) {
-              removeOldestControl = (
-                <button
-                  type="button"
-                  onClick={() => setConfirmAction('removeFirst')}
-                  className="text-xs shrink-0 px-2 py-1 rounded-md border border-gray-600 text-gray-400 hover:text-red-300 hover:border-red-500/40 transition-colors"
-                >
-                  {t('removeFirstFromChain')}
-                </button>
-              );
-            }
-
             return (
-          <div key={`${link.movie.id}-${chainIndex}`}>
-            <div className="rounded-xl bg-gray-800/60 border border-gray-700/50 hover:border-indigo-500/40 hover:bg-gray-800/80 transition-all overflow-hidden">
-              <div className="flex gap-4 p-4 group">
-                <span className="text-lg font-bold text-gray-600 w-8 text-right flex-shrink-0 pt-1">
-                  {links.length - chainIndex}
-                </span>
-                <Link to={`/movie/${link.movie.id}`} className="flex-shrink-0">
-                  {link.movie.poster_path ? (
-                    <img
-                      src={api.posterUrl(link.movie.poster_path, 'w185')}
-                      alt={link.movie.title}
-                      className="w-20 sm:w-24 rounded-lg object-cover flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="w-20 sm:w-24 aspect-[2/3] rounded-lg bg-gray-700 flex items-center justify-center text-gray-500 text-xs flex-shrink-0">
-                      {t('noPoster')}
-                    </div>
-                  )}
-                </Link>
-                <div className="flex-1 min-w-0">
-                  <Link to={`/movie/${link.movie.id}`} className="block">
-                    <h3 className="text-lg font-semibold text-gray-200 group-hover:text-white truncate">
-                      {link.movie.title}
-                    </h3>
-                  </Link>
-                  {link.loggedDate && (
-                    <p className="text-sm text-emerald-400/85 mt-1">
-                      <time dateTime={link.loggedDate}>
-                        {t('chainWatchedOn', {
-                          date: new Intl.DateTimeFormat(i18n.language, {
-                            dateStyle: 'long',
-                          }).format(new Date(`${link.loggedDate}T12:00:00`)),
-                        })}
-                      </time>
-                    </p>
-                  )}
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-400 mt-1">
-                    <span>
-                      {link.movie.release_date
-                        ? new Date(link.movie.release_date).getFullYear()
-                        : t('na')}
-                    </span>
-                    <ChallengePointsInline points={link.stepDifficulty} />
-                    {link.movie.vote_average > 0 && (
-                      <span className="flex items-center gap-1">
-                        <svg className="w-3.5 h-3.5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                        {link.movie.vote_average.toFixed(1)}
-                      </span>
-                    )}
-                  </div>
-                  {link.movie.overview && (
-                    <div className="mt-2 min-w-0">
-                      <MovieOverviewClamp
-                        overview={link.movie.overview}
-                        className="text-sm text-gray-500"
-                        resetKey={`${link.movie.id}-${chainIndex}`}
-                        linkTo={`/movie/${link.movie.id}`}
-                      />
-                    </div>
-                  )}
-                  {link.comment && (
-                    <div className="mt-2 text-sm text-indigo-300/80 italic">
-                      &ldquo;{link.comment}&rdquo;
-                    </div>
-                  )}
-                </div>
-                {removeOldestControl != null && (
-                  <div className="flex flex-col justify-start pt-1">{removeOldestControl}</div>
-                )}
-              </div>
-              <div className="px-4 pb-4 pt-2 border-t border-gray-700/40 bg-gray-900/15">
-                <ChainWatchedDateField chainIndex={chainIndex} idPrefix="chain-page" />
-              </div>
-            </div>
-            {showBridgeRow && (
-              <div className="flex items-center gap-3 py-3 pl-6 min-w-0">
-                <div className="w-px h-6 bg-indigo-500/40 shrink-0" />
-                {bridgePending ? (
-                  <span className="flex items-center gap-2 text-sm text-gray-500">
-                    <span className="inline-block w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
-                    {t('bridgeActorResolving')}
-                  </span>
-                ) : (
-                  <Link
-                    to={effectiveActorId != null ? `/actor/${effectiveActorId}` : '#'}
-                    className="flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 transition-colors min-w-0"
-                  >
-                    {effectiveActorId != null && (
-                      <ActorAvatar actorId={effectiveActorId} api={api} />
-                    )}
-                    {effectiveActorId != null && (
-                      <BridgeActorLabel
-                        actorId={effectiveActorId}
-                        explicitName={effectiveActorName}
-                        api={api}
-                      />
-                    )}
-                  </Link>
-                )}
-              </div>
-            )}
-          </div>
+              <ChainPageChainItem
+                key={`${link.movie.id}-${chainIndex}`}
+                link={link}
+                chainIndex={chainIndex}
+                sequenceNumber={links.length - chainIndex}
+                showBridgeRow={showBridgeRow}
+                effectiveActorId={effectiveActorId}
+                effectiveActorName={effectiveActorName}
+                bridgePending={bridgePending}
+                isOldestInChain={isOldestInChain}
+                api={api}
+                onRequestRemoveFirst={() => setConfirmAction('removeFirst')}
+              />
             );
           })}
         <div className="mt-4 flex items-center">

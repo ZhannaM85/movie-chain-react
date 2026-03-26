@@ -10,7 +10,9 @@ import { useResolvedBridgeActors } from '../hooks/useResolvedBridgeActors';
 import BridgeActorLabel from './BridgeActorLabel';
 import ChainGridMovieCard from './ChainGridMovieCard';
 import ChallengePointsInline from './ChallengePointsInline';
+import { useResolvedMovieTitle } from '../hooks/useResolvedMovieTitle';
 import type { ChainLink } from '../types/movie';
+import type { MovieApi } from '../services/movieApi';
 
 interface ChainListProps {
   /** When prepending, pick-actor / pick-movie UI is shown here (by the banner) instead of only at the top of the page. */
@@ -28,6 +30,124 @@ type ChainListEntryResolved = {
   bridgePending: boolean;
   isOldestInChain: boolean;
 };
+
+function ChainListMobileRow({
+  link,
+  chainIndex,
+  sequenceNumber,
+  showBridgeRow,
+  effectiveActorId,
+  effectiveActorName,
+  bridgePending,
+  isOldestInChain,
+  api,
+  onRequestRemoveFirst,
+}: {
+  link: ChainLink;
+  chainIndex: number;
+  sequenceNumber: number;
+  showBridgeRow: boolean;
+  effectiveActorId: number | null;
+  effectiveActorName: string | null;
+  bridgePending: boolean;
+  isOldestInChain: boolean;
+  api: MovieApi;
+  onRequestRemoveFirst: () => void;
+}) {
+  const { t } = useTranslation();
+  const { title: resolvedTitle, loading: titleLoading } = useResolvedMovieTitle(
+    link.movie.id,
+    link.movie.title,
+    api
+  );
+
+  return (
+    <div>
+      <div className="flex items-start gap-1.5 p-1.5 rounded-md hover:bg-gray-800/70 transition-colors group">
+        <span className="text-xs text-gray-600 w-5 text-right flex-shrink-0 pt-0.5">
+          {sequenceNumber}
+        </span>
+        {link.movie.poster_path ? (
+          <Link to={`/movie/${link.movie.id}`} className="flex-shrink-0">
+            <img
+              src={api.posterUrl(link.movie.poster_path, 'w185')}
+              alt={resolvedTitle || link.movie.title}
+              className="w-8 h-12 rounded object-cover"
+            />
+          </Link>
+        ) : (
+          <Link to={`/movie/${link.movie.id}`} className="flex-shrink-0">
+            <div className="w-8 h-12 rounded bg-gray-700" aria-hidden />
+          </Link>
+        )}
+        <div className="min-w-0 flex-1 flex flex-col gap-0.5">
+          <div className="flex items-start gap-1 min-w-0">
+            <div className="min-w-0 flex-1 flex flex-col gap-0.5">
+              <Link to={`/movie/${link.movie.id}`} className="min-w-0 block">
+                <p className="text-sm text-gray-300 group-hover:text-white line-clamp-2 break-words">
+                  {titleLoading ? (
+                    <span className="text-gray-500">{t('bridgeActorNameLoading')}</span>
+                  ) : (
+                    resolvedTitle
+                  )}
+                </p>
+              </Link>
+              {(link.movie.release_date || link.stepDifficulty != null) && (
+                <p className="text-xs text-gray-600 mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                  {link.movie.release_date ? (
+                    <span>{new Date(link.movie.release_date).getFullYear()}</span>
+                  ) : null}
+                  <ChallengePointsInline points={link.stepDifficulty} className="text-gray-600" />
+                </p>
+              )}
+            </div>
+            {isOldestInChain && (
+              <button
+                type="button"
+                onClick={onRequestRemoveFirst}
+                className="shrink-0 text-[10px] text-gray-500 hover:text-red-400 transition-colors px-0.5 py-0.5"
+                title={t('removeFirstFromChain')}
+              >
+                {t('removeFirstFromChain')}
+              </button>
+            )}
+          </div>
+          <ChainWatchedDateField
+            chainIndex={chainIndex}
+            idPrefix="chain-sidebar"
+            labelClassName="sr-only"
+            showUnsetHint={false}
+            compactContentAlign="start"
+            inputClassName="w-full min-w-0 max-w-[9.5rem] px-1 py-0.5 rounded bg-gray-900 border border-gray-600 text-[10px] text-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="flex flex-col items-stretch gap-0.5 w-full pt-0.5"
+          />
+        </div>
+      </div>
+      {showBridgeRow && (
+        <div className="flex items-center gap-1.5 py-1 pl-3 min-w-0">
+          <div className="w-px h-3 bg-gray-700 shrink-0" />
+          {bridgePending ? (
+            <span className="text-[10px] text-gray-500 truncate">{t('bridgeActorResolving')}</span>
+          ) : effectiveActorId != null ? (
+            <Link
+              to={`/actor/${effectiveActorId}`}
+              className="text-xs text-indigo-400 hover:text-indigo-300 truncate"
+            >
+              <BridgeActorLabel
+                actorId={effectiveActorId}
+                explicitName={effectiveActorName}
+                api={api}
+                compact
+              />
+            </Link>
+          ) : (
+            <span className="text-xs text-indigo-400 truncate">{effectiveActorName}</span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 /**
  * Sidebar list that summarizes the current movie chain with quick navigation.
@@ -129,88 +249,33 @@ export default function ChainList({ prependPickPanel }: ChainListProps) {
       </div>
 
       <div className="md:hidden space-y-1 pr-1">
-        {chainEntries.map(({ key, link, chainIndex, sequenceNumber, showBridgeRow, effectiveActorId, effectiveActorName, bridgePending, isOldestInChain }) => (
-          <div key={key}>
-            <div className="flex items-start gap-1.5 p-1.5 rounded-md hover:bg-gray-800/70 transition-colors group">
-              <span className="text-xs text-gray-600 w-5 text-right flex-shrink-0 pt-0.5">
-                {sequenceNumber}
-              </span>
-              {link.movie.poster_path ? (
-                <Link to={`/movie/${link.movie.id}`} className="flex-shrink-0">
-                  <img
-                    src={api.posterUrl(link.movie.poster_path, 'w185')}
-                    alt={link.movie.title}
-                    className="w-8 h-12 rounded object-cover"
-                  />
-                </Link>
-              ) : (
-                <Link to={`/movie/${link.movie.id}`} className="flex-shrink-0">
-                  <div className="w-8 h-12 rounded bg-gray-700" aria-hidden />
-                </Link>
-              )}
-              <div className="min-w-0 flex-1 flex flex-col gap-0.5">
-                <div className="flex items-start gap-1 min-w-0">
-                  <div className="min-w-0 flex-1 flex flex-col gap-0.5">
-                    <Link to={`/movie/${link.movie.id}`} className="min-w-0 block">
-                      <p className="text-sm text-gray-300 group-hover:text-white line-clamp-2 break-words">
-                        {link.movie.title}
-                      </p>
-                    </Link>
-                    {(link.movie.release_date || link.stepDifficulty != null) && (
-                      <p className="text-xs text-gray-600 mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                        {link.movie.release_date ? (
-                          <span>{new Date(link.movie.release_date).getFullYear()}</span>
-                        ) : null}
-                        <ChallengePointsInline points={link.stepDifficulty} className="text-gray-600" />
-                      </p>
-                    )}
-                  </div>
-                  {isOldestInChain && (
-                    <button
-                      type="button"
-                      onClick={() => setConfirmAction('removeFirst')}
-                      className="shrink-0 text-[10px] text-gray-500 hover:text-red-400 transition-colors px-0.5 py-0.5"
-                      title={t('removeFirstFromChain')}
-                    >
-                      {t('removeFirstFromChain')}
-                    </button>
-                  )}
-                </div>
-                <ChainWatchedDateField
-                  chainIndex={chainIndex}
-                  idPrefix="chain-sidebar"
-                  labelClassName="sr-only"
-                  showUnsetHint={false}
-                  compactContentAlign="start"
-                  inputClassName="w-full min-w-0 max-w-[9.5rem] px-1 py-0.5 rounded bg-gray-900 border border-gray-600 text-[10px] text-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                  className="flex flex-col items-stretch gap-0.5 w-full pt-0.5"
-                />
-              </div>
-            </div>
-            {showBridgeRow && (
-              <div className="flex items-center gap-1.5 py-1 pl-3 min-w-0">
-                <div className="w-px h-3 bg-gray-700 shrink-0" />
-                {bridgePending ? (
-                  <span className="text-[10px] text-gray-500 truncate">{t('bridgeActorResolving')}</span>
-                ) : effectiveActorId != null ? (
-                  <Link
-                    to={`/actor/${effectiveActorId}`}
-                    className="text-xs text-indigo-400 hover:text-indigo-300 truncate"
-                  >
-                    <BridgeActorLabel
-                      actorId={effectiveActorId}
-                      explicitName={effectiveActorName}
-                      api={api}
-                      compact
-                    />
-                  </Link>
-                ) : (
-                  <span className="text-xs text-indigo-400 truncate">{effectiveActorName}</span>
-                )}
-              </div>
-            )}
-          </div>
-        ))}
+        {chainEntries.map(
+          ({
+            key,
+            link,
+            chainIndex,
+            sequenceNumber,
+            showBridgeRow,
+            effectiveActorId,
+            effectiveActorName,
+            bridgePending,
+            isOldestInChain,
+          }) => (
+            <ChainListMobileRow
+              key={key}
+              link={link}
+              chainIndex={chainIndex}
+              sequenceNumber={sequenceNumber}
+              showBridgeRow={showBridgeRow}
+              effectiveActorId={effectiveActorId}
+              effectiveActorName={effectiveActorName}
+              bridgePending={bridgePending}
+              isOldestInChain={isOldestInChain}
+              api={api}
+              onRequestRemoveFirst={() => setConfirmAction('removeFirst')}
+            />
+          )
+        )}
       </div>
 
       <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pr-1">

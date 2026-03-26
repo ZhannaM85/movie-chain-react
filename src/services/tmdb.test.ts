@@ -6,6 +6,7 @@ import {
   getTrendingMovies,
   searchMovies,
   getMovieDetails,
+  getMovieLocaleSnapshot,
   getActorDetails,
   getActorMovieCredits,
   getMovieCredits,
@@ -122,6 +123,21 @@ describe('TMDB API functions', () => {
     expect(url.pathname).toBe('/3/movie/10');
     expect(url.searchParams.get('append_to_response')).toBe('credits');
     expect(result).toEqual(movieWithCredits);
+  });
+
+  it('getMovieLocaleSnapshot fetches movie without credits', async () => {
+    const movie = { id: 11, title: 'Snapshot' };
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(movie),
+    });
+
+    const result = await getMovieLocaleSnapshot(11);
+
+    const url = new URL(fetchMock.mock.calls[0][0]);
+    expect(url.pathname).toBe('/3/movie/11');
+    expect(url.searchParams.get('append_to_response')).toBeNull();
+    expect(result).toEqual(movie);
   });
 
   it('getActorDetails fetches person endpoint', async () => {

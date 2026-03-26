@@ -2,6 +2,7 @@ import type { MovieApi } from './movieApi';
 import {
   getTrendingMovies,
   searchMovies,
+  getMovieLocaleSnapshot,
   getMovieDetails,
   getMovieCredits,
   getActorDetails,
@@ -15,6 +16,7 @@ export function createTmdbApi(): MovieApi {
     source: 'tmdb',
     getTrendingMovies,
     searchMovies,
+    getMovieLocaleSnapshot,
     getMovieDetails,
     getMovieCredits,
     getActorDetails,

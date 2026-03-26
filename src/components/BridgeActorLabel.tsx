@@ -12,7 +12,7 @@ type Props = {
 };
 
 /**
- * Shows a bridge actor’s name, fetching from the API when we only have an id (avoids “Actor #id” when TMDB has the name).
+ * Shows a bridge actor’s name for the active UI language (refetches by id so stored names don’t freeze a locale).
  */
 export default function BridgeActorLabel({ actorId, explicitName, api, compact }: Props) {
   const { t } = useTranslation();
