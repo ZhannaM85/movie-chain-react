@@ -41,6 +41,17 @@ export default function AboutPage() {
           <li>{t('aboutRule3')}</li>
           <li>{t('aboutRule4')}</li>
           <li>{t('aboutRule5')}</li>
+          <li>{t('aboutRule6')}</li>
+        </ul>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-xl font-semibold text-white">{t('aboutStatsTitle')}</h2>
+        <p className="text-gray-300">{t('aboutStatsIntro')}</p>
+        <ul className="list-disc list-inside space-y-2 text-gray-300 mt-2">
+          <li>{t('aboutStatsItem1')}</li>
+          <li>{t('aboutStatsItem2')}</li>
+          <li>{t('aboutStatsItem3')}</li>
         </ul>
       </section>
 

@@ -169,26 +169,40 @@ const resources = {
       confirmRemoveMovie: 'Remove',
       aboutTitle: 'About Movie Chain',
       aboutIntro:
-        'Movie Chain is a small learning project where you build a path of movies that are all connected through the actors who star in them.',
+        'Movie Chain is a small learning project where you build a path of movies connected through shared cast. The UI is available in English and Russian; your chain, notes, and stats stay in this browser only.',
       aboutHowWorks: 'How the chain works',
-      aboutStep1: 'Pick a starting movie from the home screen (trending list or search).',
+      aboutStep1:
+        'From the home screen, pick a starting movie (trending this week, search, or the daily challenge).',
       aboutStep2: 'From that movie, pick an actor from the cast grid.',
-      aboutStep3: "You'll see a list of other movies that actor has appeared in. Choose one to continue the chain.",
+      aboutStep3: "Choose another movie from that actor's filmography to add the next link.",
       aboutStep4:
-        "On the new movie, pick a different actor from the cast (you can't reuse the actor that just brought you here).",
-      aboutStep5: 'Repeat steps 3-4 to grow your chain as long as you like.',
+        "On the new movie, pick a different actor from the cast — you cannot reuse the actor who just linked you to this film.",
+      aboutStep5:
+        'Repeat to grow your chain. Open the Chain page for a full list of every film, the bridge actor between each pair, per-link challenge points, and optional logged dates for your activity stats.',
       aboutRules: 'Rules & constraints',
       aboutRule1: 'Each new movie must share an actor with the previous movie in the chain.',
       aboutRule2:
-        'The connecting actor is shown between movies in the chain overview, so you can always see how you got from one to the next.',
+        'The connecting actor is shown between movies on the Chain page, so you can always see how you moved from one film to the next.',
       aboutRule3:
-        'When choosing an actor on a movie, the actor who connected you to that movie is disabled - you have to pick someone else.',
+        'When choosing an actor on a movie, the actor who connected you to that movie is disabled — you must pick someone else.',
       aboutRule4:
-        "You can use the Undo actions to remove the last movie in the chain, or Change actor when you're browsing an actor's filmography to go back and pick a different actor.",
-      aboutRule5: 'Comments you add for each movie are stored locally in your browser, along with the chain itself.',
+        "Use Undo to remove the newest chain link, Remove oldest to drop the first film, or Change actor while browsing filmography to pick a different connector.",
+      aboutRule5:
+        'Notes, the chain, gamification data, and language choice are stored locally in your browser (localStorage).',
+      aboutRule6:
+        'You can prepend an older movie before the first film: choose an actor from the first movie who also appears in the earlier title you add.',
+      aboutStatsTitle: 'Stats & achievements',
+      aboutStatsIntro:
+        'The Stats page summarizes your history on this device. Aside from loading posters and credits from the movie APIs, nothing is uploaded to a custom backend.',
+      aboutStatsItem1:
+        'Activity heatmap and streaks use each link’s logged date (it defaults to the day you added the film).',
+      aboutStatsItem2:
+        'Challenge points per step and in total, longest chain, top bridge actors, cast-frequency stats, and badges for milestones like chain length and spanning decades.',
+      aboutStatsItem3:
+        'The home screen can offer a daily challenge start movie and remember your best run length from that start.',
       aboutTech: 'Tech behind the scenes',
       aboutTechText:
-        'The app is built with React, TypeScript, Vite, Tailwind CSS, and the TMDB API (with Kinopoisk fallback) for movie and actor data. Your chain and notes are saved to localStorage so you can come back to them later on the same device.',
+        'React 19, TypeScript, Vite, Tailwind CSS, React Router, and react-i18next. Movie data comes from the TMDB API, with an unofficial Kinopoisk API as fallback when TMDB is unavailable. Vitest covers important logic. Everything persists in localStorage on this device.',
       aboutFooterBefore: 'Designed and implemented by',
       aboutFooterAfter: 'with love, passion, and Cursor',
       userStatsTitle: 'Your stats',
@@ -420,24 +434,40 @@ const resources = {
       confirmRemoveMovie: 'Убрать',
       aboutTitle: 'О Movie Chain',
       aboutIntro:
-        'Movie Chain - это небольшой учебный проект, где вы строите путь из фильмов, связанных между собой актерами, которые в них снимаются.',
+        'Movie Chain — небольшой учебный проект: вы строите цепочку фильмов через общих актёров. Интерфейс на английском и русском; цепочка, заметки и статистика хранятся только в этом браузере.',
       aboutHowWorks: 'Как работает цепочка',
-      aboutStep1: 'Выберите стартовый фильм на главном экране (популярные или поиск).',
-      aboutStep2: 'Из этого фильма выберите актера в сетке актеров.',
-      aboutStep3: 'Вы увидите список других фильмов с этим актером. Выберите один, чтобы продолжить цепочку.',
-      aboutStep4: 'В новом фильме выберите другого актера (нельзя повторно использовать предыдущего связующего актера).',
-      aboutStep5: 'Повторяйте шаги 3-4 и продолжайте цепочку сколько угодно.',
+      aboutStep1:
+        'На главном экране выберите стартовый фильм (популярное за неделю, поиск или задание дня).',
+      aboutStep2: 'Из этого фильма выберите актёра в сетке состава.',
+      aboutStep3: 'Выберите другой фильм из фильмографии этого актёра — это следующее звено.',
+      aboutStep4:
+        'В новом фильме выберите другого актёра — нельзя снова взять того, кто только что связал вас с этим фильмом.',
+      aboutStep5:
+        'Повторяйте, чтобы удлинять цепочку. Страница «Цепочка» показывает все фильмы, актёра-мост между соседними фильмами, очки сложности за шаг и при необходимости день для статистики.',
       aboutRules: 'Правила и ограничения',
-      aboutRule1: 'Каждый новый фильм должен иметь общего актера с предыдущим фильмом в цепочке.',
+      aboutRule1: 'Каждый новый фильм должен иметь общего актёра с предыдущим фильмом в цепочке.',
       aboutRule2:
-        'Связующий актер показывается между фильмами в обзоре цепочки, поэтому всегда видно, как вы перешли от одного фильма к другому.',
-      aboutRule3: 'При выборе актера в фильме актер, который привел вас в этот фильм, недоступен - нужно выбрать другого.',
+        'Связующий актёр виден между фильмами на странице цепочки — всегда понятно, как вы перешли от одного фильма к другому.',
+      aboutRule3:
+        'При выборе актёра в фильме тот, кто привёл вас в этот фильм, недоступен — нужно выбрать другого.',
       aboutRule4:
-        'Можно использовать действия Отменить, чтобы убрать последний фильм в цепочке, или Сменить актера в фильмографии, чтобы вернуться и выбрать другого актера.',
-      aboutRule5: 'Комментарии к каждому фильму сохраняются локально в браузере вместе с самой цепочкой.',
+        'Можно отменить последнее звено, убрать самый старый фильм в цепочке или сменить актёра в фильмографии и выбрать другую связку.',
+      aboutRule5:
+        'Заметки, цепочка, игровая статистика и язык интерфейса сохраняются локально в браузере (localStorage).',
+      aboutRule6:
+        'Можно добавить более ранний фильм перед первым: выберите актёра из первого фильма, который также снялся в более старом добавляемом фильме.',
+      aboutStatsTitle: 'Статистика и достижения',
+      aboutStatsIntro:
+        'Страница статистики показывает историю только на этом устройстве. Кроме запросов к API фильмов, отдельного бэкенда проекта нет.',
+      aboutStatsItem1:
+        'Теплокарта и серии дней считаются по дате «учёта» у каждого звена (по умолчанию — день добавления фильма).',
+      aboutStatsItem2:
+        'Очки сложности за шаг и всего, длиннейшая цепочка, частые актёры-мосты, топ по полному составу и значки за рубежи вроде длины цепочки и десятилетий.',
+      aboutStatsItem3:
+        'На главной может быть задание дня со стартовым фильмом и локально сохраняется лучший результат с этого старта.',
       aboutTech: 'Технологии',
       aboutTechText:
-        'Приложение создано на React, TypeScript, Vite, Tailwind CSS и TMDB API (с резервным Кинопоиском) для данных о фильмах и актерах. Ваша цепочка и заметки сохраняются в localStorage, поэтому вы можете вернуться к ним позже на этом же устройстве.',
+        'React 19, TypeScript, Vite, Tailwind CSS, React Router и react-i18next. Данные о фильмах — TMDB API, при недоступности — неофициальный API Кинопоиска. Часть логики покрыта тестами Vitest. Всё хранится в localStorage на этом устройстве.',
       aboutFooterBefore: 'Дизайн и реализация:',
       aboutFooterAfter: 'с любовью, страстью и Cursor',
       userStatsTitle: 'Ваша статистика',
