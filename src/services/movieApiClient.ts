@@ -2,6 +2,18 @@ import type { MovieApi, MovieSource } from './movieApi';
 import { createTmdbApi } from './tmdbMovieApi';
 import { createKinopoiskApi } from './kinopoisk';
 
+/**
+ * Set to `true` to restore automatic Kinopoisk when TMDB is missing or unreachable.
+ * When `false`, TMDB is required; failures surface as service-unavailable (refresh to retry).
+ */
+export const KINOPOISK_FALLBACK_ENABLED = false;
+
+/** Thrown when TMDB is unreachable or errors; map to i18n in UI. */
+export const MOVIE_API_ERR_SERVICE_UNAVAILABLE = 'MOVIE_API_SERVICE_UNAVAILABLE';
+
+/** Thrown when VITE_TMDB_API_KEY is missing but TMDB is required. */
+export const MOVIE_API_ERR_NO_TMDB_CONFIGURED = 'MOVIE_API_NO_TMDB_CONFIGURED';
+
 const STORAGE_KEY = 'movie-api-source';
 const PREFER_KINOPOISK_KEY = 'movie-api-prefer-kinopoisk';
 const CHAIN_STORAGE_KEY = 'movie-chain-state';
@@ -39,10 +51,9 @@ export function setPreferKinopoisk(value: boolean): void {
 
 /**
  * Resolves the active movie API with defensive logic:
- * - If user has TMDB entries in localStorage and TMDB is available → use TMDB
- * - If user has Kinopoisk entries in localStorage and TMDB is available → use Kinopoisk
- * - If TMDB is not available → use Kinopoisk
- * - Toggle overrides only when there is no persisted chain.
+ * - Persisted Kinopoisk chain + Kinopoisk key → Kinopoisk (same IDs as stored chain).
+ * - Otherwise TMDB is required when `KINOPOISK_FALLBACK_ENABLED` is false.
+ * - When fallback is enabled: TMDB first, then Kinopoisk if configured.
  *
  * @returns {Promise<MovieApi>} The active API implementation.
  */
@@ -53,6 +64,7 @@ export async function getMovieApi(): Promise<MovieApi> {
   const preferKinopoisk = getPreferKinopoisk();
   const tmdbKey = import.meta.env.VITE_TMDB_API_KEY as string;
   const kinopoiskKey = import.meta.env.VITE_KINOPOISK_API_KEY as string;
+  const fallback = KINOPOISK_FALLBACK_ENABLED;
 
   // User has Kinopoisk entries in localStorage → use Kinopoisk (even if TMDB is available)
   if (chainSource === 'kinopoisk' && kinopoiskKey) {
@@ -69,32 +81,33 @@ export async function getMovieApi(): Promise<MovieApi> {
       sessionStorage.setItem(STORAGE_KEY, 'tmdb');
       return cachedApi;
     } catch {
-      if (kinopoiskKey) {
+      if (fallback && kinopoiskKey) {
         cachedApi = getMovieApiForSource('kinopoisk');
         sessionStorage.setItem(STORAGE_KEY, 'kinopoisk');
         return cachedApi;
       }
-      throw new Error(
-        'TMDB is unavailable and your chain uses TMDB data. Add VITE_KINOPOISK_API_KEY for fallback.'
-      );
+      throw new Error(MOVIE_API_ERR_SERVICE_UNAVAILABLE);
     }
   }
 
-  // No chain: TMDB not available → use Kinopoisk
+  // Kinopoisk-only when no TMDB key (optional fallback mode)
   if (!tmdbKey && kinopoiskKey) {
+    if (fallback) {
+      cachedApi = getMovieApiForSource('kinopoisk');
+      sessionStorage.setItem(STORAGE_KEY, 'kinopoisk');
+      return cachedApi;
+    }
+    throw new Error(MOVIE_API_ERR_NO_TMDB_CONFIGURED);
+  }
+
+  // User prefers Kinopoisk (toggle on) → use Kinopoisk
+  if (fallback && preferKinopoisk && kinopoiskKey) {
     cachedApi = getMovieApiForSource('kinopoisk');
     sessionStorage.setItem(STORAGE_KEY, 'kinopoisk');
     return cachedApi;
   }
 
-  // No chain: user prefers Kinopoisk (toggle on) → use Kinopoisk
-  if (preferKinopoisk && kinopoiskKey) {
-    cachedApi = getMovieApiForSource('kinopoisk');
-    sessionStorage.setItem(STORAGE_KEY, 'kinopoisk');
-    return cachedApi;
-  }
-
-  // No chain: try TMDB first, fallback to Kinopoisk if blocked
+  // Try TMDB first; optional Kinopoisk fallback
   if (tmdbKey) {
     try {
       cachedApi = getMovieApiForSource('tmdb');
@@ -102,28 +115,25 @@ export async function getMovieApi(): Promise<MovieApi> {
       sessionStorage.setItem(STORAGE_KEY, 'tmdb');
       return cachedApi;
     } catch {
-      if (kinopoiskKey) {
+      if (fallback && kinopoiskKey) {
         cachedApi = getMovieApiForSource('kinopoisk');
         sessionStorage.setItem(STORAGE_KEY, 'kinopoisk');
         return cachedApi;
       }
+      throw new Error(MOVIE_API_ERR_SERVICE_UNAVAILABLE);
     }
   }
 
-  if (kinopoiskKey) {
+  if (fallback && kinopoiskKey) {
     cachedApi = getMovieApiForSource('kinopoisk');
     sessionStorage.setItem(STORAGE_KEY, 'kinopoisk');
     return cachedApi;
   }
 
   if (tmdbKey) {
-    throw new Error(
-      'TMDB is unavailable in your region. Enable Kinopoisk in settings or add VITE_KINOPOISK_API_KEY to .env.'
-    );
+    throw new Error(MOVIE_API_ERR_SERVICE_UNAVAILABLE);
   }
-  throw new Error(
-    'No API key configured. Set VITE_TMDB_API_KEY or VITE_KINOPOISK_API_KEY in .env.'
-  );
+  throw new Error(MOVIE_API_ERR_NO_TMDB_CONFIGURED);
 }
 
 /**
