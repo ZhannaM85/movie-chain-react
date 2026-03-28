@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, type TFunction } from 'react-i18next';
 import type { MovieApi } from '../services/movieApi';
 import {
   getMovieApi,
@@ -7,6 +7,8 @@ import {
   getPreferKinopoisk,
   setPreferKinopoisk as persistPreferKinopoisk,
   resetMovieApiCache,
+  MOVIE_API_ERR_SERVICE_UNAVAILABLE,
+  MOVIE_API_ERR_NO_TMDB_CONFIGURED,
 } from '../services/movieApiClient';
 import { useChainContext } from './ChainContext';
 
@@ -19,6 +21,19 @@ type MovieApiContextValue = {
 
 const MovieApiContext = createContext<MovieApiContextValue | null>(null);
 
+function bootstrapErrorDisplay(err: Error, t: TFunction): { body: string; hint: string | null } {
+  if (err.message === MOVIE_API_ERR_SERVICE_UNAVAILABLE) {
+    return {
+      body: t('serviceUnavailableMessage'),
+      hint: t('serviceUnavailableRefresh'),
+    };
+  }
+  if (err.message === MOVIE_API_ERR_NO_TMDB_CONFIGURED) {
+    return { body: t('apiKeyHintTmdbOnly'), hint: null };
+  }
+  return { body: err.message, hint: null };
+}
+
 /**
  * Provides the active movie API (TMDB or Kinopoisk) to the component subtree.
  * Supports a manual toggle to prefer Kinopoisk when TMDB is blocked.
@@ -29,7 +44,7 @@ const MovieApiContext = createContext<MovieApiContextValue | null>(null);
 export function MovieApiProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
   const [api, setApi] = useState<MovieApi | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ body: string; hint: string | null } | null>(null);
   const [preferKinopoisk, setPreferKinopoiskState] = useState(getPreferKinopoisk);
   const hasKinopoiskKey = Boolean(import.meta.env.VITE_KINOPOISK_API_KEY as string);
 
@@ -37,33 +52,32 @@ export function MovieApiProvider({ children }: { children: ReactNode }) {
     setError(null);
     getMovieApi()
       .then(setApi)
-      .catch((err: Error) => setError(err.message));
-  }, []);
+      .catch((err: Error) => setError(bootstrapErrorDisplay(err, t)));
+  }, [t]);
 
   useEffect(() => {
     resolveApi();
   }, [resolveApi]);
 
-  const setPreferKinopoisk = useCallback(
-    (value: boolean) => {
-      persistPreferKinopoisk(value);
-      setPreferKinopoiskState(value);
-      resetMovieApiCache();
-      setApi(null);
-      getMovieApi()
-        .then(setApi)
-        .catch((err: Error) => setError(err.message));
-    },
-    []
-  );
+  const setPreferKinopoisk = useCallback((value: boolean) => {
+    persistPreferKinopoisk(value);
+    setPreferKinopoiskState(value);
+    resetMovieApiCache();
+    setApi(null);
+    getMovieApi()
+      .then(setApi)
+      .catch((err: Error) => setError(bootstrapErrorDisplay(err, t)));
+  }, [t]);
 
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
         <div className="bg-red-900/30 border border-red-800 rounded-lg p-6 max-w-md text-center">
           <h2 className="text-xl font-semibold text-red-300 mb-2">{t('failedLoadMovies')}</h2>
-          <p className="text-red-200/70 text-sm">{error}</p>
-          <p className="text-red-200/50 text-xs mt-3">{t('apiKeyHint')}</p>
+          <p className="text-red-200/70 text-sm">{error.body}</p>
+          {error.hint ? (
+            <p className="text-red-200/50 text-xs mt-3">{error.hint}</p>
+          ) : null}
         </div>
       </div>
     );
