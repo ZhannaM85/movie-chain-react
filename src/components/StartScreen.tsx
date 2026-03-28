@@ -66,7 +66,7 @@ export default function StartScreen() {
         <div className="bg-red-900/30 border border-red-800 rounded-lg p-6 max-w-md text-center">
           <h2 className="text-xl font-semibold text-red-300 mb-2">{t('failedLoadMovies')}</h2>
           <p className="text-red-200/70 text-sm">{error}</p>
-          <p className="text-red-200/50 text-xs mt-3">{t('apiKeyHint')}</p>
+          <p className="text-red-200/50 text-xs mt-3">{t('serviceUnavailableRefresh')}</p>
         </div>
       </div>
     );
