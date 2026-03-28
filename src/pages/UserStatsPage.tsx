@@ -12,10 +12,36 @@ import { ACHIEVEMENT_IDS } from '../gamification/types';
 import { useTranslation } from 'react-i18next';
 import { useMatchMedia } from '../hooks/useMatchMedia';
 import { mergeMoviesAddedByDateWithChainLinks } from '../gamification/heatmap';
+import { useResolvedActorName } from '../hooks/useResolvedActorName';
+import type { MovieApi } from '../services/movieApi';
 
 /**
  * Local “profile” stats: activity heatmap, streaks, top bridge actors, totals.
  */
+/** Resolves the label via person id + current UI locale (see BridgeActorLabel). */
+function StatsActorDisplayName({
+  actorIdStr,
+  fallbackName,
+  api,
+}: {
+  actorIdStr: string;
+  fallbackName: string;
+  api: MovieApi;
+}) {
+  const { t } = useTranslation();
+  const idNum = Number(actorIdStr);
+  const actorId = Number.isFinite(idNum) && idNum > 0 ? idNum : null;
+  const { text, loading } = useResolvedActorName(actorId, fallbackName, api);
+
+  if (actorId == null) {
+    return <span className="truncate">{fallbackName}</span>;
+  }
+  if (loading) {
+    return <span className="text-gray-500 truncate">{t('bridgeActorNameLoading')}</span>;
+  }
+  return <span className="truncate">{text || t('bridgeActorNameFallback', { id: actorId })}</span>;
+}
+
 export default function UserStatsPage() {
   const { gamificationProfile: p, links } = useChainContext();
   const api = useMovieApiForChain();
@@ -124,7 +150,7 @@ export default function UserStatsPage() {
                     <div className="flex items-center gap-2 min-w-0 flex-1">
                       <span className="text-xs text-gray-600 w-5 flex-shrink-0">{i + 1}</span>
                       <span className="text-sm text-indigo-400 group-hover:text-indigo-300 truncate">
-                        {a.name}
+                        <StatsActorDisplayName actorIdStr={a.id} fallbackName={a.name} api={api} />
                       </span>
                     </div>
                     <span className="text-xs text-gray-500 flex-shrink-0 tabular-nums">
@@ -159,7 +185,9 @@ export default function UserStatsPage() {
                   >
                     <div className="flex items-center gap-2 min-w-0 flex-1">
                       <span className="text-xs text-gray-600 w-5 flex-shrink-0">{i + 1}</span>
-                      <span className="text-sm text-indigo-400 group-hover:text-indigo-300 truncate">{a.name}</span>
+                      <span className="text-sm text-indigo-400 group-hover:text-indigo-300 truncate">
+                        <StatsActorDisplayName actorIdStr={a.id} fallbackName={a.name} api={api} />
+                      </span>
                     </div>
                     <span className="text-xs text-gray-500 flex-shrink-0 tabular-nums">
                       {t('actorCastMovies', { count: a.count })}
