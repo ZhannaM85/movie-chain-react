@@ -11,7 +11,7 @@ function DifficultyPointsIcon({ className }: { className?: string }) {
   );
 }
 
-type ChallengePointsVariant = 'step' | 'total';
+type ChallengePointsVariant = 'step' | 'total' | 'actorOnly';
 
 function computePanelStyle(buttonEl: HTMLElement): CSSProperties {
   const r = buttonEl.getBoundingClientRect();
@@ -53,7 +53,7 @@ export default function ChallengePointsInline({
 }: {
   points: number | null | undefined;
   className?: string;
-  /** `step`: one link’s score (0–21). `total`: sum for the whole chain (sidebar recap). */
+  /** `step`: one link’s score (0–21). `total`: sum for the whole chain. `actorOnly`: actor slice before a movie is chosen. */
   variant?: ChallengePointsVariant;
 }) {
   const { t } = useTranslation();
@@ -64,11 +64,17 @@ export default function ChallengePointsInline({
   const panelId = useId();
 
   const explainText =
-    variant === 'total' ? t('challengePointsTotalTooltip') : t('challengePointsTooltip');
+    variant === 'total'
+      ? t('challengePointsTotalTooltip')
+      : variant === 'actorOnly'
+        ? t('challengePointsActorOnlyTooltip')
+        : t('challengePointsTooltip');
   const ariaLabel =
     variant === 'total'
       ? t('challengePointsTotalInlineAria', { points })
-      : t('challengePointsInlineAria', { points });
+      : variant === 'actorOnly'
+        ? t('challengePointsActorOnlyInlineAria', { points })
+        : t('challengePointsInlineAria', { points });
 
   useLayoutEffect(() => {
     if (!open) {

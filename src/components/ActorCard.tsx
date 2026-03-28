@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import type { Actor } from '../types/movie';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useTranslation } from 'react-i18next';
+import ChallengePointsInline from './ChallengePointsInline';
 
 interface ActorCardProps {
   actor: Actor;
@@ -9,6 +10,9 @@ interface ActorCardProps {
   selected?: boolean;
   disabled?: boolean;
   showLink?: boolean;
+  /** Preview difficulty: full step (prepend) or actor-only slice (append pick-actor). */
+  challengePoints?: number | null;
+  challengePointsVariant?: 'step' | 'actorOnly';
 }
 
 /**
@@ -17,7 +21,15 @@ interface ActorCardProps {
  * @param {ActorCardProps} props - The component props.
  * @returns {JSX.Element} The rendered actor card.
  */
-export default function ActorCard({ actor, onClick, selected, disabled, showLink = false }: ActorCardProps) {
+export default function ActorCard({
+  actor,
+  onClick,
+  selected,
+  disabled,
+  showLink = false,
+  challengePoints,
+  challengePointsVariant = 'step',
+}: ActorCardProps) {
   const api = useMovieApiForChain();
   const { t } = useTranslation();
   const inner = (
@@ -39,6 +51,15 @@ export default function ActorCard({ actor, onClick, selected, disabled, showLink
         <p className="text-sm font-medium text-gray-200 truncate">{actor.name}</p>
         {actor.character && (
           <p className="text-xs text-gray-500 truncate">{t('asCharacter', { character: actor.character })}</p>
+        )}
+        {challengePoints != null && (
+          <div className="mt-1">
+            <ChallengePointsInline
+              points={challengePoints}
+              variant={challengePointsVariant}
+              className="text-xs text-gray-500 tabular-nums"
+            />
+          </div>
         )}
       </div>
     </>
