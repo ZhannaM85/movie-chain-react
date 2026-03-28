@@ -183,7 +183,7 @@ export default function MovieSuggestions() {
         sortBy={sortBy}
         searchQuery={searchQuery}
         showAll={showAll}
-        prependMode={prependMode}
+        prependMode={prependMode === true}
         actorPopularity={actor?.popularity ?? null}
         onSelect={(movie) => addMovie(movie, prependMode ? loggedDateForPastLink : localDateString())}
         posterUrl={api.posterUrl}
