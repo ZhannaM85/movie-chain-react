@@ -45,6 +45,12 @@ const resources = {
         'Total difficulty points from every step in your current chain (each step adds 0–21 based on votes, popularity, and how famous the connecting actor is).',
       challengePointsTotalInlineAria:
         '{{points}} total challenge points. Tap or click for details.',
+      challengePointsActorOnlyTooltip:
+        'Actor part of this step (0–10): less famous actors earn more. The film you pick next adds the rest (0–11 from votes and movie popularity). Full step is 0–21.',
+      challengePointsActorOnlyInlineAria:
+        '{{points}} points from the actor so far. Tap or click for how this relates to the full step score.',
+      prependLinkChallengePointsHint:
+        'Same for every film below — scoring uses the current chain head and this actor.',
       bestChainShort: 'Best: {{count}}',
       bestChainTooltip: 'Longest chain you have built',
       bridgeActorNameFallback: 'Actor #{{id}}',
@@ -307,6 +313,12 @@ const resources = {
         'Сумма очков сложности по всем шагам текущей цепочки (за каждый шаг — от 0 до 21 в зависимости от голосов, популярности и известности актёра-связки).',
       challengePointsTotalInlineAria:
         '{{points}} очков сложности всего. Нажмите для пояснения.',
+      challengePointsActorOnlyTooltip:
+        'Часть за актёра в этом шаге (0–10): за менее известных — больше. Выбранный дальше фильм добавит остальное (0–11 по голосам и популярности фильма). Полный шаг — 0–21.',
+      challengePointsActorOnlyInlineAria:
+        '{{points}} очков за актёра на этом этапе. Нажмите, как это связано с полным шагом.',
+      prependLinkChallengePointsHint:
+        'Одинаково для любого фильма ниже — очки считаются по текущему началу цепочки и этому актёру.',
       bestChainShort: 'Рекорд: {{count}}',
       bestChainTooltip: 'Самая длинная цепочка',
       bridgeActorNameFallback: 'Актёр №{{id}}',
