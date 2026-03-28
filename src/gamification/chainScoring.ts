@@ -1,10 +1,7 @@
 import type { Movie } from '../types/movie';
 
-/**
- * Difficulty points for one chain step (connecting actor → next movie).
- * Rewards obscure movies (few votes) and less famous actors.
- */
-export function scoreChainStep(movie: Movie, actorPopularity: number | null): number {
+/** Points from movie vote_count and movie popularity (one chain step). */
+export function scoreMovieContribution(movie: Movie): number {
   let score = 0;
 
   const votes = movie.vote_count ?? 0;
@@ -16,11 +13,22 @@ export function scoreChainStep(movie: Movie, actorPopularity: number | null): nu
   if (mp < 10) score += 3;
   else if (mp < 40) score += 1;
 
-  if (actorPopularity != null && Number.isFinite(actorPopularity)) {
-    if (actorPopularity < 3) score += 10;
-    else if (actorPopularity < 15) score += 5;
-    else if (actorPopularity < 40) score += 2;
-  }
-
   return score;
+}
+
+/** Points from connecting actor popularity (0–10); null/invalid adds nothing. */
+export function scoreActorContribution(actorPopularity: number | null): number {
+  if (actorPopularity == null || !Number.isFinite(actorPopularity)) return 0;
+  if (actorPopularity < 3) return 10;
+  if (actorPopularity < 15) return 5;
+  if (actorPopularity < 40) return 2;
+  return 0;
+}
+
+/**
+ * Difficulty points for one chain step (connecting actor → next movie).
+ * Rewards obscure movies (few votes) and less famous actors.
+ */
+export function scoreChainStep(movie: Movie, actorPopularity: number | null): number {
+  return scoreMovieContribution(movie) + scoreActorContribution(actorPopularity);
 }

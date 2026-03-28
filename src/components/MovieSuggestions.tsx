@@ -6,6 +6,8 @@ import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import ChallengePointsInline from './ChallengePointsInline';
+import { scoreChainStep } from '../gamification/chainScoring';
 
 type SortOption = 'popularity' | 'title-asc' | 'title-desc' | 'date-newest' | 'date-oldest';
 
@@ -17,6 +19,7 @@ type SortOption = 'popularity' | 'title-asc' | 'title-desc' | 'date-newest' | 'd
 export default function MovieSuggestions() {
   const api = useMovieApiForChain();
   const { selectedActorId, addMovie, links, cancelActorSelection, prependMode } = useChainContext();
+  const headMovie = prependMode && links[0] ? links[0].movie : null;
   const { t, i18n } = useTranslation();
   const [loggedDateForPastLink, setLoggedDateForPastLink] = useState(() =>
     prependMode === true ? defaultPastLinkLoggedDateFromHeadLink(links[0]) : localDateString()
@@ -39,6 +42,11 @@ export default function MovieSuggestions() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('popularity');
   const [prevDeps, setPrevDeps] = useState({ actorId: selectedActorId, linksLen: links.length });
+
+  const prependStepPoints = useMemo(() => {
+    if (!prependMode || !headMovie || !actor) return null;
+    return scoreChainStep(headMovie, actor.popularity);
+  }, [prependMode, headMovie, actor]);
 
   if (selectedActorId !== prevDeps.actorId || links.length !== prevDeps.linksLen) {
     setPrevDeps({ actorId: selectedActorId, linksLen: links.length });
@@ -163,11 +171,20 @@ export default function MovieSuggestions() {
         </select>
       </div>
 
+      {prependMode && prependStepPoints != null && (
+        <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-gray-400">
+          <ChallengePointsInline points={prependStepPoints} variant="step" />
+          <span>{t('prependLinkChallengePointsHint')}</span>
+        </div>
+      )}
+
       <MovieGrid
         movies={movies}
         sortBy={sortBy}
         searchQuery={searchQuery}
         showAll={showAll}
+        prependMode={prependMode}
+        actorPopularity={actor?.popularity ?? null}
         onSelect={(movie) => addMovie(movie, prependMode ? loggedDateForPastLink : localDateString())}
         posterUrl={api.posterUrl}
         t={t}
@@ -229,6 +246,8 @@ function MovieGrid({
   sortBy,
   searchQuery,
   showAll,
+  prependMode,
+  actorPopularity,
   onSelect,
   posterUrl,
   t,
@@ -237,6 +256,8 @@ function MovieGrid({
   sortBy: SortOption;
   searchQuery: string;
   showAll: boolean;
+  prependMode: boolean;
+  actorPopularity: number | null;
   onSelect: (movie: Movie) => void;
   posterUrl: (path: string | null, size?: string) => string;
   t: (key: string, options?: Record<string, unknown>) => string;
@@ -260,27 +281,37 @@ function MovieGrid({
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-      {displayMovies.map((movie) => (
-        <button
-          key={movie.id}
-          onClick={() => onSelect(movie)}
-          className="group text-left rounded-lg overflow-hidden bg-gray-800/50 hover:bg-gray-800 border border-gray-800 hover:border-indigo-500/50 transition-all hover:scale-[1.02]"
-        >
-          <img
-            src={posterUrl(movie.poster_path ?? null, 'w342')}
-            alt={movie.title}
-            className="w-full aspect-[2/3] object-cover"
-          />
-          <div className="p-2">
-            <h4 className="text-sm font-medium text-gray-200 group-hover:text-white truncate">
-              {movie.title}
-            </h4>
-            <p className="text-xs text-gray-500">
-              {movie.release_date ? new Date(movie.release_date).getFullYear() : t('na')}
-            </p>
-          </div>
-        </button>
-      ))}
+      {displayMovies.map((movie) => {
+        const stepPoints = prependMode
+          ? null
+          : scoreChainStep(movie, actorPopularity);
+        return (
+          <button
+            key={movie.id}
+            onClick={() => onSelect(movie)}
+            className="group text-left rounded-lg overflow-hidden bg-gray-800/50 hover:bg-gray-800 border border-gray-800 hover:border-indigo-500/50 transition-all hover:scale-[1.02]"
+          >
+            <img
+              src={posterUrl(movie.poster_path ?? null, 'w342')}
+              alt={movie.title}
+              className="w-full aspect-[2/3] object-cover"
+            />
+            <div className="p-2">
+              <h4 className="text-sm font-medium text-gray-200 group-hover:text-white truncate">
+                {movie.title}
+              </h4>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-gray-500">
+                <span>
+                  {movie.release_date ? new Date(movie.release_date).getFullYear() : t('na')}
+                </span>
+                {stepPoints != null && (
+                  <ChallengePointsInline points={stepPoints} className="text-gray-500 tabular-nums" />
+                )}
+              </div>
+            </div>
+          </button>
+        );
+      })}
     </div>
   );
 }

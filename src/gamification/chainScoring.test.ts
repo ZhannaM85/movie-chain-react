@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { scoreChainStep } from './chainScoring';
+import {
+  scoreActorContribution,
+  scoreChainStep,
+  scoreMovieContribution,
+} from './chainScoring';
 import type { Movie } from '../types/movie';
 
 const baseMovie: Movie = {
@@ -30,5 +34,25 @@ describe('scoreChainStep', () => {
     const m = { ...baseMovie, vote_count: 5000 };
     const s = scoreChainStep(m, null);
     expect(s).toBeGreaterThanOrEqual(0);
+  });
+
+  it('equals movie contribution plus actor contribution', () => {
+    const m = { ...baseMovie, vote_count: 100, popularity: 5 };
+    const ap = 8;
+    expect(scoreChainStep(m, ap)).toBe(
+      scoreMovieContribution(m) + scoreActorContribution(ap)
+    );
+  });
+});
+
+describe('scoreActorContribution', () => {
+  it('returns 0 for null', () => {
+    expect(scoreActorContribution(null)).toBe(0);
+  });
+});
+
+describe('scoreMovieContribution', () => {
+  it('ignores actor', () => {
+    expect(scoreMovieContribution(baseMovie)).toBeGreaterThanOrEqual(0);
   });
 });
