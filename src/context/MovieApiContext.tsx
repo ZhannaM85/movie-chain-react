@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
-import { useTranslation, type TFunction } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import type { MovieApi } from '../services/movieApi';
 import {
   getMovieApi,
@@ -21,7 +21,10 @@ type MovieApiContextValue = {
 
 const MovieApiContext = createContext<MovieApiContextValue | null>(null);
 
-function bootstrapErrorDisplay(err: Error, t: TFunction): { body: string; hint: string | null } {
+function bootstrapErrorDisplay(
+  err: Error,
+  t: (key: string) => string
+): { body: string; hint: string | null } {
   if (err.message === MOVIE_API_ERR_SERVICE_UNAVAILABLE) {
     return {
       body: t('serviceUnavailableMessage'),
