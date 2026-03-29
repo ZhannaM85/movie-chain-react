@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
@@ -44,20 +44,10 @@ function ChainPageChainItem({
     api
   );
 
-  const removeOldestControl: ReactNode = isOldestInChain ? (
-    <button
-      type="button"
-      onClick={onRequestRemoveFirst}
-      className="text-xs shrink-0 px-2 py-1 rounded-md border border-gray-600 text-gray-400 hover:text-red-300 hover:border-red-500/40 transition-colors"
-    >
-      {t('removeFirstFromChain')}
-    </button>
-  ) : null;
-
   return (
     <div>
       <div className="rounded-xl bg-gray-800/60 border border-gray-700/50 hover:border-indigo-500/40 hover:bg-gray-800/80 transition-all overflow-hidden">
-        <div className="flex gap-4 p-4 group">
+        <div className="flex items-start gap-4 p-4 group">
           <span className="text-lg font-bold text-gray-600 w-8 text-right flex-shrink-0 pt-1">
             {sequenceNumber}
           </span>
@@ -75,8 +65,8 @@ function ChainPageChainItem({
             )}
           </Link>
           <div className="flex-1 min-w-0">
-            <Link to={`/movie/${link.movie.id}`} className="block">
-              <h3 className="text-lg font-semibold text-gray-200 group-hover:text-white truncate">
+            <Link to={`/movie/${link.movie.id}`} className="block min-w-0">
+              <h3 className="text-lg font-semibold text-gray-200 group-hover:text-white break-words">
                 {titleLoading ? (
                   <span className="text-gray-500">{t('bridgeActorNameLoading')}</span>
                 ) : (
@@ -127,12 +117,14 @@ function ChainPageChainItem({
               </div>
             )}
           </div>
-          {removeOldestControl != null && (
-            <div className="flex flex-col justify-start pt-1">{removeOldestControl}</div>
-          )}
         </div>
         <div className="px-4 pb-4 pt-2 border-t border-gray-700/40 bg-gray-900/15">
-          <ChainWatchedDateField chainIndex={chainIndex} idPrefix="chain-page" />
+          <ChainWatchedDateField
+            chainIndex={chainIndex}
+            idPrefix="chain-page"
+            showRemoveFirstButton={isOldestInChain}
+            onRemoveFirst={onRequestRemoveFirst}
+          />
         </div>
       </div>
       {showBridgeRow && (
