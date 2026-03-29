@@ -81,37 +81,23 @@ function ChainListMobileRow({
           </Link>
         )}
         <div className="min-w-0 flex-1 flex flex-col gap-0.5">
-          <div className="flex items-start gap-1 min-w-0">
-            <div className="min-w-0 flex-1 flex flex-col gap-0.5">
-              <Link to={`/movie/${link.movie.id}`} className="min-w-0 block">
-                <p className="text-sm text-gray-300 group-hover:text-white line-clamp-2 break-words">
-                  {titleLoading ? (
-                    <span className="text-gray-500">{t('bridgeActorNameLoading')}</span>
-                  ) : (
-                    resolvedTitle
-                  )}
-                </p>
-              </Link>
-              {(link.movie.release_date || link.stepDifficulty != null) && (
-                <p className="text-xs text-gray-600 mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                  {link.movie.release_date ? (
-                    <span>{new Date(link.movie.release_date).getFullYear()}</span>
-                  ) : null}
-                  <ChallengePointsInline points={link.stepDifficulty} className="text-gray-600" />
-                </p>
+          <Link to={`/movie/${link.movie.id}`} className="min-w-0 block">
+            <p className="text-sm text-gray-300 group-hover:text-white line-clamp-2 break-words">
+              {titleLoading ? (
+                <span className="text-gray-500">{t('bridgeActorNameLoading')}</span>
+              ) : (
+                resolvedTitle
               )}
-            </div>
-            {isOldestInChain && (
-              <button
-                type="button"
-                onClick={onRequestRemoveFirst}
-                className="shrink-0 text-[10px] text-gray-500 hover:text-red-400 transition-colors px-0.5 py-0.5"
-                title={t('removeFirstFromChain')}
-              >
-                {t('removeFirstFromChain')}
-              </button>
-            )}
-          </div>
+            </p>
+          </Link>
+          {(link.movie.release_date || link.stepDifficulty != null) && (
+            <p className="text-xs text-gray-600 mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              {link.movie.release_date ? (
+                <span>{new Date(link.movie.release_date).getFullYear()}</span>
+              ) : null}
+              <ChallengePointsInline points={link.stepDifficulty} className="text-gray-600" />
+            </p>
+          )}
           <ChainWatchedDateField
             chainIndex={chainIndex}
             idPrefix="chain-sidebar"
@@ -120,6 +106,8 @@ function ChainListMobileRow({
             compactContentAlign="start"
             inputClassName="w-full min-w-0 max-w-[9.5rem] px-1 py-0.5 rounded bg-gray-900 border border-gray-600 text-[10px] text-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             className="flex flex-col items-stretch gap-0.5 w-full pt-0.5"
+            showRemoveFirstButton={isOldestInChain}
+            onRemoveFirst={onRequestRemoveFirst}
           />
         </div>
       </div>
