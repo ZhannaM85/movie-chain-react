@@ -35,11 +35,14 @@ interface ChainWatchedDateFieldProps {
   className?: string;
   /** In compact (sidebar) mode, align date row with title (`start`) or to the right (`end`). */
   compactContentAlign?: 'start' | 'end';
+  /** When set (e.g. oldest link on chain page), show “remove first” beside the stats date row. */
+  showRemoveFirstButton?: boolean;
+  onRemoveFirst?: () => void;
 }
 
 /**
  * Edits which calendar day this chain link counts toward (heatmap / stats).
- * View mode shows the date and a pencil; edit mode shows the date input.
+ * View mode shows the date, optional “remove first”, and a pencil; edit mode shows the date input.
  */
 export default function ChainWatchedDateField({
   chainIndex,
@@ -49,6 +52,8 @@ export default function ChainWatchedDateField({
   showUnsetHint = true,
   className,
   compactContentAlign = 'end',
+  showRemoveFirstButton = false,
+  onRemoveFirst,
 }: ChainWatchedDateFieldProps) {
   const { links, updateLoggedDate } = useChainContext();
   const { t, i18n } = useTranslation();
@@ -101,17 +106,27 @@ export default function ChainWatchedDateField({
   const compactInnerAlign =
     compactContentAlign === 'start' ? 'justify-start' : 'justify-end';
 
+  const hasRemoveFirst = showRemoveFirstButton && onRemoveFirst;
+
   if (!editing) {
+    const viewOuterClass =
+      className ??
+      (compact
+        ? baseRow
+        : hasRemoveFirst
+          ? 'flex flex-wrap items-center gap-2 w-full'
+          : baseRow);
+
+    const viewInnerClass = compact
+      ? `flex items-center gap-1 min-w-0 ${compactInnerAlign}${hasRemoveFirst ? ' w-full' : ''}`
+      : hasRemoveFirst
+        ? 'flex flex-1 min-w-0 items-center gap-2'
+        : 'flex items-center gap-2 flex-wrap';
+
     return (
-      <div className={className ?? baseRow}>
+      <div className={viewOuterClass}>
         <span className={labelClassName}>{t('loggedDateShort')}</span>
-        <div
-          className={
-            compact
-              ? `flex items-center gap-1 min-w-0 ${compactInnerAlign}`
-              : 'flex items-center gap-2 flex-wrap'
-          }
-        >
+        <div className={viewInnerClass}>
           {link.loggedDate && shortDateForSidebar ? (
             compact ? (
               <span
@@ -123,7 +138,7 @@ export default function ChainWatchedDateField({
                 {t('chainWatchedOn', { date: shortDateForSidebar })}
               </span>
             ) : (
-              <time dateTime={link.loggedDate} className="text-sm text-gray-200">
+              <time dateTime={link.loggedDate} className="text-sm text-gray-200 shrink-0">
                 {formattedDateMedium}
               </time>
             )
@@ -142,6 +157,15 @@ export default function ChainWatchedDateField({
           >
             <PencilIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
+          {hasRemoveFirst && (
+            <button
+              type="button"
+              onClick={onRemoveFirst}
+              className="text-xs shrink-0 px-2 py-1 rounded-md border border-gray-600 text-gray-400 hover:text-red-300 hover:border-red-500/40 transition-colors ml-auto"
+            >
+              {t('removeFirstFromChain')}
+            </button>
+          )}
         </div>
       </div>
     );
