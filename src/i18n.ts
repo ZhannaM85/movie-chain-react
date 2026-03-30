@@ -91,6 +91,10 @@ const resources = {
           title: 'Time traveler',
           desc: 'Your chain spans at least three different decades.',
         },
+        movies_milestone: {
+          title: '{{count}} movies logged',
+          desc: 'Total movies added across all chains reached this milestone.',
+        },
       },
       backToChain: 'Back to chain',
       navigateBackToStats: 'Navigate back to stats',
@@ -362,6 +366,10 @@ const resources = {
         three_decades: {
           title: 'Путешественник во времени',
           desc: 'Цепочка охватывает не меньше трёх десятилетий.',
+        },
+        movies_milestone: {
+          title: 'Записано фильмов: {{count}}',
+          desc: 'Всего добавлено фильмов по всем цепочкам — достигнута эта отметка.',
         },
       },
       backToChain: 'Назад к цепочке',

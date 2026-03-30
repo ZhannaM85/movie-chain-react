@@ -1,3 +1,4 @@
+import { ensureMoviesMilestoneAchievements } from './profile';
 import type { GamificationProfile } from './types';
 import { DEFAULT_GAMIFICATION_PROFILE } from './types';
 
@@ -68,7 +69,11 @@ export function loadGamificationProfile(): GamificationProfile {
       merged.actorCastAppearanceCounts = {};
     }
 
-    return merged;
+    const result = ensureMoviesMilestoneAchievements(merged);
+    if (hadSeenWithoutSnapshots || result !== merged) {
+      saveGamificationProfile(result);
+    }
+    return result;
   } catch {
     return { ...DEFAULT_GAMIFICATION_PROFILE };
   }
