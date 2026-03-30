@@ -16,6 +16,25 @@ function addUnlocked(profile: GamificationProfile, id: string): GamificationProf
   };
 }
 
+/**
+ * Ensures `movies_100`, `movies_200`, … are unlocked for every milestone already
+ * reached by {@link GamificationProfile.totalLinksAddedAllTime} (fixes users who
+ * were above a threshold before the feature or missed a toast-only unlock).
+ */
+export function ensureMoviesMilestoneAchievements(profile: GamificationProfile): GamificationProfile {
+  const max = Math.floor(profile.totalLinksAddedAllTime / 100) * 100;
+  if (max < 100) return profile;
+
+  let next = profile;
+  for (let m = 100; m <= max; m += 100) {
+    const id = `movies_${m}`;
+    if (!next.unlockedAchievementIds.includes(id)) {
+      next = addUnlocked(next, id);
+    }
+  }
+  return next;
+}
+
 function countDistinctDecades(links: ChainLink[]): number {
   const decades = new Set<number>();
   for (const link of links) {
@@ -319,6 +338,12 @@ export function afterAddMovie(
   if (newLength >= 10) pushAch('chain_10');
   if (newLength >= 20) pushAch('chain_20');
   if (countDistinctDecades(linksAfterAdd) >= 3) pushAch('three_decades');
+
+  const prevMoviesLogged = profile.totalLinksAddedAllTime;
+  const nextMoviesLogged = next.totalLinksAddedAllTime;
+  if (nextMoviesLogged > 0 && nextMoviesLogged % 100 === 0 && prevMoviesLogged < nextMoviesLogged) {
+    pushAch(`movies_${nextMoviesLogged}`);
+  }
 
   const beatPersonalBest = newLength > prevLongest && newLength >= 2;
 

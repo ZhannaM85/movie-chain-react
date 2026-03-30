@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useChainContext } from '../context/ChainContext';
 import { useTranslation } from 'react-i18next';
+import { achievementDesc, achievementTitle } from '../gamification/achievementLabels';
 
 /**
  * Shows queued achievement and personal-best toasts from gamification state.
@@ -26,8 +27,8 @@ export default function GamificationToasts() {
     description = t('toastPersonalBestDesc');
   } else if (top.startsWith('achievement:')) {
     const id = top.slice('achievement:'.length);
-    title = t(`achievement.${id}.title`);
-    description = t(`achievement.${id}.desc`);
+    title = achievementTitle(t, id);
+    description = achievementDesc(t, id);
   } else {
     title = t('toastUnknownTitle');
     description = t('toastUnknownDesc');

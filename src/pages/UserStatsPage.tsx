@@ -8,6 +8,7 @@ import {
   fetchTopCastAppearancesFromApi,
   type ActorBridgeRank,
 } from '../gamification/actorStats';
+import { achievementDesc, achievementTitle } from '../gamification/achievementLabels';
 import { ACHIEVEMENT_IDS } from '../gamification/types';
 import { useTranslation } from 'react-i18next';
 import { useMatchMedia } from '../hooks/useMatchMedia';
@@ -329,10 +330,10 @@ function UnlockedAchievementsModal({
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium text-gray-100">
-                          {t(`achievement.${id}.title`, { defaultValue: id })}
+                          {achievementTitle(t, id)}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
-                          {t(`achievement.${id}.desc`, { defaultValue: '' })}
+                          {achievementDesc(t, id)}
                         </p>
                       </div>
                     </div>
@@ -344,10 +345,10 @@ function UnlockedAchievementsModal({
                     className="rounded-lg border border-emerald-900/50 bg-emerald-950/20 px-3 py-2.5"
                   >
                     <p className="text-sm font-medium text-gray-100">
-                      {t(`achievement.${id}.title`, { defaultValue: id })}
+                      {achievementTitle(t, id)}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      {t(`achievement.${id}.desc`, { defaultValue: '' })}
+                      {achievementDesc(t, id)}
                     </p>
                   </li>
                 ))}
@@ -375,12 +376,12 @@ function UnlockedAchievementsModal({
                       <AchievementLockIcon className="w-4 h-4 text-amber-600/80 shrink-0 mt-0.5" />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium text-gray-400">{t(`achievement.${id}.title`, { defaultValue: id })}</p>
+                          <p className="text-sm font-medium text-gray-400">{achievementTitle(t, id)}</p>
                           <span className="text-[10px] font-medium uppercase tracking-wide text-amber-600/90 shrink-0">
                             {t('achievementLocked')}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-600 mt-1">{t(`achievement.${id}.desc`, { defaultValue: '' })}</p>
+                        <p className="text-xs text-gray-600 mt-1">{achievementDesc(t, id)}</p>
                       </div>
                     </div>
                   </li>
