@@ -6,6 +6,7 @@ import { useMovieApiForChain, useMovieApiPreference } from '../context/MovieApiC
 import { useTranslation } from 'react-i18next';
 import { buildChainRecap } from '../gamification/chainRecap';
 import GamificationToasts from './GamificationToasts';
+import MoviesMilestoneModal from './MoviesMilestoneModal';
 
 /** Set to `true` to show the Kinopoisk / TMDB preference switch in the header again. */
 const SHOW_KINOPOISK_TOGGLE = false;
@@ -242,6 +243,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         </button>
       )}
       <GamificationToasts />
+      <MoviesMilestoneModal />
     </div>
   );
 }

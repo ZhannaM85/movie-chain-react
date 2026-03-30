@@ -34,6 +34,8 @@ export interface GamificationProfile {
   /** Best chain length when starting from that day's daily challenge (YYYY-MM-DD UTC) */
   dailyBestByDate: Record<string, number>;
   hasWrittenNoteBefore: boolean;
+  /** Milestone values (100, 200, …) for which the “100+ movies” modal was dismissed. */
+  moviesMilestoneModalsAcknowledged: number[];
 }
 
 export const DEFAULT_GAMIFICATION_PROFILE: GamificationProfile = {
@@ -52,4 +54,5 @@ export const DEFAULT_GAMIFICATION_PROFILE: GamificationProfile = {
   castAppearanceMoviesSeen: {},
   dailyBestByDate: {},
   hasWrittenNoteBefore: false,
+  moviesMilestoneModalsAcknowledged: [],
 };

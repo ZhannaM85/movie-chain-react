@@ -68,6 +68,9 @@ const resources = {
       toastPersonalBest: 'New personal best!',
       toastPersonalBestDesc: 'You beat your longest chain.',
       toastDismiss: 'Dismiss',
+      moviesMilestoneModalTitle: 'Over {{count}} movies!',
+      moviesMilestoneModalBody: 'Your longest chain has reached at least {{count}} movies.',
+      moviesMilestoneModalCta: 'Great!',
       toastUnknownTitle: 'Unlocked',
       toastUnknownDesc: '',
       achievement: {
@@ -92,8 +95,8 @@ const resources = {
           desc: 'Your chain spans at least three different decades.',
         },
         movies_milestone: {
-          title: '{{count}} movies logged',
-          desc: 'Total movies added across all chains reached this milestone.',
+          title: '{{count}} movies in a chain',
+          desc: 'Your longest chain reached at least this many movies.',
         },
       },
       backToChain: 'Back to chain',
@@ -344,6 +347,9 @@ const resources = {
       toastPersonalBest: 'Новый личный рекорд!',
       toastPersonalBestDesc: 'Вы побили длину самой длинной цепочки.',
       toastDismiss: 'Закрыть',
+      moviesMilestoneModalTitle: 'Больше {{count}} фильмов!',
+      moviesMilestoneModalBody: 'Самая длинная цепочка — не меньше {{count}} фильмов.',
+      moviesMilestoneModalCta: 'Отлично!',
       toastUnknownTitle: 'Получено',
       toastUnknownDesc: '',
       achievement: {
@@ -368,8 +374,8 @@ const resources = {
           desc: 'Цепочка охватывает не меньше трёх десятилетий.',
         },
         movies_milestone: {
-          title: 'Записано фильмов: {{count}}',
-          desc: 'Всего добавлено фильмов по всем цепочкам — достигнута эта отметка.',
+          title: '{{count}} фильмов в цепочке',
+          desc: 'Самая длинная цепочка достигла не меньше этого числа фильмов.',
         },
       },
       backToChain: 'Назад к цепочке',
