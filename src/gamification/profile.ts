@@ -16,6 +16,25 @@ function addUnlocked(profile: GamificationProfile, id: string): GamificationProf
   };
 }
 
+/**
+ * Ensures `movies_100`, `movies_200`, … are unlocked for every milestone already
+ * reached by {@link GamificationProfile.totalLinksAddedAllTime} (fixes users who
+ * were above a threshold before the feature or missed a toast-only unlock).
+ */
+export function ensureMoviesMilestoneAchievements(profile: GamificationProfile): GamificationProfile {
+  const max = Math.floor(profile.totalLinksAddedAllTime / 100) * 100;
+  if (max < 100) return profile;
+
+  let next = profile;
+  for (let m = 100; m <= max; m += 100) {
+    const id = `movies_${m}`;
+    if (!next.unlockedAchievementIds.includes(id)) {
+      next = addUnlocked(next, id);
+    }
+  }
+  return next;
+}
+
 function countDistinctDecades(links: ChainLink[]): number {
   const decades = new Set<number>();
   for (const link of links) {

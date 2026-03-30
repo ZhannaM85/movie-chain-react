@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ChainLink } from '../types/movie';
 import { DEFAULT_GAMIFICATION_PROFILE } from './types';
-import { afterAddMovie } from './profile';
+import { afterAddMovie, ensureMoviesMilestoneAchievements } from './profile';
 
 function link(movieId: number, partial: Partial<ChainLink> = {}): ChainLink {
   const movie = {
@@ -39,6 +39,16 @@ describe('afterAddMovie movies milestones', () => {
     expect(r.profile.totalLinksAddedAllTime).toBe(100);
     expect(r.newAchievements).toContain('movies_100');
     expect(r.profile.unlockedAchievementIds).toContain('movies_100');
+  });
+
+  it('backfills movies_100 when total is already past the milestone', () => {
+    const p = ensureMoviesMilestoneAchievements({
+      ...DEFAULT_GAMIFICATION_PROFILE,
+      totalLinksAddedAllTime: 105,
+      unlockedAchievementIds: [],
+    });
+    expect(p.unlockedAchievementIds).toContain('movies_100');
+    expect(p.unlockedAchievementIds).not.toContain('movies_200');
   });
 
   it('does not unlock twice at 100', () => {
