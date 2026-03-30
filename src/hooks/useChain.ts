@@ -1,15 +1,17 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { normalizeLoggedDateForHeatmap } from '../lib/dateUtils';
 import type { Actor, ChainState, Movie, MovieSource } from '../types/movie';
 import { recordCastAppearancesForMovie, rebuildActorCastAppearanceCounts } from '../gamification/castAppearances';
 import { scoreChainStep } from '../gamification/chainScoring';
 import {
+  acknowledgeMoviesMilestoneModal,
   adjustDailyForLoggedDateChange,
   afterAddMovie,
   afterFirstNote,
   decrementDailyMovies,
   ensureDailyCountsFromLinks,
   finalizeChainReset,
+  getPendingMoviesMilestoneModal,
   recordStartMovie,
   syncProfileStreakFromHeatmapData,
   reverseAfterRemoveFirst,
@@ -111,6 +113,21 @@ export function useChain() {
 
   const dismissGamificationToast = useCallback(() => {
     setGamificationToastQueue((q) => q.slice(1));
+  }, []);
+
+  const pendingMoviesMilestoneModal = useMemo(
+    () => getPendingMoviesMilestoneModal(gamificationProfile),
+    [gamificationProfile]
+  );
+
+  const dismissMoviesMilestoneModal = useCallback(() => {
+    setGamificationProfile((p) => {
+      const milestone = getPendingMoviesMilestoneModal(p);
+      if (milestone == null) return p;
+      const next = acknowledgeMoviesMilestoneModal(p, milestone);
+      saveGamificationProfile(next);
+      return next;
+    });
   }, []);
 
   const aggregateCastAppearancesForMovie = useCallback((movieId: number, cast: Actor[]) => {
@@ -470,6 +487,8 @@ export function useChain() {
     gamificationProfile,
     gamificationToastQueue,
     dismissGamificationToast,
+    pendingMoviesMilestoneModal,
+    dismissMoviesMilestoneModal,
     aggregateCastAppearancesForMovie,
     startChain,
     startPrependToChain,
