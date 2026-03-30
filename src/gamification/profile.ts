@@ -320,6 +320,12 @@ export function afterAddMovie(
   if (newLength >= 20) pushAch('chain_20');
   if (countDistinctDecades(linksAfterAdd) >= 3) pushAch('three_decades');
 
+  const prevMoviesLogged = profile.totalLinksAddedAllTime;
+  const nextMoviesLogged = next.totalLinksAddedAllTime;
+  if (nextMoviesLogged > 0 && nextMoviesLogged % 100 === 0 && prevMoviesLogged < nextMoviesLogged) {
+    pushAch(`movies_${nextMoviesLogged}`);
+  }
+
   const beatPersonalBest = newLength > prevLongest && newLength >= 2;
 
   return { profile: next, newAchievements, beatPersonalBest };
