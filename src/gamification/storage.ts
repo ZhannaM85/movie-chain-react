@@ -39,6 +39,11 @@ export function loadGamificationProfile(): GamificationProfile {
         parsed.movieCastByMovie && typeof parsed.movieCastByMovie === 'object'
           ? parsed.movieCastByMovie
           : {},
+      moviesMilestoneModalsAcknowledged: Array.isArray(parsed.moviesMilestoneModalsAcknowledged)
+        ? parsed.moviesMilestoneModalsAcknowledged.filter(
+            (n): n is number => typeof n === 'number' && n >= 100 && n % 100 === 0
+          )
+        : [],
       castAppearanceMoviesSeen: (() => {
         const p = parsed as Record<string, unknown>;
         if (

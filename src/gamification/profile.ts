@@ -16,13 +16,17 @@ function addUnlocked(profile: GamificationProfile, id: string): GamificationProf
   };
 }
 
+/** Best single number for “how many movies” badges: matches chain length UI vs cumulative adds. */
+function moviesMilestoneScore(profile: GamificationProfile): number {
+  return Math.max(profile.longestChainEver, profile.totalLinksAddedAllTime);
+}
+
 /**
- * Ensures `movies_100`, `movies_200`, … are unlocked for every milestone already
- * reached by {@link GamificationProfile.totalLinksAddedAllTime} (fixes users who
- * were above a threshold before the feature or missed a toast-only unlock).
+ * Ensures `movies_100`, `movies_200`, … for every milestone already reached by
+ * the max of longest chain length and total links added.
  */
 export function ensureMoviesMilestoneAchievements(profile: GamificationProfile): GamificationProfile {
-  const max = Math.floor(profile.totalLinksAddedAllTime / 100) * 100;
+  const max = Math.floor(moviesMilestoneScore(profile) / 100) * 100;
   if (max < 100) return profile;
 
   let next = profile;
@@ -33,6 +37,34 @@ export function ensureMoviesMilestoneAchievements(profile: GamificationProfile):
     }
   }
   return next;
+}
+
+/**
+ * Next movie-count milestone (100, 200, …) that qualifies for a celebration modal
+ * but has not been dismissed yet.
+ */
+export function getPendingMoviesMilestoneModal(profile: GamificationProfile): number | null {
+  const score = moviesMilestoneScore(profile);
+  const maxM = Math.floor(score / 100) * 100;
+  if (maxM < 100) return null;
+  const ack = new Set(profile.moviesMilestoneModalsAcknowledged ?? []);
+  for (let m = 100; m <= maxM; m += 100) {
+    if (!ack.has(m)) return m;
+  }
+  return null;
+}
+
+export function acknowledgeMoviesMilestoneModal(
+  profile: GamificationProfile,
+  milestone: number
+): GamificationProfile {
+  if (milestone < 100 || milestone % 100 !== 0) return profile;
+  const prev = profile.moviesMilestoneModalsAcknowledged ?? [];
+  if (prev.includes(milestone)) return profile;
+  return {
+    ...profile,
+    moviesMilestoneModalsAcknowledged: [...prev, milestone].sort((a, b) => a - b),
+  };
 }
 
 function countDistinctDecades(links: ChainLink[]): number {
@@ -339,10 +371,10 @@ export function afterAddMovie(
   if (newLength >= 20) pushAch('chain_20');
   if (countDistinctDecades(linksAfterAdd) >= 3) pushAch('three_decades');
 
-  const prevMoviesLogged = profile.totalLinksAddedAllTime;
-  const nextMoviesLogged = next.totalLinksAddedAllTime;
-  if (nextMoviesLogged > 0 && nextMoviesLogged % 100 === 0 && prevMoviesLogged < nextMoviesLogged) {
-    pushAch(`movies_${nextMoviesLogged}`);
+  const prevScore = moviesMilestoneScore(profile);
+  const nextScore = moviesMilestoneScore(next);
+  if (nextScore > 0 && nextScore % 100 === 0 && prevScore < nextScore) {
+    pushAch(`movies_${nextScore}`);
   }
 
   const beatPersonalBest = newLength > prevLongest && newLength >= 2;
