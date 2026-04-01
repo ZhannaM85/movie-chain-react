@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import type { KeyboardEvent } from 'react';
 import type { Actor } from '../types/movie';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useTranslation } from 'react-i18next';
@@ -81,12 +82,24 @@ export default function ActorCard({
   }
 
   return (
-    <button
-      onClick={disabled ? undefined : onClick}
+    <div
+      role="button"
+      tabIndex={disabled ? -1 : 0}
+      aria-disabled={disabled || undefined}
       className={`${baseClasses} ${stateClasses} w-full`}
-      disabled={disabled}
+      onClick={() => {
+        if (disabled) return;
+        onClick?.();
+      }}
+      onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {
+        if (disabled) return;
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
     >
       {inner}
-    </button>
+    </div>
   );
 }

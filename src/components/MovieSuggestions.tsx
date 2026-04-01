@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
+import type { KeyboardEvent } from 'react';
 import type { Movie } from '../types/movie';
 import type { Actor } from '../types/movie';
 import { defaultPastLinkLoggedDateFromHeadLink, localDateString } from '../lib/dateUtils';
@@ -286,10 +287,18 @@ function MovieGrid({
           ? null
           : scoreChainStep(movie, actorPopularity);
         return (
-          <button
+          <div
             key={movie.id}
+            role="button"
+            tabIndex={0}
+            className="group cursor-pointer text-left rounded-lg overflow-hidden bg-gray-800/50 hover:bg-gray-800 border border-gray-800 hover:border-indigo-500/50 transition-all hover:scale-[1.02]"
             onClick={() => onSelect(movie)}
-            className="group text-left rounded-lg overflow-hidden bg-gray-800/50 hover:bg-gray-800 border border-gray-800 hover:border-indigo-500/50 transition-all hover:scale-[1.02]"
+            onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSelect(movie);
+              }
+            }}
           >
             <img
               src={posterUrl(movie.poster_path ?? null, 'w342')}
@@ -309,7 +318,7 @@ function MovieGrid({
                 )}
               </div>
             </div>
-          </button>
+          </div>
         );
       })}
     </div>
