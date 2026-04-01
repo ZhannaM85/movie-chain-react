@@ -67,7 +67,6 @@ export interface ChainState {
   selectedActorId: number | null;
   /** Mirrors the last pick-actor choice; used if sessionStorage is missing when a movie is added. */
   selectedActorName: string | null;
-  excludedActorId: number | null;
   /** When true, pick actor/movie to insert a link before the current first movie. */
   prependMode?: boolean;
   /** UTC date (YYYY-MM-DD) when this run started from the daily challenge */

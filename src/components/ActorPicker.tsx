@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { MovieCredits } from '../types/movie';
 import { useChainContext } from '../context/ChainContext';
 import ActorCard from './ActorCard';
 import { useTranslation } from 'react-i18next';
 import { scoreActorContribution, scoreChainStep } from '../gamification/chainScoring';
+import { usedBridgeActorIds } from '../utils/chainLinks';
 
 interface ActorPickerProps {
   credits: MovieCredits;
@@ -35,10 +36,12 @@ function ChevronToggleIcon({ expanded }: { expanded: boolean }) {
 }
 
 export default function ActorPicker({ credits }: ActorPickerProps) {
-  const { selectActor, excludedActorId, prependMode, links } = useChainContext();
+  const { selectActor, prependMode, links } = useChainContext();
   const { t } = useTranslation();
   const [showAll, setShowAll] = useState(false);
   const [actorsExpanded, setActorsExpanded] = useState(true);
+
+  const bridgeActorIds = useMemo(() => usedBridgeActorIds(links), [links]);
 
   const cast = credits.cast.filter(
     (a) => a.known_for_department === 'Acting' || a.order !== undefined
@@ -66,7 +69,7 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
         <>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
             {displayCast.map((actor) => {
-              const isExcluded = actor.id === excludedActorId;
+              const isExcluded = bridgeActorIds.has(actor.id);
               const headMovie = links[0]?.movie;
               const challengePoints =
                 prependMode && headMovie
