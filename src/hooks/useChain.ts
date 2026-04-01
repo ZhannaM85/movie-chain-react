@@ -38,8 +38,6 @@ function loadState(): ChainState {
     const raw = localStorage.getItem(STORAGE_KEY);
     const parsed = raw ? (JSON.parse(raw) as ChainState) : null;
     if (parsed) {
-      const links = parsed.links ?? [];
-      const tail = links.length > 0 ? links[links.length - 1] : null;
       /** Older saves wrongly persisted prependMode — treat as stale and resume normal “extend chain” flow. */
       const hadPersistedPrepend = parsed.prependMode === true;
 
@@ -62,7 +60,6 @@ function loadState(): ChainState {
               currentStep: 'pick-actor',
               selectedActorId: null,
               selectedActorName: null,
-              excludedActorId: tail?.connectingActorId ?? null,
             }
           : {}),
       };
@@ -75,7 +72,6 @@ function loadState(): ChainState {
     currentStep: 'start',
     selectedActorId: null,
     selectedActorName: null,
-    excludedActorId: null,
     prependMode: false,
     dailyChallengeDate: null,
   };
@@ -156,7 +152,6 @@ export function useChain() {
       currentStep: 'pick-actor',
       selectedActorId: null,
       selectedActorName: null,
-      excludedActorId: null,
       prependMode: false,
       dailyChallengeDate: options?.dailyChallenge ? utcDateString() : null,
     });
@@ -178,7 +173,6 @@ export function useChain() {
         currentStep: 'pick-actor',
         selectedActorId: null,
         selectedActorName: null,
-        excludedActorId: null,
       };
     });
     sessionStorage.removeItem(PENDING_ACTOR_KEY);
@@ -210,6 +204,9 @@ export function useChain() {
 
   const addMovie = useCallback((movie: Movie, loggedDate?: string) => {
     setState((prev) => {
+      if (prev.links.some((l) => l.movie.id === movie.id)) {
+        return prev;
+      }
       const raw = sessionStorage.getItem(PENDING_ACTOR_KEY);
       sessionStorage.removeItem(PENDING_ACTOR_KEY);
       let actorName: string | null = null;
@@ -270,8 +267,6 @@ export function useChain() {
         newLinkIndex = newLinks.length - 1;
       }
 
-      const tail = newLinks[newLinks.length - 1];
-
       queueMicrotask(() => {
         setGamificationProfile((p) => {
           const r = afterAddMovie(p, newLinks, newLinkIndex);
@@ -295,7 +290,6 @@ export function useChain() {
         links: newLinks,
         prependMode: false,
         currentStep: 'pick-actor',
-        excludedActorId: tail.connectingActorId ?? null,
         selectedActorId: null,
         selectedActorName: null,
       };
@@ -370,7 +364,6 @@ export function useChain() {
         currentStep: 'start',
         selectedActorId: null,
         selectedActorName: null,
-        excludedActorId: null,
         prependMode: false,
         dailyChallengeDate: null,
       };
@@ -404,7 +397,6 @@ export function useChain() {
           currentStep: 'start',
           selectedActorId: null,
           selectedActorName: null,
-          excludedActorId: null,
           prependMode: false,
           dailyChallengeDate: null,
         };
@@ -417,7 +409,6 @@ export function useChain() {
         });
       });
       const links = prev.links.slice(0, -1);
-      const prevLink = links.length >= 2 ? links[links.length - 1] : null;
       return {
         ...prev,
         links,
@@ -425,7 +416,6 @@ export function useChain() {
         currentStep: 'pick-actor',
         selectedActorId: null,
         selectedActorName: null,
-        excludedActorId: prevLink?.connectingActorId ?? null,
       };
     });
   }, []);
@@ -448,7 +438,6 @@ export function useChain() {
           currentStep: 'start',
           selectedActorId: null,
           selectedActorName: null,
-          excludedActorId: null,
           prependMode: false,
           dailyChallengeDate: null,
         };
@@ -469,7 +458,6 @@ export function useChain() {
       };
       delete normalizedFirst.stepDifficulty;
       const links = [normalizedFirst, ...rest.slice(1)];
-      const tail = links[links.length - 1];
       return {
         ...prev,
         links,
@@ -477,7 +465,6 @@ export function useChain() {
         currentStep: 'pick-actor',
         selectedActorId: null,
         selectedActorName: null,
-        excludedActorId: tail?.connectingActorId ?? null,
       };
     });
   }, []);

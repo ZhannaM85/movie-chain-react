@@ -64,7 +64,6 @@ describe('useChain', () => {
     expect(result.current.currentStep).toBe('start');
     expect(result.current.selectedActorId).toBeNull();
     expect(result.current.selectedActorName).toBeNull();
-    expect(result.current.excludedActorId).toBeNull();
   });
 
   it('startChain sets one link and step to pick-actor', async () => {
@@ -121,7 +120,6 @@ describe('useChain', () => {
     expect(result.current.links[1].connectingActorName).toBe('Jane Doe');
     expect(result.current.links[1].stepDifficulty).toBeDefined();
     expect(result.current.currentStep).toBe('pick-actor');
-    expect(result.current.excludedActorId).toBe(42);
     expect(result.current.selectedActorId).toBeNull();
     expect(result.current.selectedActorName).toBeNull();
   });
@@ -156,7 +154,6 @@ describe('useChain', () => {
     expect(result.current.links).toEqual([]);
     expect(result.current.currentStep).toBe('start');
     expect(result.current.selectedActorId).toBeNull();
-    expect(result.current.excludedActorId).toBeNull();
   });
 
   it('cancelActorSelection clears selectedActorId and step to pick-actor', async () => {
@@ -215,8 +212,6 @@ describe('useChain', () => {
     expect(result.current.links).toHaveLength(1);
     expect(result.current.links[0].movie.id).toBe(1);
     expect(result.current.currentStep).toBe('pick-actor');
-    // First link has connectingActorId null, so excludedActorId is null after undoing second
-    expect(result.current.excludedActorId).toBeNull();
   });
 
   it('removeFirst with two links drops oldest and clears bridge on new head', async () => {
@@ -236,7 +231,6 @@ describe('useChain', () => {
     expect(result.current.links[0].connectingActorId).toBeNull();
     expect(result.current.links[0].connectingActorName).toBeNull();
     expect(result.current.links[0].stepDifficulty).toBeUndefined();
-    expect(result.current.excludedActorId).toBeNull();
   });
 
   it('removeFirst with one link clears chain like undoLast', async () => {
@@ -259,5 +253,17 @@ describe('useChain', () => {
     act(() => result.current.addMovie(movie2));
     await flushMicrotasks();
     expect(result.current.links[1].entryKind).toBe('append');
+  });
+
+  it('addMovie does nothing when movie id is already in the chain', async () => {
+    const { result } = renderHook(() => useChain());
+    act(() => result.current.startChain(minimalMovie));
+    await flushMicrotasks();
+    act(() => result.current.selectActor(42, 'Jane Doe'));
+    act(() => result.current.addMovie(minimalMovie));
+    await flushMicrotasks();
+    expect(result.current.links).toHaveLength(1);
+    expect(result.current.currentStep).toBe('pick-movie');
+    expect(result.current.selectedActorId).toBe(42);
   });
 });
