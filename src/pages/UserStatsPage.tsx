@@ -16,6 +16,11 @@ import { mergeMoviesAddedByDateWithChainLinks } from '../gamification/heatmap';
 import { useResolvedActorName } from '../hooks/useResolvedActorName';
 import type { MovieApi } from '../services/movieApi';
 
+/** Temporary: bridge leaderboard hidden (one bridge per actor rule); set true to show again. */
+const SHOW_TOP_BRIDGE_ACTORS = false;
+
+const TOP_CAST_LIMIT = SHOW_TOP_BRIDGE_ACTORS ? 12 : 24;
+
 /**
  * Local “profile” stats: activity heatmap, streaks, top bridge actors, totals.
  */
@@ -61,7 +66,7 @@ export default function UserStatsPage() {
       return;
     }
     setTopCastLoading(true);
-    fetchTopCastAppearancesFromApi(links, api, 12)
+    fetchTopCastAppearancesFromApi(links, api, TOP_CAST_LIMIT)
       .then((rows) => {
         if (!cancelled) setTopCastActors(rows);
       })
@@ -78,7 +83,10 @@ export default function UserStatsPage() {
     [p.moviesAddedByDate, links]
   );
 
-  const topActors = useMemo(() => getTopActorBridges(p, 12), [p]);
+  const topActors = useMemo(
+    () => (SHOW_TOP_BRIDGE_ACTORS ? getTopActorBridges(p, 12) : []),
+    [p]
+  );
 
   const busiestDay = useMemo(() => {
     let bestDate: string | null = null;
@@ -135,34 +143,42 @@ export default function UserStatsPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 overflow-visible">
-        <section>
-          <ExplainableSectionTitle title={t('topActorsSectionTitle')} explanation={t('statExplainTopBridge')} />
-          {topActors.length === 0 ? (
-            <p className="text-sm text-gray-600">{t('topActorsEmpty')}</p>
-          ) : (
-            <ul className="space-y-2">
-              {topActors.map((a, i) => (
-                <li key={a.id}>
-                  <Link
-                    to={`/actor/${a.id}?from=bridge`}
-                    className="group flex items-center justify-between gap-3 rounded-lg bg-gray-800/50 border border-gray-800 px-3 py-2 w-full min-w-0 text-left no-underline hover:border-indigo-500/50 hover:bg-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0f]"
-                  >
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <span className="text-xs text-gray-600 w-5 flex-shrink-0">{i + 1}</span>
-                      <span className="text-sm text-indigo-400 group-hover:text-indigo-300 truncate">
-                        <StatsActorDisplayName actorIdStr={a.id} fallbackName={a.name} api={api} />
+      <div
+        className={
+          SHOW_TOP_BRIDGE_ACTORS
+            ? 'grid grid-cols-1 lg:grid-cols-3 gap-8 overflow-visible'
+            : 'grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-visible'
+        }
+      >
+        {SHOW_TOP_BRIDGE_ACTORS ? (
+          <section>
+            <ExplainableSectionTitle title={t('topActorsSectionTitle')} explanation={t('statExplainTopBridge')} />
+            {topActors.length === 0 ? (
+              <p className="text-sm text-gray-600">{t('topActorsEmpty')}</p>
+            ) : (
+              <ul className="space-y-2">
+                {topActors.map((a, i) => (
+                  <li key={a.id}>
+                    <Link
+                      to={`/actor/${a.id}?from=bridge`}
+                      className="group flex items-center justify-between gap-3 rounded-lg bg-gray-800/50 border border-gray-800 px-3 py-2 w-full min-w-0 text-left no-underline hover:border-indigo-500/50 hover:bg-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0f]"
+                    >
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <span className="text-xs text-gray-600 w-5 flex-shrink-0">{i + 1}</span>
+                        <span className="text-sm text-indigo-400 group-hover:text-indigo-300 truncate">
+                          <StatsActorDisplayName actorIdStr={a.id} fallbackName={a.name} api={api} />
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-500 flex-shrink-0 tabular-nums">
+                        {t('actorBridgeTimes', { count: a.count })}
                       </span>
-                    </div>
-                    <span className="text-xs text-gray-500 flex-shrink-0 tabular-nums">
-                      {t('actorBridgeTimes', { count: a.count })}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        ) : null}
 
         <section>
           <div className="mb-1">
