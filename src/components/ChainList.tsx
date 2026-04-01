@@ -192,7 +192,7 @@ export default function ChainList({ prependPickPanel }: ChainListProps) {
           key: `${link.movie.id}-${chainIndex}`,
           link,
           chainIndex,
-          sequenceNumber: links.length - chainIndex,
+          sequenceNumber: chainIndex + 1,
           showBridgeRow,
           effectiveActorId,
           effectiveActorName,
