@@ -279,7 +279,7 @@ export default function ChainPage() {
                 key={`${link.movie.id}-${chainIndex}`}
                 link={link}
                 chainIndex={chainIndex}
-                sequenceNumber={links.length - chainIndex}
+                sequenceNumber={chainIndex + 1}
                 showBridgeRow={showBridgeRow}
                 effectiveActorId={effectiveActorId}
                 effectiveActorName={effectiveActorName}
