@@ -49,6 +49,8 @@ export default function MovieSuggestions() {
     return scoreChainStep(headMovie, actor.popularity);
   }, [prependMode, headMovie, actor]);
 
+  const chainMovieIds = useMemo(() => new Set(links.map((l) => l.movie.id)), [links]);
+
   if (selectedActorId !== prevDeps.actorId || links.length !== prevDeps.linksLen) {
     setPrevDeps({ actorId: selectedActorId, linksLen: links.length });
     setLoading(true);
@@ -68,9 +70,8 @@ export default function MovieSuggestions() {
       .then(({ actorData, creditsData }) => {
         if (ignore) return;
         setActor(actorData);
-        const watchedIds = new Set(links.map((l) => l.movie.id));
         const filtered = creditsData.cast
-          .filter((m) => m.poster_path && m.release_date && !watchedIds.has(m.id))
+          .filter((m) => m.poster_path && m.release_date)
           .sort((a, b) => b.popularity - a.popularity);
         setMovies(filtered);
       })
@@ -181,6 +182,7 @@ export default function MovieSuggestions() {
 
       <MovieGrid
         movies={movies}
+        chainMovieIds={chainMovieIds}
         sortBy={sortBy}
         searchQuery={searchQuery}
         showAll={showAll}
@@ -244,6 +246,7 @@ function sortMovies(movies: Movie[], sortBy: SortOption): Movie[] {
  */
 function MovieGrid({
   movies,
+  chainMovieIds,
   sortBy,
   searchQuery,
   showAll,
@@ -254,6 +257,7 @@ function MovieGrid({
   t,
 }: {
   movies: Movie[];
+  chainMovieIds: Set<number>;
   sortBy: SortOption;
   searchQuery: string;
   showAll: boolean;
@@ -283,17 +287,26 @@ function MovieGrid({
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
       {displayMovies.map((movie) => {
-        const stepPoints = prependMode
-          ? null
-          : scoreChainStep(movie, actorPopularity);
+        const inChain = chainMovieIds.has(movie.id);
+        const stepPoints = prependMode || inChain ? null : scoreChainStep(movie, actorPopularity);
         return (
           <div
             key={movie.id}
             role="button"
-            tabIndex={0}
-            className="group cursor-pointer text-left rounded-lg overflow-hidden bg-gray-800/50 hover:bg-gray-800 border border-gray-800 hover:border-indigo-500/50 transition-all hover:scale-[1.02]"
-            onClick={() => onSelect(movie)}
+            tabIndex={inChain ? -1 : 0}
+            aria-disabled={inChain || undefined}
+            title={inChain ? t('movieAlreadyInChain') : undefined}
+            className={
+              'group text-left rounded-lg overflow-hidden border transition-all ' +
+              (inChain
+                ? 'cursor-not-allowed opacity-50 bg-gray-800/30 border-gray-800/80'
+                : 'cursor-pointer bg-gray-800/50 hover:bg-gray-800 border-gray-800 hover:border-indigo-500/50 hover:scale-[1.02]')
+            }
+            onClick={() => {
+              if (!inChain) onSelect(movie);
+            }}
             onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {
+              if (inChain) return;
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 onSelect(movie);
@@ -303,10 +316,15 @@ function MovieGrid({
             <img
               src={posterUrl(movie.poster_path ?? null, 'w342')}
               alt={movie.title}
-              className="w-full aspect-[2/3] object-cover"
+              className={'w-full aspect-[2/3] object-cover ' + (inChain ? 'grayscale' : '')}
             />
             <div className="p-2">
-              <h4 className="text-sm font-medium text-gray-200 group-hover:text-white truncate">
+              <h4
+                className={
+                  'text-sm font-medium truncate ' +
+                  (inChain ? 'text-gray-500' : 'text-gray-200 group-hover:text-white')
+                }
+              >
                 {movie.title}
               </h4>
               <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-gray-500">
@@ -317,6 +335,9 @@ function MovieGrid({
                   <ChallengePointsInline points={stepPoints} className="text-gray-500 tabular-nums" />
                 )}
               </div>
+              {inChain ? (
+                <p className="text-[10px] text-gray-600 mt-1 leading-tight">{t('movieAlreadyInChainHint')}</p>
+              ) : null}
             </div>
           </div>
         );
