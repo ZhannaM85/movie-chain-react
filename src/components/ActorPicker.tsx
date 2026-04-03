@@ -4,7 +4,7 @@ import { useChainContext } from '../context/ChainContext';
 import ActorCard from './ActorCard';
 import { useTranslation } from 'react-i18next';
 import { scoreActorContribution, scoreChainStep } from '../gamification/chainScoring';
-import { usedBridgeActorIds } from '../utils/chainLinks';
+import { bridgeActorStepByActorId, usedBridgeActorIds } from '../utils/chainLinks';
 
 interface ActorPickerProps {
   credits: MovieCredits;
@@ -42,6 +42,7 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
   const [actorsExpanded, setActorsExpanded] = useState(true);
 
   const bridgeActorIds = useMemo(() => usedBridgeActorIds(links), [links]);
+  const bridgeStepsByActorId = useMemo(() => bridgeActorStepByActorId(links), [links]);
 
   const cast = credits.cast.filter(
     (a) => a.known_for_department === 'Acting' || a.order !== undefined
@@ -70,6 +71,18 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
             {displayCast.map((actor) => {
               const isExcluded = bridgeActorIds.has(actor.id);
+              const step = bridgeStepsByActorId.get(actor.id);
+              const disabledBridge =
+                isExcluded && step
+                  ? {
+                      fromTitle: step.fromTitle,
+                      toTitle: step.toTitle,
+                      description: t('actorAlreadyUsedAsBridge', {
+                        from: step.fromTitle,
+                        to: step.toTitle,
+                      }),
+                    }
+                  : undefined;
               const headMovie = links[0]?.movie;
               const challengePoints =
                 prependMode && headMovie
@@ -81,6 +94,7 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
                   key={actor.id}
                   actor={actor}
                   disabled={isExcluded}
+                  disabledBridge={disabledBridge}
                   onClick={() => selectActor(actor.id, actor.name, actor.popularity)}
                   challengePoints={challengePoints}
                   challengePointsVariant={challengePointsVariant}

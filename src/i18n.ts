@@ -145,6 +145,7 @@ const resources = {
       useKinopoisk: 'Use Kinopoisk',
       useKinopoiskOff: 'TMDB',
       pickActorToContinue: 'Pick an actor to continue the chain',
+      actorAlreadyUsedAsBridge: 'Already used as bridge: {{from}} → {{to}}',
       collapseActorsAria: 'Collapse actor list',
       expandActorsAria: 'Expand actor list',
       pickActorToPrepend:
@@ -426,6 +427,7 @@ const resources = {
       useKinopoisk: 'Кинопоиск',
       useKinopoiskOff: 'TMDB',
       pickActorToContinue: 'Выберите актера, чтобы продолжить цепочку',
+      actorAlreadyUsedAsBridge: 'Уже был мостом: {{from}} → {{to}}',
       collapseActorsAria: 'Свернуть список актёров',
       expandActorsAria: 'Развернуть список актёров',
       pickActorToPrepend:
