@@ -5,11 +5,20 @@ import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useTranslation } from 'react-i18next';
 import ChallengePointsInline from './ChallengePointsInline';
 
+interface ActorDisabledBridgeInfo {
+  fromTitle: string;
+  toTitle: string;
+  /** Full phrase for tooltip and accessible name (e.g. translated “already used as bridge…”). */
+  description: string;
+}
+
 interface ActorCardProps {
   actor: Actor;
   onClick?: () => void;
   selected?: boolean;
   disabled?: boolean;
+  /** Compact bridge step (icon + titles on card); `description` used for title tooltip and aria-label. */
+  disabledBridge?: ActorDisabledBridgeInfo;
   showLink?: boolean;
   /** Preview difficulty: full step (prepend) or actor-only slice (append pick-actor). */
   challengePoints?: number | null;
@@ -22,11 +31,32 @@ interface ActorCardProps {
  * @param {ActorCardProps} props - The component props.
  * @returns {JSX.Element} The rendered actor card.
  */
+function BridgeUsedIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className={className}
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"
+      />
+    </svg>
+  );
+}
+
 export default function ActorCard({
   actor,
   onClick,
   selected,
   disabled,
+  disabledBridge,
   showLink = false,
   challengePoints,
   challengePointsVariant = 'step',
@@ -52,6 +82,16 @@ export default function ActorCard({
         <p className="text-sm font-medium text-gray-200 truncate">{actor.name}</p>
         {actor.character && (
           <p className="text-xs text-gray-500 truncate">{t('asCharacter', { character: actor.character })}</p>
+        )}
+        {disabled && disabledBridge && (
+          <div className="mt-1 flex items-start gap-1 min-w-0">
+            <BridgeUsedIcon className="w-3.5 h-3.5 shrink-0 mt-0.5 text-gray-500" />
+            <p className="text-[10px] text-gray-500 leading-snug min-w-0 break-words line-clamp-4" aria-hidden>
+              {disabledBridge.fromTitle}
+              <span className="text-gray-600 mx-0.5">→</span>
+              {disabledBridge.toTitle}
+            </p>
+          </div>
         )}
         {challengePoints != null && (
           <div className="mt-1">
@@ -81,11 +121,16 @@ export default function ActorCard({
     );
   }
 
+  const ariaLabel =
+    disabled && disabledBridge ? `${actor.name}. ${disabledBridge.description}` : undefined;
+
   return (
     <div
       role="button"
       tabIndex={disabled ? -1 : 0}
       aria-disabled={disabled || undefined}
+      aria-label={ariaLabel}
+      title={disabled && disabledBridge ? disabledBridge.description : undefined}
       className={`${baseClasses} ${stateClasses} w-full`}
       onClick={() => {
         if (disabled) return;
