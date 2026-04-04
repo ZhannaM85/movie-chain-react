@@ -164,8 +164,16 @@ function ChainPageChainItem({
 export default function ChainPage() {
   const api = useMovieApiForChain();
   const navigate = useNavigate();
-  const { links, resetChain, undoLast, removeFirst, gamificationProfile, startPrependToChain } =
-    useChainContext();
+  const {
+    links,
+    resetChain,
+    undoLast,
+    removeFirst,
+    gamificationProfile,
+    startPrependToChain,
+    exportActiveListJson,
+    exportActiveListCsv,
+  } = useChainContext();
   const { t } = useTranslation();
   const [confirmAction, setConfirmAction] = useState<null | 'undoLast' | 'removeFirst'>(null);
   const recap = useMemo(() => buildChainRecap(links), [links]);
@@ -177,6 +185,22 @@ export default function ChainPage() {
       <div className="max-w-3xl mx-auto px-4 py-16 text-center">
         <h1 className="text-2xl font-bold text-white mb-3">{t('noChainYet')}</h1>
         <p className="text-gray-400 mb-6">{t('noChainDescription')}</p>
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+          <button
+            type="button"
+            onClick={exportActiveListJson}
+            className="rounded-md border border-indigo-600/60 bg-indigo-950/40 px-3 py-2 text-sm font-medium text-indigo-200 hover:bg-indigo-900/50 transition-colors"
+          >
+            {t('listExportJson')}
+          </button>
+          <button
+            type="button"
+            onClick={exportActiveListCsv}
+            className="rounded-md border border-gray-600 bg-gray-800/80 px-3 py-2 text-sm font-medium text-gray-200 hover:bg-gray-700/80 transition-colors"
+          >
+            {t('listExportCsv')}
+          </button>
+        </div>
         <Link
           to="/"
           className="inline-block px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition-colors"
@@ -216,34 +240,52 @@ export default function ChainPage() {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {links.length > 1 && (
+        <div className="flex flex-col items-stretch sm:items-end gap-2 shrink-0">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <button
               type="button"
-              onClick={() => setConfirmAction('undoLast')}
+              onClick={exportActiveListJson}
+              className="text-sm px-3 py-1.5 rounded-md border border-indigo-600/50 bg-indigo-950/35 text-indigo-200 hover:bg-indigo-900/45 transition-colors"
+            >
+              {t('listExportJson')}
+            </button>
+            <button
+              type="button"
+              onClick={exportActiveListCsv}
               className="text-sm px-3 py-1.5 rounded-md bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors"
             >
-              {t('undoLast')}
+              {t('listExportCsv')}
             </button>
-          )}
-          <button
-            type="button"
-            title={t('clearChainTooltip')}
-            onClick={() => {
-              const msg = t('confirmNewChainRecap', {
-                length: recap.length,
-                difficulty: recap.totalDifficulty,
-                actors: recap.uniqueActors,
-                decades: recap.distinctDecades,
-              });
-              if (window.confirm(msg)) {
-                resetChain();
-              }
-            }}
-            className="text-sm px-3 py-1.5 rounded-md bg-gray-800 hover:bg-red-900/50 hover:text-red-300 text-gray-300 transition-colors"
-          >
-            {t('clearChain')}
-          </button>
+          </div>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {links.length > 1 && (
+              <button
+                type="button"
+                onClick={() => setConfirmAction('undoLast')}
+                className="text-sm px-3 py-1.5 rounded-md bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors"
+              >
+                {t('undoLast')}
+              </button>
+            )}
+            <button
+              type="button"
+              title={t('clearChainTooltip')}
+              onClick={() => {
+                const msg = t('confirmNewChainRecap', {
+                  length: recap.length,
+                  difficulty: recap.totalDifficulty,
+                  actors: recap.uniqueActors,
+                  decades: recap.distinctDecades,
+                });
+                if (window.confirm(msg)) {
+                  resetChain();
+                }
+              }}
+              className="text-sm px-3 py-1.5 rounded-md bg-gray-800 hover:bg-red-900/50 hover:text-red-300 text-gray-300 transition-colors"
+            >
+              {t('clearChain')}
+            </button>
+          </div>
         </div>
       </div>
 

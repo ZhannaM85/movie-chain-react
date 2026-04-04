@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useChainContext } from '../context/ChainContext';
 import { useMovieApiForChain, useMovieApiPreference } from '../context/MovieApiContext';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +8,7 @@ import { buildChainRecap } from '../gamification/chainRecap';
 import GamificationToasts from './GamificationToasts';
 import MoviesMilestoneModal from './MoviesMilestoneModal';
 import ChainListMenu from './ChainListMenu';
+import { ChainListsBackupError } from '../utils/chainListsBackup';
 
 /** Set to `true` to show the Kinopoisk / TMDB preference switch in the header again. */
 const SHOW_KINOPOISK_TOGGLE = false;
@@ -26,10 +27,53 @@ const headerToolbarChrome = `${headerToolbarChromeBase} inline-flex`;
 export default function Layout({ children }: { children: ReactNode }) {
   const api = useMovieApiForChain();
   const { preferKinopoisk, setPreferKinopoisk, hasKinopoiskKey } = useMovieApiPreference();
-  const { links, source, resetChain, gamificationProfile, createList, chainLists } =
+  const { links, source, resetChain, gamificationProfile, createList, chainLists, importChainListsFromJson } =
     useChainContext();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [fabAddOpen, setFabAddOpen] = useState(false);
+  const fabImportInputRef = useRef<HTMLInputElement>(null);
   const { t, i18n } = useTranslation();
+
+  const runFabImportMerge = useCallback(
+    (text: string) => {
+      try {
+        importChainListsFromJson(text, 'merge');
+        window.alert(t('backupImportSuccess'));
+      } catch (e) {
+        const msg =
+          e instanceof ChainListsBackupError
+            ? e.message
+            : e instanceof Error
+              ? e.message
+              : t('backupImportError');
+        window.alert(msg);
+      }
+      setFabAddOpen(false);
+    },
+    [importChainListsFromJson, t]
+  );
+
+  const onFabImportFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      e.target.value = '';
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        runFabImportMerge(String(reader.result ?? ''));
+      };
+      reader.onerror = () => {
+        window.alert(t('backupImportError'));
+      };
+      reader.readAsText(file);
+    },
+    [runFabImportMerge, t]
+  );
+
+  const handleFabAddEmpty = useCallback(() => {
+    createList(t('newListNumbered', { n: chainLists.length + 1 }));
+    setFabAddOpen(false);
+  }, [chainLists.length, createList, t]);
 
   const confirmAndStartNewChain = useCallback(() => {
     const recap = buildChainRecap(links);
@@ -226,29 +270,82 @@ export default function Layout({ children }: { children: ReactNode }) {
         {children}
       </main>
       {links.length > 0 && (
-        <button
-          type="button"
-          onClick={() => {
-            createList(t('newListNumbered', { n: chainLists.length + 1 }));
-          }}
-          className="sm:hidden fixed right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full border border-indigo-700/70 bg-indigo-950/90 text-indigo-100 shadow-lg shadow-black/50 backdrop-blur-sm transition hover:border-indigo-500 hover:bg-indigo-900/85 active:scale-95 bottom-[max(1rem,env(safe-area-inset-bottom))]"
-          title={t('addList')}
-          aria-label={t('addListFabAria')}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2.25}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="w-7 h-7"
-            aria-hidden
+        <>
+          <input
+            ref={fabImportInputRef}
+            type="file"
+            accept="application/json,.json"
+            className="sr-only"
+            aria-label={t('backupImportFileAria')}
+            onChange={onFabImportFileChange}
+          />
+          <button
+            type="button"
+            onClick={() => setFabAddOpen(true)}
+            className="sm:hidden fixed right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full border border-indigo-700/70 bg-indigo-950/90 text-indigo-100 shadow-lg shadow-black/50 backdrop-blur-sm transition hover:border-indigo-500 hover:bg-indigo-900/85 active:scale-95 bottom-[max(1rem,env(safe-area-inset-bottom))]"
+            title={t('addList')}
+            aria-label={t('addListFabAria')}
+            aria-expanded={fabAddOpen}
+            aria-haspopup="dialog"
           >
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.25}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-7 h-7"
+              aria-hidden
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </button>
+          {fabAddOpen && (
+            <>
+              <div
+                className="sm:hidden fixed inset-0 z-[90] bg-black/50"
+                aria-hidden
+                onClick={() => setFabAddOpen(false)}
+              />
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label={t('addListFabMenuAria')}
+                className="sm:hidden fixed left-0 right-0 bottom-0 z-[95] rounded-t-2xl border border-gray-700/80 border-b-0 bg-gray-900 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-2xl shadow-black/60"
+              >
+                <p className="text-sm font-medium text-gray-200 mb-3">{t('addListFabMenuTitle')}</p>
+                <div className="flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={handleFabAddEmpty}
+                    className="w-full rounded-lg border border-indigo-600/50 bg-indigo-950/40 px-4 py-3 text-left text-sm font-medium text-indigo-100 hover:bg-indigo-900/50 transition-colors"
+                  >
+                    {t('addListEmpty')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      fabImportInputRef.current?.click();
+                      setFabAddOpen(false);
+                    }}
+                    className="w-full rounded-lg border border-gray-600 bg-gray-800/90 px-4 py-3 text-left text-sm font-medium text-gray-100 hover:bg-gray-700/80 transition-colors"
+                  >
+                    {t('addListImportJson')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFabAddOpen(false)}
+                    className="w-full rounded-lg px-4 py-2.5 text-sm text-gray-400 hover:text-gray-200 transition-colors"
+                  >
+                    {t('cancel')}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </>
       )}
       <GamificationToasts />
       <MoviesMilestoneModal />
