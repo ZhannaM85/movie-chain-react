@@ -1,6 +1,7 @@
 import type { MovieApi, MovieSource } from './movieApi';
 import { createTmdbApi } from './tmdbMovieApi';
 import { createKinopoiskApi } from './kinopoisk';
+import { CHAIN_LISTS_STORAGE_KEY, LEGACY_CHAIN_STORAGE_KEY } from '../types/chainLists';
 
 /**
  * Set to `true` to restore automatic Kinopoisk when TMDB is missing or unreachable.
@@ -16,14 +17,24 @@ export const MOVIE_API_ERR_NO_TMDB_CONFIGURED = 'MOVIE_API_NO_TMDB_CONFIGURED';
 
 const STORAGE_KEY = 'movie-api-source';
 const PREFER_KINOPOISK_KEY = 'movie-api-prefer-kinopoisk';
-const CHAIN_STORAGE_KEY = 'movie-chain-state';
-
 let cachedApi: MovieApi | null = null;
 const apiBySource: { tmdb?: MovieApi; kinopoisk?: MovieApi } = {};
 
 function getChainSourceFromStorage(): MovieSource | null {
   try {
-    const raw = localStorage.getItem(CHAIN_STORAGE_KEY);
+    const v1 = localStorage.getItem(CHAIN_LISTS_STORAGE_KEY);
+    if (v1) {
+      const parsed = JSON.parse(v1) as {
+        activeListId?: string;
+        lists?: { id: string; state?: { source?: MovieSource; links?: unknown[] } }[];
+      };
+      const id = parsed.activeListId;
+      const active = parsed.lists?.find((l) => l.id === id) ?? parsed.lists?.[0];
+      const links = active?.state?.links;
+      if (!links?.length || !active?.state) return null;
+      return active.state.source ?? 'tmdb';
+    }
+    const raw = localStorage.getItem(LEGACY_CHAIN_STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as { source?: MovieSource; links?: unknown[] };
     if (!parsed.links?.length) return null;

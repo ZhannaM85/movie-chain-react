@@ -1,6 +1,15 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { normalizeLoggedDateForHeatmap } from '../lib/dateUtils';
 import type { Actor, ChainState, Movie, MovieSource } from '../types/movie';
+import {
+  CHAIN_LIST_NAME_MAX_LENGTH,
+  createEmptyChainState,
+  loadChainListsPersisted,
+  saveChainListsPersisted,
+  type ChainListEntry,
+  type ChainListsPersisted,
+} from '../types/chainLists';
 import { recordCastAppearancesForMovie, rebuildActorCastAppearanceCounts } from '../gamification/castAppearances';
 import { scoreChainStep } from '../gamification/chainScoring';
 import {
@@ -21,8 +30,10 @@ import {
 import { loadGamificationProfile, saveGamificationProfile } from '../gamification/storage';
 import type { GamificationProfile } from '../gamification/types';
 
-const STORAGE_KEY = 'movie-chain-state';
 const PENDING_ACTOR_KEY = 'pending-actor-pick';
+
+/** Used when migrating legacy storage before i18n is available. */
+const DEFAULT_MIGRATED_LIST_NAME = 'My list';
 
 export interface StartChainOptions {
   dailyChallenge?: boolean;
@@ -30,71 +41,49 @@ export interface StartChainOptions {
   loggedDate?: string;
 }
 
-/**
- * Loads the persisted movie chain state from localStorage, falling back to the initial state.
- */
-function loadState(): ChainState {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const parsed = raw ? (JSON.parse(raw) as ChainState) : null;
-    if (parsed) {
-      /** Older saves wrongly persisted prependMode — treat as stale and resume normal “extend chain” flow. */
-      const hadPersistedPrepend = parsed.prependMode === true;
-
-      if (hadPersistedPrepend) {
-        try {
-          sessionStorage.removeItem(PENDING_ACTOR_KEY);
-        } catch {
-          // ignore
+function applyGamificationForClearingList(
+  setGamificationProfile: Dispatch<SetStateAction<GamificationProfile>>,
+  linksSnapshot: ChainState['links'],
+  dailySnapshot: string | null | undefined
+) {
+  queueMicrotask(() => {
+    setGamificationProfile((p) => {
+      let next = finalizeChainReset(p, linksSnapshot, dailySnapshot);
+      for (const link of linksSnapshot) {
+        if (link.loggedDate) {
+          next = decrementDailyMovies(next, link.loggedDate);
         }
       }
-
-      return {
-        ...parsed,
-        source: parsed.source ?? 'tmdb',
-        dailyChallengeDate: parsed.dailyChallengeDate ?? null,
-        selectedActorName: parsed.selectedActorName ?? null,
-        prependMode: false,
-        ...(hadPersistedPrepend
-          ? {
-              currentStep: 'pick-actor',
-              selectedActorId: null,
-              selectedActorName: null,
-            }
-          : {}),
-      };
-    }
-  } catch {
-    // ignore corrupted data
-  }
-  return {
-    links: [],
-    currentStep: 'start',
-    selectedActorId: null,
-    selectedActorName: null,
-    prependMode: false,
-    dailyChallengeDate: null,
-  };
-}
-
-/** Prepend is session-only; never persist it so “under +” UI cannot stick across reloads. */
-function saveState(state: ChainState) {
-  const persisted: ChainState = { ...state, prependMode: false };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(persisted));
+      saveGamificationProfile(next);
+      return next;
+    });
+  });
 }
 
 /**
- * React hook that manages the full lifecycle of a movie chain,
+ * React hook that manages the full lifecycle of movie chains (named lists),
  * including persistence, navigation steps, user comments, and gamification.
  */
 export function useChain() {
-  const [state, setState] = useState<ChainState>(loadState);
+  const [persisted, setPersisted] = useState<ChainListsPersisted>(() =>
+    loadChainListsPersisted(DEFAULT_MIGRATED_LIST_NAME, PENDING_ACTOR_KEY)
+  );
   const [gamificationProfile, setGamificationProfile] = useState<GamificationProfile>(loadGamificationProfile);
   const [gamificationToastQueue, setGamificationToastQueue] = useState<string[]>([]);
 
+  const activeListId = persisted.activeListId;
+  const lists = persisted.lists;
+
+  const activeEntry = useMemo(() => {
+    const found = lists.find((e) => e.id === activeListId);
+    return found ?? lists[0];
+  }, [lists, activeListId]);
+
+  const state = activeEntry?.state ?? createEmptyChainState();
+
   useEffect(() => {
-    saveState(state);
-  }, [state]);
+    saveChainListsPersisted(persisted);
+  }, [persisted]);
 
   useEffect(() => {
     setGamificationProfile((p) => {
@@ -135,9 +124,95 @@ export function useChain() {
     });
   }, [state.links]);
 
+  const updateActiveState = useCallback((updater: (prev: ChainState) => ChainState) => {
+    setPersisted((prev) => {
+      const id = prev.activeListId;
+      const nextLists = prev.lists.map((e) =>
+        e.id === id ? { ...e, state: updater(e.state) } : e
+      );
+      return { ...prev, lists: nextLists };
+    });
+  }, []);
+
+  const setActiveListId = useCallback((id: string) => {
+    setPersisted((prev) => {
+      if (!prev.lists.some((e) => e.id === id)) return prev;
+      try {
+        sessionStorage.removeItem(PENDING_ACTOR_KEY);
+      } catch {
+        // ignore
+      }
+      return { ...prev, activeListId: id };
+    });
+  }, []);
+
+  const createList = useCallback((name?: string) => {
+    const label = name?.trim() || `List ${persisted.lists.length + 1}`;
+    const trimmed = label.slice(0, CHAIN_LIST_NAME_MAX_LENGTH);
+    const newEntry: ChainListEntry = {
+      id: crypto.randomUUID(),
+      name: trimmed,
+      state: createEmptyChainState(),
+    };
+    setPersisted((prev) => ({
+      version: 1,
+      activeListId: newEntry.id,
+      lists: [...prev.lists, newEntry],
+    }));
+  }, [persisted.lists.length]);
+
+  const renameList = useCallback((id: string, name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const nextName = trimmed.slice(0, CHAIN_LIST_NAME_MAX_LENGTH);
+    setPersisted((prev) => ({
+      ...prev,
+      lists: prev.lists.map((e) => (e.id === id ? { ...e, name: nextName } : e)),
+    }));
+  }, []);
+
+  const deleteList = useCallback(
+    (id: string) => {
+      setPersisted((prev) => {
+        const victim = prev.lists.find((e) => e.id === id);
+        if (!victim) return prev;
+
+        if (victim.state.links.length > 0) {
+          applyGamificationForClearingList(
+            setGamificationProfile,
+            victim.state.links,
+            victim.state.dailyChallengeDate
+          );
+        }
+
+        const remaining = prev.lists.filter((e) => e.id !== id);
+        if (remaining.length === 0) {
+          const fresh: ChainListEntry = {
+            id: crypto.randomUUID(),
+            name: DEFAULT_MIGRATED_LIST_NAME,
+            state: createEmptyChainState(),
+          };
+          return { version: 1, activeListId: fresh.id, lists: [fresh] };
+        }
+
+        let nextActive = prev.activeListId;
+        if (prev.activeListId === id) {
+          nextActive = remaining[0].id;
+        }
+        try {
+          sessionStorage.removeItem(PENDING_ACTOR_KEY);
+        } catch {
+          // ignore
+        }
+        return { version: 1, activeListId: nextActive, lists: remaining };
+      });
+    },
+    []
+  );
+
   const startChain = useCallback((movie: Movie, source?: MovieSource, options?: StartChainOptions) => {
     const logged = normalizeLoggedDateForHeatmap(options?.loggedDate);
-    setState({
+    updateActiveState(() => ({
       source: source ?? 'tmdb',
       links: [
         {
@@ -154,7 +229,7 @@ export function useChain() {
       selectedActorName: null,
       prependMode: false,
       dailyChallengeDate: options?.dailyChallenge ? utcDateString() : null,
-    });
+    }));
     queueMicrotask(() => {
       setGamificationProfile((p) => {
         const next = recordStartMovie(p, logged);
@@ -162,10 +237,10 @@ export function useChain() {
         return next;
       });
     });
-  }, []);
+  }, [updateActiveState]);
 
   const startPrependToChain = useCallback(() => {
-    setState((prev) => {
+    updateActiveState((prev) => {
       if (prev.links.length === 0) return prev;
       return {
         ...prev,
@@ -176,21 +251,21 @@ export function useChain() {
       };
     });
     sessionStorage.removeItem(PENDING_ACTOR_KEY);
-  }, []);
+  }, [updateActiveState]);
 
   const cancelPrepend = useCallback(() => {
     sessionStorage.removeItem(PENDING_ACTOR_KEY);
-    setState((prev) => ({
+    updateActiveState((prev) => ({
       ...prev,
       prependMode: false,
       currentStep: 'pick-actor',
       selectedActorId: null,
       selectedActorName: null,
     }));
-  }, []);
+  }, [updateActiveState]);
 
   const selectActor = useCallback((actorId: number, actorName: string, actorPopularity?: number | null) => {
-    setState((prev) => ({
+    updateActiveState((prev) => ({
       ...prev,
       currentStep: 'pick-movie',
       selectedActorId: actorId,
@@ -200,10 +275,10 @@ export function useChain() {
       PENDING_ACTOR_KEY,
       JSON.stringify({ name: actorName, popularity: actorPopularity ?? null })
     );
-  }, []);
+  }, [updateActiveState]);
 
   const addMovie = useCallback((movie: Movie, loggedDate?: string) => {
-    setState((prev) => {
+    updateActiveState((prev) => {
       if (prev.links.some((l) => l.movie.id === movie.id)) {
         return prev;
       }
@@ -294,10 +369,10 @@ export function useChain() {
         selectedActorName: null,
       };
     });
-  }, []);
+  }, [updateActiveState]);
 
   const updateLoggedDate = useCallback((index: number, loggedDate: string) => {
-    setState((prev) => {
+    updateActiveState((prev) => {
       const link = prev.links[index];
       if (!link) return prev;
       const oldDate = link.loggedDate;
@@ -313,10 +388,10 @@ export function useChain() {
       });
       return { ...prev, links };
     });
-  }, []);
+  }, [updateActiveState]);
 
   const updateComment = useCallback((index: number, comment: string) => {
-    setState((prev) => {
+    updateActiveState((prev) => {
       const prevComment = prev.links[index]?.comment ?? '';
       const wasEmpty = !prevComment.trim();
       const willHaveContent = comment.trim().length > 0;
@@ -341,24 +416,11 @@ export function useChain() {
       }
       return { ...prev, links };
     });
-  }, []);
+  }, [updateActiveState]);
 
   const resetChain = useCallback(() => {
-    setState((prev) => {
-      const linksSnapshot = prev.links;
-      const dailySnapshot = prev.dailyChallengeDate;
-      queueMicrotask(() => {
-        setGamificationProfile((p) => {
-          let next = finalizeChainReset(p, linksSnapshot, dailySnapshot);
-          for (const link of linksSnapshot) {
-            if (link.loggedDate) {
-              next = decrementDailyMovies(next, link.loggedDate);
-            }
-          }
-          saveGamificationProfile(next);
-          return next;
-        });
-      });
+    updateActiveState((prev) => {
+      applyGamificationForClearingList(setGamificationProfile, prev.links, prev.dailyChallengeDate);
       return {
         links: [],
         currentStep: 'start',
@@ -368,20 +430,20 @@ export function useChain() {
         dailyChallengeDate: null,
       };
     });
-  }, []);
+  }, [updateActiveState]);
 
   const cancelActorSelection = useCallback(() => {
     sessionStorage.removeItem(PENDING_ACTOR_KEY);
-    setState((prev) => ({
+    updateActiveState((prev) => ({
       ...prev,
       currentStep: 'pick-actor',
       selectedActorId: null,
       selectedActorName: null,
     }));
-  }, []);
+  }, [updateActiveState]);
 
   const undoLast = useCallback(() => {
-    setState((prev) => {
+    updateActiveState((prev) => {
       if (prev.links.length === 0) return prev;
       const linksBefore = prev.links;
       if (prev.links.length <= 1) {
@@ -418,10 +480,10 @@ export function useChain() {
         selectedActorName: null,
       };
     });
-  }, []);
+  }, [updateActiveState]);
 
   const removeFirst = useCallback(() => {
-    setState((prev) => {
+    updateActiveState((prev) => {
       if (prev.links.length === 0) return prev;
       const linksBefore = prev.links;
       if (prev.links.length === 1) {
@@ -467,10 +529,29 @@ export function useChain() {
         selectedActorName: null,
       };
     });
-  }, []);
+  }, [updateActiveState]);
+
+  const chainLists = useMemo(
+    () => lists.map((e) => ({ id: e.id, name: e.name, linkCount: e.state.links.length })),
+    [lists]
+  );
+  const activeListName = activeEntry?.name ?? '';
+
+  const getListLinks = useCallback(
+    (id: string) => persisted.lists.find((e) => e.id === id)?.state.links ?? [],
+    [persisted.lists]
+  );
 
   return {
     ...state,
+    activeListId,
+    activeListName,
+    chainLists,
+    getListLinks,
+    setActiveListId,
+    createList,
+    renameList,
+    deleteList,
     gamificationProfile,
     gamificationToastQueue,
     dismissGamificationToast,
