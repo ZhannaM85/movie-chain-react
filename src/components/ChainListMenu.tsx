@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useChainContext } from '../context/ChainContext';
 import { buildChainRecap } from '../gamification/chainRecap';
@@ -21,14 +22,41 @@ export default function ChainListMenu() {
   } = useChainContext();
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const wrapRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [panelPos, setPanelPos] = useState({ top: 0, left: 0, minWidth: 224 });
+
+  const updatePanelPosition = useCallback(() => {
+    const el = triggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const minW = Math.max(rect.width, 224);
+    const margin = 8;
+    let left = rect.left;
+    if (left + minW > window.innerWidth - margin) {
+      left = Math.max(margin, window.innerWidth - margin - minW);
+    }
+    setPanelPos({ top: rect.bottom + 4, left, minWidth: minW });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    updatePanelPosition();
+    const onScrollOrResize = () => updatePanelPosition();
+    window.addEventListener('resize', onScrollOrResize);
+    window.addEventListener('scroll', onScrollOrResize, true);
+    return () => {
+      window.removeEventListener('resize', onScrollOrResize);
+      window.removeEventListener('scroll', onScrollOrResize, true);
+    };
+  }, [open, updatePanelPosition]);
 
   useEffect(() => {
     if (!open) return;
     const onDoc = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      const node = e.target as Node;
+      if (triggerRef.current?.contains(node) || panelRef.current?.contains(node)) return;
+      setOpen(false);
     };
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
@@ -91,8 +119,80 @@ export default function ChainListMenu() {
     [deleteList, getListLinks, t]
   );
 
+  const dropdown =
+    open &&
+    createPortal(
+      <div
+        ref={panelRef}
+        className="fixed z-[200] max-w-[min(calc(100vw-1rem),20rem)] rounded-md border border-gray-700 bg-gray-900 py-1 shadow-lg shadow-black/40"
+        style={{
+          top: panelPos.top,
+          left: panelPos.left,
+          minWidth: panelPos.minWidth,
+        }}
+        role="listbox"
+      >
+        <div className="max-h-[min(60vh,20rem)] overflow-y-auto">
+          {chainLists.map((entry) => (
+            <div
+              key={entry.id}
+              className={`flex items-center gap-1 border-b border-gray-800/80 px-2 py-1.5 last:border-b-0 ${
+                entry.id === activeListId ? 'bg-indigo-950/40' : ''
+              }`}
+            >
+              <button
+                type="button"
+                role="option"
+                aria-selected={entry.id === activeListId}
+                className="min-w-0 flex-1 truncate text-left text-sm text-gray-200 hover:text-indigo-300"
+                onClick={() => {
+                  setActiveListId(entry.id);
+                  setOpen(false);
+                }}
+              >
+                <span className="font-medium">{entry.name}</span>
+                <span className="ml-1 text-xs text-gray-500">({entry.linkCount})</span>
+              </button>
+              <button
+                type="button"
+                className="shrink-0 rounded px-1.5 py-0.5 text-xs text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                onClick={() => handleRename(entry.id, entry.name)}
+              >
+                {t('renameList')}
+              </button>
+              <button
+                type="button"
+                className="shrink-0 rounded px-1.5 py-0.5 text-xs text-red-400/90 hover:bg-red-950/50 hover:text-red-300"
+                onClick={() => handleDelete(entry.id, entry.name)}
+              >
+                {t('deleteList')}
+              </button>
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          className="w-full border-t border-gray-800 px-2 py-2 text-left text-sm text-indigo-400 hover:bg-gray-800/80"
+          onClick={handleAdd}
+        >
+          {t('addList')}
+        </button>
+        {links.length > 0 && (
+          <button
+            type="button"
+            className="w-full border-t border-gray-800 px-2 py-2 text-left text-sm text-red-400/95 hover:bg-red-950/40"
+            title={t('clearChainTooltip')}
+            onClick={handleClearCurrentChain}
+          >
+            {t('clearChain')}
+          </button>
+        )}
+      </div>,
+      document.body
+    );
+
   return (
-    <div ref={wrapRef} className="relative shrink-0">
+    <div ref={triggerRef} className="relative shrink-0">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -117,68 +217,7 @@ export default function ChainListMenu() {
           />
         </svg>
       </button>
-      {open && (
-        <div
-          className="absolute left-0 top-full z-[60] mt-1 min-w-[14rem] max-w-[min(100vw-2rem,20rem)] rounded-md border border-gray-700 bg-gray-900 py-1 shadow-lg shadow-black/40"
-          role="listbox"
-        >
-          <div className="max-h-[min(60vh,20rem)] overflow-y-auto">
-            {chainLists.map((entry) => (
-              <div
-                key={entry.id}
-                className={`flex items-center gap-1 border-b border-gray-800/80 px-2 py-1.5 last:border-b-0 ${
-                  entry.id === activeListId ? 'bg-indigo-950/40' : ''
-                }`}
-              >
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={entry.id === activeListId}
-                  className="min-w-0 flex-1 truncate text-left text-sm text-gray-200 hover:text-indigo-300"
-                  onClick={() => {
-                    setActiveListId(entry.id);
-                    setOpen(false);
-                  }}
-                >
-                  <span className="font-medium">{entry.name}</span>
-                  <span className="ml-1 text-xs text-gray-500">({entry.linkCount})</span>
-                </button>
-                <button
-                  type="button"
-                  className="shrink-0 rounded px-1.5 py-0.5 text-xs text-gray-400 hover:bg-gray-800 hover:text-gray-200"
-                  onClick={() => handleRename(entry.id, entry.name)}
-                >
-                  {t('renameList')}
-                </button>
-                <button
-                  type="button"
-                  className="shrink-0 rounded px-1.5 py-0.5 text-xs text-red-400/90 hover:bg-red-950/50 hover:text-red-300"
-                  onClick={() => handleDelete(entry.id, entry.name)}
-                >
-                  {t('deleteList')}
-                </button>
-              </div>
-            ))}
-          </div>
-          <button
-            type="button"
-            className="w-full border-t border-gray-800 px-2 py-2 text-left text-sm text-indigo-400 hover:bg-gray-800/80"
-            onClick={handleAdd}
-          >
-            {t('addList')}
-          </button>
-          {links.length > 0 && (
-            <button
-              type="button"
-              className="w-full border-t border-gray-800 px-2 py-2 text-left text-sm text-red-400/95 hover:bg-red-950/40"
-              title={t('clearChainTooltip')}
-              onClick={handleClearCurrentChain}
-            >
-              {t('clearChain')}
-            </button>
-          )}
-        </div>
-      )}
+      {dropdown}
     </div>
   );
 }
