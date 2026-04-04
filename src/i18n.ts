@@ -237,6 +237,20 @@ const resources = {
       aboutTech: 'Tech behind the scenes',
       aboutTechText:
         'React 19, TypeScript, Vite, Tailwind CSS, React Router, and react-i18next. Movie data comes from the TMDB API. Vitest covers important logic. Everything persists in localStorage on this device.',
+      backupSectionTitle: 'Backup & restore',
+      backupSectionIntro:
+        'Your lists live only in this browser. Export a JSON file from time to time so you can restore after clearing site data, switching devices, or if something goes wrong. CSV is for viewing in Excel only (it cannot restore full movie data).',
+      backupExportJson: 'Export JSON (full backup)',
+      backupExportCsv: 'Export CSV (spreadsheet)',
+      backupCsvNote:
+        'CSV includes titles, dates, and notes per row; use JSON to restore the app exactly. Import only accepts JSON files created by this app.',
+      backupImportReplace: 'Import JSON — replace all lists',
+      backupImportMerge: 'Import JSON — add as new lists',
+      backupImportConfirmReplace:
+        'Replace all current lists with the backup? This cannot be undone. Your current lists will be lost unless you exported them first.',
+      backupImportSuccess: 'Import completed successfully.',
+      backupImportError: 'Could not read the backup file. Check that it is valid JSON from this app.',
+      backupImportFileAria: 'Choose JSON backup file',
       aboutFooterBefore: 'Designed and implemented by',
       aboutFooterAfter: 'with love, passion, and Cursor',
       userStatsTitle: 'Your stats',
@@ -536,6 +550,20 @@ const resources = {
       aboutTech: 'Технологии',
       aboutTechText:
         'React 19, TypeScript, Vite, Tailwind CSS, React Router и react-i18next. Данные о фильмах — TMDB API. Часть логики покрыта тестами Vitest. Всё хранится в localStorage на этом устройстве.',
+      backupSectionTitle: 'Резервная копия и восстановление',
+      backupSectionIntro:
+        'Списки хранятся только в этом браузере. Периодически экспортируйте JSON, чтобы восстановить данные после очистки сайта, смены устройства или сбоя. CSV — для просмотра в Excel (полное восстановление фильмов из него невозможно).',
+      backupExportJson: 'Экспорт JSON (полная копия)',
+      backupExportCsv: 'Экспорт CSV (таблица)',
+      backupCsvNote:
+        'В CSV есть названия, даты и заметки; для точного восстановления приложения используйте JSON. Импорт принимает только JSON, созданный этим приложением.',
+      backupImportReplace: 'Импорт JSON — заменить все списки',
+      backupImportMerge: 'Импорт JSON — добавить как новые списки',
+      backupImportConfirmReplace:
+        'Заменить все текущие списки резервной копией? Это нельзя отменить. Текущие списки будут потеряны, если вы не экспортировали их заранее.',
+      backupImportSuccess: 'Импорт выполнен успешно.',
+      backupImportError: 'Не удалось прочитать файл. Убедитесь, что это JSON из этого приложения.',
+      backupImportFileAria: 'Выбрать JSON-файл резервной копии',
       aboutFooterBefore: 'Дизайн и реализация:',
       aboutFooterAfter: 'с любовью, страстью и Cursor',
       userStatsTitle: 'Ваша статистика',

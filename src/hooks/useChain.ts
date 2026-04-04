@@ -10,6 +10,17 @@ import {
   type ChainListEntry,
   type ChainListsPersisted,
 } from '../types/chainLists';
+import {
+  BACKUP_PENDING_ACTOR_KEY,
+  buildExportJsonFile,
+  downloadTextFile,
+  backupFilenameJson,
+  backupFilenameCsv,
+  parseChainListsBackupJson,
+  prepareImportedListsMerge,
+  prepareImportedListsReplace,
+} from '../utils/chainListsBackup';
+import { buildChainListsCsv } from '../utils/chainListsCsv';
 import { recordCastAppearancesForMovie, rebuildActorCastAppearanceCounts } from '../gamification/castAppearances';
 import { scoreChainStep } from '../gamification/chainScoring';
 import {
@@ -31,6 +42,10 @@ import { loadGamificationProfile, saveGamificationProfile } from '../gamificatio
 import type { GamificationProfile } from '../gamification/types';
 
 const PENDING_ACTOR_KEY = 'pending-actor-pick';
+
+if (PENDING_ACTOR_KEY !== BACKUP_PENDING_ACTOR_KEY) {
+  throw new Error('PENDING_ACTOR_KEY must match BACKUP_PENDING_ACTOR_KEY in chainListsBackup.ts');
+}
 
 /** Used when migrating legacy storage before i18n is available. */
 const DEFAULT_MIGRATED_LIST_NAME = 'My list';
@@ -542,12 +557,39 @@ export function useChain() {
     [persisted.lists]
   );
 
+  const exportChainListsJson = useCallback(() => {
+    const json = buildExportJsonFile(persisted);
+    downloadTextFile(backupFilenameJson(), json, 'application/json;charset=utf-8');
+  }, [persisted]);
+
+  const exportChainListsCsv = useCallback(() => {
+    const csv = buildChainListsCsv(persisted);
+    downloadTextFile(backupFilenameCsv(), csv, 'text/csv;charset=utf-8');
+  }, [persisted]);
+
+  const importChainListsFromJson = useCallback((text: string, mode: 'replace' | 'merge') => {
+    const data = parseChainListsBackupJson(text);
+    try {
+      sessionStorage.removeItem(PENDING_ACTOR_KEY);
+    } catch {
+      // ignore
+    }
+    if (mode === 'replace') {
+      setPersisted(prepareImportedListsReplace(data, PENDING_ACTOR_KEY));
+    } else {
+      setPersisted((prev) => prepareImportedListsMerge(prev, data, PENDING_ACTOR_KEY));
+    }
+  }, []);
+
   return {
     ...state,
     activeListId,
     activeListName,
     chainLists,
     getListLinks,
+    exportChainListsJson,
+    exportChainListsCsv,
+    importChainListsFromJson,
     setActiveListId,
     createList,
     renameList,
