@@ -53,11 +53,24 @@ export default function Layout({ children }: { children: ReactNode }) {
       {/* Mobile: fixed bar (reliable vs overflow-x + sticky). Desktop: sm:contents + sticky header. */}
       <div className="max-sm:fixed max-sm:inset-x-0 max-sm:top-0 max-sm:z-50 max-sm:bg-gray-900/95 max-sm:backdrop-blur max-sm:border-b max-sm:border-gray-800 sm:contents">
         <header className="relative z-50 bg-gray-900/95 backdrop-blur border-b border-gray-800 max-sm:border-b-0 sm:sticky sm:top-0">
-          <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-2 sm:gap-4 relative">
-            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+          <div className="max-w-7xl relative mx-auto flex h-14 min-w-0 items-center px-3 sm:px-4 max-sm:gap-2 max-sm:overflow-x-hidden max-sm:justify-start sm:justify-between sm:gap-4">
+            <div className="flex shrink-0 items-center gap-2 sm:min-w-0 sm:gap-4">
+            <button
+              type="button"
+              className={`sm:hidden shrink-0 ${headerToolbarChrome} w-9 p-0 text-gray-300 hover:bg-gray-800/90 hover:border-gray-600 transition-colors`}
+              onClick={() => setMobileNavOpen((open) => !open)}
+              aria-label={t('navHome')}
+            >
+              <span className="sr-only">{t('navHome')}</span>
+              <span className="space-y-1">
+                <span className="block w-4 h-[2px] bg-current" />
+                <span className="block w-4 h-[2px] bg-current" />
+                <span className="block w-4 h-[2px] bg-current" />
+              </span>
+            </button>
             <Link
               to="/"
-              className="text-xl font-bold tracking-tight text-white hover:text-indigo-400 transition-colors"
+              className="hidden min-w-0 text-xl font-bold tracking-tight text-white hover:text-indigo-400 transition-colors sm:inline-block"
               onClick={() => setMobileNavOpen(false)}
             >
               {t('appName')}
@@ -84,20 +97,7 @@ export default function Layout({ children }: { children: ReactNode }) {
               </Link>
             </nav>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4 shrink-0 min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <button
-              type="button"
-              className={`sm:hidden ${headerToolbarChrome} w-9 p-0 text-gray-300 hover:bg-gray-800/90 hover:border-gray-600 transition-colors`}
-              onClick={() => setMobileNavOpen((open) => !open)}
-              aria-label={t('navHome')}
-            >
-              <span className="sr-only">{t('navHome')}</span>
-              <span className="space-y-1">
-                <span className="block w-4 h-[2px] bg-current" />
-                <span className="block w-4 h-[2px] bg-current" />
-                <span className="block w-4 h-[2px] bg-current" />
-              </span>
-            </button>
+          <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-4">
             <ChainListMenu />
             {SHOW_KINOPOISK_TOGGLE && hasKinopoiskKey && (
               <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
@@ -144,7 +144,7 @@ export default function Layout({ children }: { children: ReactNode }) {
               </span>
             )}
             <span
-              className={`${headerToolbarChrome} px-2.5 text-xs font-medium text-gray-400`}
+              className={`${headerToolbarChrome} hidden px-2.5 text-xs font-medium text-gray-400 sm:inline-flex`}
               title={api.source === 'kinopoisk' ? t('dataSourceKinopoisk') : t('dataSourceTmdb')}
             >
               {api.source === 'kinopoisk' ? t('dataSourceKinopoisk') : t('dataSourceTmdb')}
@@ -156,7 +156,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 void i18n.changeLanguage(e.target.value);
                 setMobileNavOpen(false);
               }}
-              className="h-9 shrink-0 max-w-[7.25rem] cursor-pointer rounded-md border border-gray-700 bg-gray-800 px-2 py-0 text-base text-gray-200 outline-none transition-colors hover:border-gray-600 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900"
+              className="h-9 max-w-[5.5rem] shrink-0 cursor-pointer rounded-md border border-gray-700 bg-gray-800 px-1.5 py-0 text-sm text-gray-200 outline-none transition-colors hover:border-gray-600 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900 sm:max-w-[7.25rem] sm:px-2 sm:text-base"
             >
               <option value="en-US">English</option>
               <option value="ru-RU">Русский</option>
@@ -190,6 +190,9 @@ export default function Layout({ children }: { children: ReactNode }) {
         {mobileNavOpen && (
           <div className="sm:hidden absolute top-full left-0 right-0 z-50 bg-gray-900/98 backdrop-blur border-b border-gray-800 shadow-lg">
             <div className="max-w-7xl mx-auto px-4 py-2 flex flex-col gap-1 text-sm">
+              <div className="pb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                {t('appName')}
+              </div>
               <Link
                 to="/"
                 className="py-1 text-gray-300 hover:text-indigo-300 transition-colors"
