@@ -30,6 +30,10 @@ const resources = {
       /** Shorter header label on narrow screens (full phrase still in title/aria). */
       chainCountCompact: '{{count}} in chain',
       newChain: 'New Chain',
+      clearChain: 'Clear chain',
+      clearChainTooltip:
+        'Remove all movies from this list only. Other lists are not changed.',
+      addListFabAria: 'Add a new list and switch to it',
       addList: 'Add list',
       renameList: 'Rename',
       deleteList: 'Delete',
@@ -320,6 +324,10 @@ const resources = {
       chainCount_other: '{{count}} фильма в цепочке',
       chainCountCompact: '{{count}} в цеп.',
       newChain: 'Новая цепочка',
+      clearChain: 'Очистить цепочку',
+      clearChainTooltip:
+        'Убрать все фильмы только из этого списка. Остальные списки не затрагиваются.',
+      addListFabAria: 'Новый список и переключиться на него',
       addList: 'Добавить список',
       renameList: 'Переименовать',
       deleteList: 'Удалить',

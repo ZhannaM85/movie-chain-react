@@ -10,12 +10,14 @@ export default function ChainListMenu() {
   const {
     activeListId,
     activeListName,
+    links,
     chainLists,
     setActiveListId,
     createList,
     renameList,
     deleteList,
     getListLinks,
+    resetChain,
   } = useChainContext();
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -49,6 +51,23 @@ export default function ChainListMenu() {
     },
     [renameList, t]
   );
+
+  const handleClearCurrentChain = useCallback(() => {
+    const recap = buildChainRecap(links);
+    const msg =
+      links.length === 0
+        ? t('confirmNewChain')
+        : t('confirmNewChainRecap', {
+            length: recap.length,
+            difficulty: recap.totalDifficulty,
+            actors: recap.uniqueActors,
+            decades: recap.distinctDecades,
+          });
+    if (window.confirm(msg)) {
+      resetChain();
+      setOpen(false);
+    }
+  }, [links, resetChain, t]);
 
   const handleDelete = useCallback(
     (id: string, name: string) => {
@@ -148,6 +167,16 @@ export default function ChainListMenu() {
           >
             {t('addList')}
           </button>
+          {links.length > 0 && (
+            <button
+              type="button"
+              className="w-full border-t border-gray-800 px-2 py-2 text-left text-sm text-red-400/95 hover:bg-red-950/40"
+              title={t('clearChainTooltip')}
+              onClick={handleClearCurrentChain}
+            >
+              {t('clearChain')}
+            </button>
+          )}
         </div>
       )}
     </div>

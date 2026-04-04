@@ -227,6 +227,8 @@ export default function ChainPage() {
             </button>
           )}
           <button
+            type="button"
+            title={t('clearChainTooltip')}
             onClick={() => {
               const msg = t('confirmNewChainRecap', {
                 length: recap.length,
@@ -240,7 +242,7 @@ export default function ChainPage() {
             }}
             className="text-sm px-3 py-1.5 rounded-md bg-gray-800 hover:bg-red-900/50 hover:text-red-300 text-gray-300 transition-colors"
           >
-            {t('newChain')}
+            {t('clearChain')}
           </button>
         </div>
       </div>

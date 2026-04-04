@@ -26,7 +26,8 @@ const headerToolbarChrome = `${headerToolbarChromeBase} inline-flex`;
 export default function Layout({ children }: { children: ReactNode }) {
   const api = useMovieApiForChain();
   const { preferKinopoisk, setPreferKinopoisk, hasKinopoiskKey } = useMovieApiPreference();
-  const { links, source, resetChain, gamificationProfile } = useChainContext();
+  const { links, source, resetChain, gamificationProfile, createList, chainLists } =
+    useChainContext();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const { t, i18n } = useTranslation();
 
@@ -177,10 +178,10 @@ export default function Layout({ children }: { children: ReactNode }) {
                 type="button"
                 onClick={confirmAndStartNewChain}
                 className={`max-sm:hidden sm:inline-flex ${headerToolbarChromeBase} px-3 text-sm text-gray-300 transition-colors hover:border-red-800/80 hover:bg-red-950/40 hover:text-red-300`}
-                title={t('newChain')}
-                aria-label={t('newChain')}
+                title={t('clearChainTooltip')}
+                aria-label={t('clearChain')}
               >
-                {t('newChain')}
+                {t('clearChain')}
               </button>
             )}
           </div>
@@ -224,10 +225,12 @@ export default function Layout({ children }: { children: ReactNode }) {
       {links.length > 0 && (
         <button
           type="button"
-          onClick={confirmAndStartNewChain}
-          className="sm:hidden fixed right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full border border-red-900/55 bg-red-950/90 text-red-100 shadow-lg shadow-black/50 backdrop-blur-sm transition hover:border-red-700 hover:bg-red-900/80 active:scale-95 bottom-[max(1rem,env(safe-area-inset-bottom))]"
-          title={t('newChain')}
-          aria-label={t('newChain')}
+          onClick={() => {
+            createList(t('newListNumbered', { n: chainLists.length + 1 }));
+          }}
+          className="sm:hidden fixed right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full border border-indigo-700/70 bg-indigo-950/90 text-indigo-100 shadow-lg shadow-black/50 backdrop-blur-sm transition hover:border-indigo-500 hover:bg-indigo-900/85 active:scale-95 bottom-[max(1rem,env(safe-area-inset-bottom))]"
+          title={t('addList')}
+          aria-label={t('addListFabAria')}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
