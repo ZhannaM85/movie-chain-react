@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { buildChainRecap } from '../gamification/chainRecap';
 import GamificationToasts from './GamificationToasts';
 import MoviesMilestoneModal from './MoviesMilestoneModal';
+import ChainListMenu from './ChainListMenu';
 
 /** Set to `true` to show the Kinopoisk / TMDB preference switch in the header again. */
 const SHOW_KINOPOISK_TOGGLE = false;
@@ -96,6 +97,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 <span className="block w-4 h-[2px] bg-current" />
               </span>
             </button>
+            <ChainListMenu />
             {SHOW_KINOPOISK_TOGGLE && hasKinopoiskKey && (
               <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
                 <span className="hidden sm:inline">{t('useKinopoisk')}</span>
