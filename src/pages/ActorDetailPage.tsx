@@ -41,13 +41,13 @@ function MoviePosterGrid({
   if (movies.length === 0) return null;
   return (
     <div className={className}>
-      <h2 className="text-xl font-semibold text-gray-200 mb-4">{title}</h2>
+      <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">{title}</h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
         {movies.map((movie) => (
           <Link
             key={movie.id}
             to={`/movie/${movie.id}`}
-            className="rounded-lg overflow-hidden bg-gray-800/50 border border-gray-800 hover:border-indigo-500/50 hover:bg-gray-800 transition-all hover:scale-[1.02]"
+            className="rounded-lg overflow-hidden bg-gray-100/80 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-800 hover:border-indigo-600/50 dark:hover:border-indigo-500/50 hover:bg-gray-200 dark:hover:bg-gray-800 transition-all hover:scale-[1.02]"
           >
             <img
               src={api.posterUrl(movie.poster_path, 'w342')}
@@ -55,7 +55,7 @@ function MoviePosterGrid({
               className="w-full aspect-[2/3] object-cover"
             />
             <div className="p-2">
-              <h4 className="text-sm font-medium text-gray-200 truncate">{movie.title}</h4>
+              <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{movie.title}</h4>
               <p className="text-xs text-gray-500">
                 {movie.release_date ? new Date(movie.release_date).getFullYear() : t('na')}
               </p>
@@ -178,7 +178,7 @@ export default function ActorDetailPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12 flex items-center gap-2 text-gray-400">
+      <div className="max-w-4xl mx-auto px-4 py-12 flex items-center gap-2 text-gray-600 dark:text-gray-400">
         <span className="inline-block w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
         {t('loadingActorDetails')}
       </div>
@@ -188,10 +188,10 @@ export default function ActorDetailPage() {
   if (error || !actor) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <p className="text-red-400">{t('failedLoadActorDetails')}</p>
+        <p className="text-red-600 dark:text-red-400">{t('failedLoadActorDetails')}</p>
         <Link
           to={cameFromStatsPage ? '/stats' : '/'}
-          className="text-indigo-400 hover:text-indigo-300 mt-2 inline-block"
+          className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 mt-2 inline-block"
         >
           &larr; {t(cameFromStatsPage ? 'navigateBackToStats' : 'backToChain')}
         </Link>
@@ -206,7 +206,7 @@ export default function ActorDetailPage() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       <Link
         to={cameFromStatsPage ? '/stats' : '/'}
-        className="text-sm text-indigo-400 hover:text-indigo-300 mb-4 inline-block"
+        className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 mb-4 inline-block"
       >
         &larr; {t(cameFromStatsPage ? 'navigateBackToStats' : 'backToChain')}
       </Link>
@@ -219,19 +219,19 @@ export default function ActorDetailPage() {
             className="w-full sm:w-56 rounded-xl object-cover flex-shrink-0"
           />
         ) : (
-          <div className="w-full sm:w-56 aspect-[2/3] rounded-xl bg-gray-800 flex items-center justify-center text-gray-600 flex-shrink-0">
+          <div className="w-full sm:w-56 aspect-[2/3] rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 flex-shrink-0">
             {t('noPhoto')}
           </div>
         )}
 
         <div className="flex-1 min-w-0">
-          <h1 className="text-3xl font-bold text-white mb-2">{actor.name}</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{actor.name}</h1>
 
           {hasExpandableActorDetails ? (
             <>
               <button
                 type="button"
-                className="flex items-center gap-2 w-full sm:w-auto max-w-full text-left text-sm text-indigo-400 hover:text-indigo-300 py-1.5 -ml-1 px-1 rounded-lg hover:bg-gray-800/60 transition-colors"
+                className="flex items-center gap-2 w-full sm:w-auto max-w-full text-left text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 py-1.5 -ml-1 px-1 rounded-lg hover:bg-gray-100/80 dark:bg-gray-800/60 transition-colors"
                 onClick={() => setActorDetailsOpen((o) => !o)}
                 aria-expanded={actorDetailsOpen}
                 aria-controls="actor-details-panel"
@@ -247,7 +247,7 @@ export default function ActorDetailPage() {
                   aria-labelledby="actor-details-toggle"
                   className="mt-3 space-y-3"
                 >
-                  <div className="flex flex-wrap gap-4 text-sm text-gray-400">
+                  <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
                     {actor.birthday && (
                       <span>
                         {t('born')}:{' '}
@@ -261,7 +261,7 @@ export default function ActorDetailPage() {
                     {actor.place_of_birth && <span>{actor.place_of_birth}</span>}
                   </div>
                   {actor.biography ? (
-                    <p className="text-gray-300 leading-relaxed text-sm whitespace-pre-wrap">{actor.biography}</p>
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm whitespace-pre-wrap">{actor.biography}</p>
                   ) : null}
                 </div>
               ) : null}
@@ -323,13 +323,13 @@ export default function ActorDetailPage() {
 
       {movies.length > 0 && (
         <div>
-          <h2 className="text-xl font-semibold text-gray-200 mb-4">{t('knownFor')}</h2>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('knownFor')}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             {movies.slice(0, 20).map((movie) => (
               <Link
                 key={movie.id}
                 to={`/movie/${movie.id}`}
-                className="rounded-lg overflow-hidden bg-gray-800/50 border border-gray-800 hover:border-indigo-500/50 hover:bg-gray-800 transition-all hover:scale-[1.02]"
+                className="rounded-lg overflow-hidden bg-gray-100/80 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-800 hover:border-indigo-600/50 dark:hover:border-indigo-500/50 hover:bg-gray-200 dark:hover:bg-gray-800 transition-all hover:scale-[1.02]"
               >
                 <img
                   src={api.posterUrl(movie.poster_path, 'w342')}
@@ -337,7 +337,7 @@ export default function ActorDetailPage() {
                   className="w-full aspect-[2/3] object-cover"
                 />
                 <div className="p-2">
-                  <h4 className="text-sm font-medium text-gray-200 truncate">{movie.title}</h4>
+                  <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{movie.title}</h4>
                   <p className="text-xs text-gray-500">
                     {movie.release_date ? new Date(movie.release_date).getFullYear() : t('na')}
                   </p>

@@ -91,7 +91,7 @@ export default function MovieSuggestions() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-gray-400 py-4">
+      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 py-4">
         <span className="inline-block w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
         {t('loadingFilmography')}
       </div>
@@ -99,7 +99,7 @@ export default function MovieSuggestions() {
   }
 
   if (error) {
-    return <p className="text-red-400 py-4">{t('failedLoadMoviesWithReason', { error })}</p>;
+    return <p className="text-red-600 dark:text-red-400 py-4">{t('failedLoadMoviesWithReason', { error })}</p>;
   }
 
   return (
@@ -113,22 +113,22 @@ export default function MovieSuggestions() {
               className="w-12 h-12 rounded-full object-cover"
             />
           ) : (
-            <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
               <svg className="w-6 h-6 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
               </svg>
             </div>
           )}
           <div>
-            <Link to={`/actor/${actor.id}`} className="font-semibold text-indigo-300 hover:text-indigo-200 transition-colors">
+            <Link to={`/actor/${actor.id}`} className="font-semibold text-indigo-800 dark:text-indigo-300 hover:text-indigo-900 dark:text-indigo-200 transition-colors">
               {actor.name}
             </Link>
-            <p className="text-sm text-gray-400">{t('pickFromFilmography')}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{t('pickFromFilmography')}</p>
           </div>
           <button
             type="button"
             onClick={cancelActorSelection}
-            className="ml-auto text-xs px-3 py-1.5 rounded-full border border-indigo-500/60 text-indigo-300 hover:bg-indigo-500/10 hover:border-indigo-400 transition-colors"
+            className="ml-auto text-xs px-3 py-1.5 rounded-full border border-indigo-500/60 text-indigo-800 dark:text-indigo-300 hover:bg-indigo-500/10 hover:border-indigo-400 transition-colors"
           >
             {t('changeActor')}
           </button>
@@ -146,7 +146,7 @@ export default function MovieSuggestions() {
               type="date"
               value={loggedDateForPastLink}
               onChange={(e) => setLoggedDateForPastLink(e.target.value)}
-              className="box-border w-full min-w-0 px-2 py-2 rounded-lg bg-gray-800 border border-gray-700 text-base text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="box-border w-full min-w-0 px-2 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-base text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
         </div>
@@ -158,12 +158,12 @@ export default function MovieSuggestions() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={t('searchFilmography')}
-          className="w-full sm:max-w-sm px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-base text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+          className="w-full sm:max-w-sm px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-base text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
         />
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortOption)}
-          className="px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-base text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition cursor-pointer"
+          className="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-base text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition cursor-pointer"
         >
           <option value="popularity">{t('sortPopularity')}</option>
           <option value="title-asc">{t('sortTitleAsc')}</option>
@@ -174,7 +174,7 @@ export default function MovieSuggestions() {
       </div>
 
       {prependMode && prependStepPoints != null && (
-        <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-gray-400">
+        <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
           <ChallengePointsInline points={prependStepPoints} variant="step" />
           <span>{t('prependLinkChallengePointsHint')}</span>
         </div>
@@ -195,7 +195,7 @@ export default function MovieSuggestions() {
       {!searchQuery.trim() && !showAll && movies.length > 20 && (
         <button
           onClick={() => setShowAll(true)}
-          className="mt-4 text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+          className="mt-4 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
         >
           {t('showAllMovies', { count: movies.length })}
         </button>
@@ -299,8 +299,8 @@ function MovieGrid({
             className={
               'group text-left rounded-lg overflow-hidden border transition-all ' +
               (inChain
-                ? 'cursor-not-allowed opacity-50 bg-gray-800/30 border-gray-800/80'
-                : 'cursor-pointer bg-gray-800/50 hover:bg-gray-800 border-gray-800 hover:border-indigo-500/50 hover:scale-[1.02]')
+                ? 'cursor-not-allowed opacity-50 bg-gray-100/80 dark:bg-gray-800/30 border-gray-200/80 dark:border-gray-800/80'
+                : 'cursor-pointer bg-gray-100/80 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-800 hover:border-indigo-600/50 dark:hover:border-indigo-500/50 hover:scale-[1.02]')
             }
             onClick={() => {
               if (!inChain) onSelect(movie);
@@ -322,7 +322,7 @@ function MovieGrid({
               <h4
                 className={
                   'text-sm font-medium truncate ' +
-                  (inChain ? 'text-gray-500' : 'text-gray-200 group-hover:text-white')
+                  (inChain ? 'text-gray-500' : 'text-gray-800 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-900 dark:text-white')
                 }
               >
                 {movie.title}

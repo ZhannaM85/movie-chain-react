@@ -38,14 +38,14 @@ export default function GamificationToasts() {
     <div className="fixed bottom-4 right-4 z-[100] max-w-sm w-[calc(100vw-2rem)]">
       <div
         role="status"
-        className="rounded-lg border border-indigo-500/40 bg-gray-900/95 backdrop-blur px-4 py-3 shadow-lg shadow-indigo-950/50"
+        className="rounded-lg border border-indigo-500/40 bg-white/95 dark:bg-gray-900/95 backdrop-blur px-4 py-3 shadow-lg shadow-indigo-950/50"
       >
-        <p className="text-sm font-semibold text-indigo-200">{title}</p>
-        {description ? <p className="text-xs text-gray-400 mt-1">{description}</p> : null}
+        <p className="text-sm font-semibold text-indigo-900 dark:text-indigo-200">{title}</p>
+        {description ? <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{description}</p> : null}
         <button
           type="button"
           onClick={dismissGamificationToast}
-          className="mt-2 text-xs text-gray-500 hover:text-gray-300"
+          className="mt-2 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-300"
         >
           {t('toastDismiss')}
         </button>

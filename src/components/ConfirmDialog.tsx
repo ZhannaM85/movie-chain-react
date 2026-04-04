@@ -46,21 +46,21 @@ export default function ConfirmDialog({
       onMouseDown={(e) => e.target === e.currentTarget && onCancel()}
     >
       <div
-        className="w-full max-w-md rounded-xl border border-gray-700 bg-gray-900 shadow-xl"
+        className="w-full max-w-md rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl"
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <div className="px-4 py-4 border-b border-gray-800">
-          <h2 id="confirm-dialog-title" className="text-lg font-semibold text-white">
+        <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-800">
+          <h2 id="confirm-dialog-title" className="text-lg font-semibold text-gray-900 dark:text-white">
             {title}
           </h2>
-          <p id="confirm-dialog-desc" className="text-sm text-gray-400 mt-2">
+          <p id="confirm-dialog-desc" className="text-sm text-gray-600 dark:text-gray-400 mt-2">
             {message}
           </p>
         </div>
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 px-4 py-3">
           <button
             type="button"
-            className="w-full sm:w-auto text-sm px-4 py-2 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-800/80 transition-colors"
+            className="w-full sm:w-auto text-sm px-4 py-2 rounded-lg border border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100/90 dark:bg-gray-800/80 transition-colors"
             onClick={onCancel}
           >
             {cancelLabel}
@@ -70,7 +70,7 @@ export default function ConfirmDialog({
             className={
               confirmDanger
                 ? 'w-full sm:w-auto text-sm px-4 py-2 rounded-lg bg-red-900/80 hover:bg-red-800 text-red-100 transition-colors'
-                : 'w-full sm:w-auto text-sm px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-colors'
+                : 'w-full sm:w-auto text-sm px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-gray-900 dark:text-white transition-colors'
             }
             onClick={onConfirm}
           >

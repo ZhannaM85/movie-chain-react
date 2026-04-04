@@ -74,7 +74,7 @@ export default function MovieOverviewClamp({
 
   const desktopBody =
     linkTo && showLink ? (
-      <Link to={linkTo} className={`block min-w-0 ${className} hover:text-gray-300 transition-colors`}>
+      <Link to={linkTo} className={`block min-w-0 ${className} hover:text-gray-700 dark:text-gray-300 transition-colors`}>
         {overview}
       </Link>
     ) : (
@@ -90,7 +90,7 @@ export default function MovieOverviewClamp({
         {showToggle && (
           <button
             type="button"
-            className="mt-1.5 text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+            className="mt-1.5 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
             onClick={() => setExpanded((e) => !e)}
           >
             {expanded ? t('overviewShowLess') : t('overviewReadMore')}

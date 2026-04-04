@@ -33,13 +33,13 @@ export default function MovieCard({ movie, showLink = true, challengePoints }: M
         className="w-28 sm:w-36 rounded-lg object-cover flex-shrink-0"
       />
     ) : (
-      <div className="w-28 sm:w-36 aspect-[2/3] rounded-lg bg-gray-700 flex items-center justify-center text-gray-500 text-xs flex-shrink-0">
+      <div className="w-28 sm:w-36 aspect-[2/3] rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 text-xs flex-shrink-0">
         {t('noPoster')}
       </div>
     );
 
   return (
-    <div className="flex gap-4 bg-gray-800/60 rounded-xl p-4 border border-gray-700/50 hover:border-indigo-500/40 transition-colors">
+    <div className="flex gap-4 bg-gray-100/80 dark:bg-gray-800/60 rounded-xl p-4 border border-gray-300/50 dark:border-gray-700/50 hover:border-indigo-500/60 dark:hover:border-indigo-500/40 transition-colors">
       {showLink ? (
         <Link to={toMovie} className="flex-shrink-0">
           {poster}
@@ -50,12 +50,12 @@ export default function MovieCard({ movie, showLink = true, challengePoints }: M
       <div className="flex-1 min-w-0">
         {showLink ? (
           <Link to={toMovie} className="block mb-1">
-            <h2 className="text-xl font-bold text-white">{movie.title}</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">{movie.title}</h2>
           </Link>
         ) : (
-          <h2 className="text-xl font-bold text-white mb-1">{movie.title}</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{movie.title}</h2>
         )}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-400 mb-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600 dark:text-gray-400 mb-3">
           <span>{year}</span>
           <ChallengePointsInline points={challengePoints} />
           <span className="flex items-center gap-1">
@@ -73,7 +73,7 @@ export default function MovieCard({ movie, showLink = true, challengePoints }: M
         {movie.genres && movie.genres.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-3">
             {movie.genres.map((g) => (
-              <span key={g.id} className="text-xs px-2 py-0.5 rounded-full bg-gray-700 text-gray-300">
+              <span key={g.id} className="text-xs px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                 {g.name}
               </span>
             ))}
@@ -82,7 +82,7 @@ export default function MovieCard({ movie, showLink = true, challengePoints }: M
         {movie.overview && (
           <MovieOverviewClamp
             overview={movie.overview}
-            className="text-sm text-gray-400"
+            className="text-sm text-gray-600 dark:text-gray-400"
             resetKey={movie.id}
             linkTo={showLink ? toMovie : undefined}
             showLink={showLink}

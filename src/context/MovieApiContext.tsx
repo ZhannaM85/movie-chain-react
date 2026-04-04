@@ -75,11 +75,11 @@ export function MovieApiProvider({ children }: { children: ReactNode }) {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
-        <div className="bg-red-900/30 border border-red-800 rounded-lg p-6 max-w-md text-center">
-          <h2 className="text-xl font-semibold text-red-300 mb-2">{t('failedLoadMovies')}</h2>
-          <p className="text-red-200/70 text-sm">{error.body}</p>
+        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-md text-center">
+          <h2 className="text-xl font-semibold text-red-800 dark:text-red-300 mb-2">{t('failedLoadMovies')}</h2>
+          <p className="text-red-700/90 dark:text-red-200/70 text-sm">{error.body}</p>
           {error.hint ? (
-            <p className="text-red-200/50 text-xs mt-3">{error.hint}</p>
+            <p className="text-red-600/80 dark:text-red-200/50 text-xs mt-3">{error.hint}</p>
           ) : null}
         </div>
       </div>
