@@ -1,13 +1,15 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   html {
-    @apply bg-gray-950 text-gray-100;
+    @apply bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100;
   }
   body {
-    @apply bg-gray-950 m-0 min-h-full;
+    @apply bg-gray-50 m-0 min-h-full text-gray-900 dark:bg-gray-950 dark:text-gray-100;
   }
   #root {
-    @apply min-h-full bg-gray-950;
+    @apply min-h-full bg-gray-50 dark:bg-gray-950;
   }
 }

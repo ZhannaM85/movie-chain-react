@@ -63,10 +63,10 @@ export default function StartScreen() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
-        <div className="bg-red-900/30 border border-red-800 rounded-lg p-6 max-w-md text-center">
-          <h2 className="text-xl font-semibold text-red-300 mb-2">{t('failedLoadMovies')}</h2>
-          <p className="text-red-200/70 text-sm">{error}</p>
-          <p className="text-red-200/50 text-xs mt-3">{t('serviceUnavailableRefresh')}</p>
+        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-md text-center">
+          <h2 className="text-xl font-semibold text-red-800 dark:text-red-300 mb-2">{t('failedLoadMovies')}</h2>
+          <p className="text-red-700/90 dark:text-red-200/70 text-sm">{error}</p>
+          <p className="text-red-600/80 dark:text-red-200/50 text-xs mt-3">{t('serviceUnavailableRefresh')}</p>
         </div>
       </div>
     );
@@ -76,7 +76,7 @@ export default function StartScreen() {
     <div className="max-w-6xl mx-auto px-4 py-8 w-full min-w-0">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold mb-2">{t('startTitle')}</h1>
-        <p className="text-gray-400">{t('startSubtitle')}</p>
+        <p className="text-gray-600 dark:text-gray-400">{t('startSubtitle')}</p>
       </div>
 
       <div className="max-w-md mx-auto mb-8 w-full min-w-0">
@@ -85,11 +85,11 @@ export default function StartScreen() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t('searchMoviePlaceholder')}
-          className="box-border w-full min-w-0 max-w-full px-4 py-3 rounded-lg bg-gray-800 border border-gray-700 text-base text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+          className="box-border w-full min-w-0 max-w-full px-4 py-3 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-base text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
         />
       </div>
 
-      <h2 className="text-lg font-semibold text-gray-300 mb-4">
+      <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
         {title}
         {(loading || searching) && (
           <span className="ml-2 inline-block w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
@@ -97,7 +97,7 @@ export default function StartScreen() {
       </h2>
 
       {!query.trim() && !loading && dailyMovie && (
-        <div className="mb-8 rounded-xl border border-indigo-500/35 bg-gradient-to-br from-indigo-950/40 to-gray-900/40 p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
+        <div className="mb-8 rounded-xl border border-indigo-400/40 dark:border-indigo-500/35 bg-gradient-to-br from-indigo-100/40 dark:from-indigo-950/40 to-gray-100/40 dark:to-gray-900/40 p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
           <div className="flex gap-4 min-w-0">
             {dailyMovie.poster_path ? (
               <img
@@ -106,13 +106,13 @@ export default function StartScreen() {
                 className="w-16 sm:w-20 rounded-lg object-cover flex-shrink-0 aspect-[2/3]"
               />
             ) : (
-              <div className="w-16 sm:w-20 aspect-[2/3] rounded-lg bg-gray-800 flex-shrink-0" />
+              <div className="w-16 sm:w-20 aspect-[2/3] rounded-lg bg-gray-100 dark:bg-gray-800 flex-shrink-0" />
             )}
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-wider text-indigo-400">
+              <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
                 {t('dailyChallengeTitle')}
               </p>
-              <p className="text-base font-semibold text-white truncate mt-1">{dailyMovie.title}</p>
+              <p className="text-base font-semibold text-gray-900 dark:text-white truncate mt-1">{dailyMovie.title}</p>
               <p className="text-xs text-gray-500 mt-1">
                 {t('dailyChallengeBest', { count: dailyBest })}
               </p>
@@ -121,7 +121,7 @@ export default function StartScreen() {
           <button
             type="button"
             onClick={() => startChain(dailyMovie, api.source, { dailyChallenge: true })}
-            className="shrink-0 px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors w-full sm:w-auto"
+            className="shrink-0 px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-gray-900 dark:text-white text-sm font-medium transition-colors w-full sm:w-auto"
           >
             {t('dailyChallengeCta')}
           </button>
@@ -133,7 +133,7 @@ export default function StartScreen() {
           <button
             key={movie.id}
             onClick={() => startChain(movie, api.source)}
-            className="group text-left rounded-lg overflow-hidden bg-gray-800/50 hover:bg-gray-800 border border-gray-800 hover:border-indigo-500/50 transition-all hover:scale-[1.02]"
+            className="group text-left rounded-lg overflow-hidden bg-gray-100/80 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-800 hover:border-indigo-600/50 dark:hover:border-indigo-500/50 transition-all hover:scale-[1.02]"
           >
             {movie.poster_path ? (
               <img
@@ -142,12 +142,12 @@ export default function StartScreen() {
                 className="w-full aspect-[2/3] object-cover"
               />
             ) : (
-              <div className="w-full aspect-[2/3] bg-gray-700 flex items-center justify-center text-gray-500 text-sm">
+              <div className="w-full aspect-[2/3] bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 text-sm">
                 {t('noPoster')}
               </div>
             )}
             <div className="p-2">
-              <h3 className="text-sm font-medium text-gray-200 group-hover:text-white truncate">
+              <h3 className="text-sm font-medium text-gray-800 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-900 dark:text-white truncate">
                 {movie.title}
               </h3>
               <p className="text-xs text-gray-500">

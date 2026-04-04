@@ -3,11 +3,11 @@ import { buildCalendarHeatmapWeeks, intensityLevel } from '../gamification/heatm
 import { useTranslation } from 'react-i18next';
 
 const LEVEL_CLASS: Record<0 | 1 | 2 | 3 | 4, string> = {
-  0: 'bg-white border border-gray-200',
-  1: 'bg-emerald-200 border border-emerald-300',
-  2: 'bg-emerald-400 border border-emerald-500',
-  3: 'bg-emerald-600 border border-emerald-700',
-  4: 'bg-emerald-800 border border-emerald-900',
+  0: 'bg-gray-100 border border-gray-200 dark:bg-gray-900 dark:border-gray-700',
+  1: 'bg-emerald-200 border border-emerald-300 dark:bg-emerald-900/70 dark:border-emerald-800',
+  2: 'bg-emerald-400 border border-emerald-500 dark:bg-emerald-700 dark:border-emerald-600',
+  3: 'bg-emerald-600 border border-emerald-700 dark:bg-emerald-600 dark:border-emerald-500',
+  4: 'bg-emerald-800 border border-emerald-900 dark:bg-emerald-500 dark:border-emerald-400',
 };
 
 interface ActivityHeatmapProps {
@@ -94,7 +94,7 @@ export default function ActivityHeatmap({ moviesAddedByDate }: ActivityHeatmapPr
                           prev?.date === cell.date ? null : { date: cell.date, count: cell.count }
                         );
                       }}
-                      className={`min-h-0 flex-1 rounded-sm text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950 ${LEVEL_CLASS[level]} ${
+                      className={`min-h-0 flex-1 rounded-sm text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:focus-visible:ring-offset-gray-950 ${LEVEL_CLASS[level]} ${
                         isSelected ? 'ring-2 ring-indigo-400 ring-inset' : ''
                       }`}
                     />
@@ -106,7 +106,7 @@ export default function ActivityHeatmap({ moviesAddedByDate }: ActivityHeatmapPr
         </div>
       </div>
       {selected && (
-        <p className="text-sm text-gray-200 mt-3" role="status" aria-live="polite">
+        <p className="text-sm text-gray-800 dark:text-gray-200 mt-3" role="status" aria-live="polite">
           {selected.count === 0
             ? t('heatmapDayEmpty', { date: formatDayLabel(selected.date) })
             : t('heatmapDayMovies', { date: formatDayLabel(selected.date), count: selected.count })}

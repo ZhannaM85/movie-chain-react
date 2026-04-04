@@ -4,11 +4,14 @@ import { HashRouter } from 'react-router-dom';
 import './index.css';
 import App from './App';
 import './i18n';
+import { ThemeProvider } from './context/ThemeContext';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <HashRouter>
-      <App />
-    </HashRouter>
+    <ThemeProvider>
+      <HashRouter>
+        <App />
+      </HashRouter>
+    </ThemeProvider>
   </StrictMode>,
 );

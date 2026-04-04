@@ -63,7 +63,7 @@ export default function ChainWatchedDateField({
 
   const id = `${idPrefix}-${chainIndex}`;
   const defaultInput =
-    'px-2 py-1 rounded-md bg-gray-900 border border-gray-700 text-base text-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500';
+    'px-2 py-1 rounded-md bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-base text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500';
 
   const compact = labelClassName.includes('sr-only');
 
@@ -138,7 +138,7 @@ export default function ChainWatchedDateField({
                 {t('chainWatchedOn', { date: shortDateForSidebar })}
               </span>
             ) : (
-              <time dateTime={link.loggedDate} className="text-sm text-gray-200 shrink-0">
+              <time dateTime={link.loggedDate} className="text-sm text-gray-800 dark:text-gray-200 shrink-0">
                 {formattedDateMedium}
               </time>
             )
@@ -152,7 +152,7 @@ export default function ChainWatchedDateField({
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="p-1 rounded-md text-gray-500 hover:text-indigo-400 hover:bg-gray-800/80 transition-colors shrink-0"
+            className="p-1 rounded-md text-gray-500 hover:text-indigo-700 dark:hover:text-indigo-600 dark:text-indigo-400 hover:bg-gray-100/90 dark:bg-gray-800/80 transition-colors shrink-0"
             aria-label={t('editWatchedDateAria')}
           >
             <PencilIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -161,7 +161,7 @@ export default function ChainWatchedDateField({
             <button
               type="button"
               onClick={onRemoveFirst}
-              className="text-xs shrink-0 px-2 py-1 rounded-md border border-gray-600 text-gray-400 hover:text-red-300 hover:border-red-500/40 transition-colors ml-auto"
+              className="text-xs shrink-0 px-2 py-1 rounded-md border border-gray-400 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:text-red-800 dark:text-red-300 hover:border-red-500/40 transition-colors ml-auto"
             >
               {t('removeFirstFromChain')}
             </button>
@@ -190,7 +190,7 @@ export default function ChainWatchedDateField({
       <button
         type="button"
         onClick={() => setEditing(false)}
-        className="p-1 rounded-md text-emerald-500/90 hover:text-emerald-400 hover:bg-gray-800/80 transition-colors shrink-0"
+        className="p-1 rounded-md text-emerald-500/90 hover:text-emerald-400 hover:bg-gray-100/90 dark:bg-gray-800/80 transition-colors shrink-0"
         aria-label={t('finishWatchedDateEditAria')}
       >
         <CheckIcon className="w-4 h-4" />
