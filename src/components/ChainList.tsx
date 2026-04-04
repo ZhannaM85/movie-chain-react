@@ -63,7 +63,7 @@ function ChainListMobileRow({
 
   return (
     <div>
-      <div className="flex items-start gap-1.5 p-1.5 rounded-md hover:bg-gray-800/70 transition-colors group">
+      <div className="flex items-start gap-1.5 p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800/70 transition-colors group">
         <span className="text-xs text-gray-600 w-5 text-right flex-shrink-0 pt-0.5">
           {sequenceNumber}
         </span>
@@ -77,12 +77,12 @@ function ChainListMobileRow({
           </Link>
         ) : (
           <Link to={`/movie/${link.movie.id}`} className="flex-shrink-0">
-            <div className="w-8 h-12 rounded bg-gray-700" aria-hidden />
+            <div className="w-8 h-12 rounded bg-gray-200 dark:bg-gray-700" aria-hidden />
           </Link>
         )}
         <div className="min-w-0 flex-1 flex flex-col gap-0.5">
           <Link to={`/movie/${link.movie.id}`} className="min-w-0 block">
-            <p className="text-sm text-gray-300 group-hover:text-white line-clamp-2 break-words">
+            <p className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-900 dark:text-white line-clamp-2 break-words">
               {titleLoading ? (
                 <span className="text-gray-500">{t('bridgeActorNameLoading')}</span>
               ) : (
@@ -104,7 +104,7 @@ function ChainListMobileRow({
             labelClassName="sr-only"
             showUnsetHint={false}
             compactContentAlign="start"
-            inputClassName="w-full min-w-0 max-w-[9.5rem] px-1 py-0.5 rounded bg-gray-900 border border-gray-600 text-[10px] text-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            inputClassName="w-full min-w-0 max-w-[9.5rem] px-1 py-0.5 rounded bg-white dark:bg-gray-900 border border-gray-400 dark:border-gray-600 text-[10px] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             className="flex flex-col items-stretch gap-0.5 w-full pt-0.5"
             showRemoveFirstButton={isOldestInChain}
             onRemoveFirst={onRequestRemoveFirst}
@@ -113,13 +113,13 @@ function ChainListMobileRow({
       </div>
       {showBridgeRow && (
         <div className="flex items-center gap-1.5 py-1 pl-3 min-w-0">
-          <div className="w-px h-3 bg-gray-700 shrink-0" />
+          <div className="w-px h-3 bg-gray-200 dark:bg-gray-700 shrink-0" />
           {bridgePending ? (
             <span className="text-[10px] text-gray-500 truncate">{t('bridgeActorResolving')}</span>
           ) : effectiveActorId != null ? (
             <Link
               to={`/actor/${effectiveActorId}`}
-              className="text-xs text-indigo-400 hover:text-indigo-300 truncate"
+              className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 truncate"
             >
               <BridgeActorLabel
                 actorId={effectiveActorId}
@@ -129,7 +129,7 @@ function ChainListMobileRow({
               />
             </Link>
           ) : (
-            <span className="text-xs text-indigo-400 truncate">{effectiveActorName}</span>
+            <span className="text-xs text-indigo-600 dark:text-indigo-400 truncate">{effectiveActorName}</span>
           )}
         </div>
       )}
@@ -221,7 +221,7 @@ export default function ChainList({ prependPickPanel }: ChainListProps) {
       <div className="flex items-center justify-between mb-3 px-1 shrink-0">
         <Link
           to="/chain"
-          className="text-sm font-semibold text-gray-400 uppercase tracking-wider hover:text-indigo-400 transition-colors"
+          className="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider hover:text-indigo-700 dark:hover:text-indigo-600 dark:text-indigo-400 transition-colors"
         >
           {t('chain')}
         </Link>
@@ -229,7 +229,7 @@ export default function ChainList({ prependPickPanel }: ChainListProps) {
           <button
             type="button"
             onClick={() => setConfirmAction('undoLast')}
-            className="text-xs text-gray-500 hover:text-red-400 transition-colors"
+            className="text-xs text-gray-500 hover:text-red-600 dark:text-red-400 transition-colors"
           >
             {t('undo')}
           </button>
@@ -285,7 +285,7 @@ export default function ChainList({ prependPickPanel }: ChainListProps) {
         <button
           type="button"
           onClick={() => startPrependToChain()}
-          className="rounded-lg border border-dashed border-gray-600 bg-gray-900/40 hover:bg-gray-800/80 hover:border-indigo-500/50 transition-colors flex flex-col items-center justify-center aspect-[2/3] min-h-[12rem] text-3xl font-medium text-indigo-400"
+          className="rounded-lg border border-dashed border-gray-400 dark:border-gray-600 bg-gray-100/80 dark:bg-gray-900/40 hover:bg-gray-100/90 dark:bg-gray-800/80 hover:border-indigo-600/50 dark:hover:border-indigo-500/50 transition-colors flex flex-col items-center justify-center aspect-[2/3] min-h-[12rem] text-3xl font-medium text-indigo-600 dark:text-indigo-400"
           title={t('addMovieBeforeChainBottom')}
           aria-label={t('addMovieBeforeChainBottom')}
         >
@@ -293,21 +293,21 @@ export default function ChainList({ prependPickPanel }: ChainListProps) {
         </button>
       </div>
 
-      <div className="shrink-0 flex flex-col gap-2 pt-2 mt-1 border-t border-gray-800/70 px-1">
+      <div className="shrink-0 flex flex-col gap-2 pt-2 mt-1 border-t border-gray-200 dark:border-gray-800/70 px-1">
         {prependMode && (
           <div className="rounded-lg border border-indigo-500/40 bg-indigo-950/30 px-3 py-2.5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-indigo-200/90">{t('prependToChainBanner')}</p>
+            <p className="text-sm text-indigo-900 dark:text-indigo-200/90">{t('prependToChainBanner')}</p>
             <button
               type="button"
               onClick={() => cancelPrepend()}
-              className="text-sm shrink-0 px-3 py-1.5 rounded-md border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors self-start sm:self-auto"
+              className="text-sm shrink-0 px-3 py-1.5 rounded-md border border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors self-start sm:self-auto"
             >
               {t('cancel')}
             </button>
           </div>
         )}
         {prependMode && prependPickPanel != null && (
-          <div className="w-full min-w-0 px-1 pb-2 border-t border-gray-800/80 pt-3 mt-1">
+          <div className="w-full min-w-0 px-1 pb-2 border-t border-gray-200/80 dark:border-gray-800/80 pt-3 mt-1">
             {prependPickPanel}
           </div>
         )}
@@ -315,7 +315,7 @@ export default function ChainList({ prependPickPanel }: ChainListProps) {
           <button
             type="button"
             onClick={() => startPrependToChain()}
-            className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-dashed border-gray-600 text-lg font-medium text-indigo-400 hover:bg-gray-800/80 hover:border-indigo-500/50 transition-colors"
+            className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-dashed border-gray-400 dark:border-gray-600 text-lg font-medium text-indigo-600 dark:text-indigo-400 hover:bg-gray-100/90 dark:bg-gray-800/80 hover:border-indigo-600/50 dark:hover:border-indigo-500/50 transition-colors"
             title={t('addMovieBeforeChainBottom')}
             aria-label={t('addMovieBeforeChainBottom')}
           >

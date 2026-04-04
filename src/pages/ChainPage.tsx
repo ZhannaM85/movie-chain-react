@@ -46,7 +46,7 @@ function ChainPageChainItem({
 
   return (
     <div>
-      <div className="rounded-xl bg-gray-800/60 border border-gray-700/50 hover:border-indigo-500/40 hover:bg-gray-800/80 transition-all overflow-hidden">
+      <div className="rounded-xl bg-gray-100/80 dark:bg-gray-800/60 border border-gray-300/50 dark:border-gray-700/50 hover:border-indigo-500/60 dark:hover:border-indigo-500/40 hover:bg-gray-100/90 dark:bg-gray-800/80 transition-all overflow-hidden">
         <div className="flex items-start gap-4 p-4 group">
           <span className="text-lg font-bold text-gray-600 w-8 text-right flex-shrink-0 pt-1">
             {sequenceNumber}
@@ -59,14 +59,14 @@ function ChainPageChainItem({
                 className="w-20 sm:w-24 rounded-lg object-cover flex-shrink-0"
               />
             ) : (
-              <div className="w-20 sm:w-24 aspect-[2/3] rounded-lg bg-gray-700 flex items-center justify-center text-gray-500 text-xs flex-shrink-0">
+              <div className="w-20 sm:w-24 aspect-[2/3] rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 text-xs flex-shrink-0">
                 {t('noPoster')}
               </div>
             )}
           </Link>
           <div className="flex-1 min-w-0">
             <Link to={`/movie/${link.movie.id}`} className="block min-w-0">
-              <h3 className="text-lg font-semibold text-gray-200 group-hover:text-white break-words">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-900 dark:text-white break-words">
                 {titleLoading ? (
                   <span className="text-gray-500">{t('bridgeActorNameLoading')}</span>
                 ) : (
@@ -85,7 +85,7 @@ function ChainPageChainItem({
                 </time>
               </p>
             )}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-400 mt-1">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600 dark:text-gray-400 mt-1">
               <span>
                 {link.movie.release_date
                   ? new Date(link.movie.release_date).getFullYear()
@@ -112,13 +112,13 @@ function ChainPageChainItem({
               </div>
             )}
             {link.comment && (
-              <div className="mt-2 text-sm text-indigo-300/80 italic">
+              <div className="mt-2 text-sm text-indigo-800/80 dark:text-indigo-800 dark:text-indigo-300/80 italic">
                 &ldquo;{link.comment}&rdquo;
               </div>
             )}
           </div>
         </div>
-        <div className="px-4 pb-4 pt-2 border-t border-gray-700/40 bg-gray-900/15">
+        <div className="px-4 pb-4 pt-2 border-t border-gray-200/80 dark:border-gray-700/40 bg-gray-100/60 dark:bg-gray-900/15">
           <ChainWatchedDateField
             chainIndex={chainIndex}
             idPrefix="chain-page"
@@ -138,7 +138,7 @@ function ChainPageChainItem({
           ) : (
             <Link
               to={effectiveActorId != null ? `/actor/${effectiveActorId}` : '#'}
-              className="flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 transition-colors min-w-0"
+              className="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors min-w-0"
             >
               {effectiveActorId != null && <ActorAvatar actorId={effectiveActorId} api={api} />}
               {effectiveActorId != null && (
@@ -183,27 +183,27 @@ export default function ChainPage() {
   if (links.length === 0) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold text-white mb-3">{t('noChainYet')}</h1>
-        <p className="text-gray-400 mb-6">{t('noChainDescription')}</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">{t('noChainYet')}</h1>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">{t('noChainDescription')}</p>
         <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
           <button
             type="button"
             onClick={exportActiveListJson}
-            className="rounded-md border border-indigo-600/60 bg-indigo-950/40 px-3 py-2 text-sm font-medium text-indigo-200 hover:bg-indigo-900/50 transition-colors"
+            className="rounded-md border border-indigo-500/60 dark:border-indigo-600/60 bg-indigo-100/40 dark:bg-indigo-950/40 px-3 py-2 text-sm font-medium text-indigo-900 dark:text-indigo-200 hover:bg-indigo-200/80 dark:hover:bg-indigo-900/50 transition-colors"
           >
             {t('listExportJson')}
           </button>
           <button
             type="button"
             onClick={exportActiveListCsv}
-            className="rounded-md border border-gray-600 bg-gray-800/80 px-3 py-2 text-sm font-medium text-gray-200 hover:bg-gray-700/80 transition-colors"
+            className="rounded-md border border-gray-400 dark:border-gray-600 bg-gray-100/90 dark:bg-gray-800/80 px-3 py-2 text-sm font-medium text-gray-800 dark:text-gray-200 hover:bg-gray-300/80 dark:hover:bg-gray-700/80 transition-colors"
           >
             {t('listExportCsv')}
           </button>
         </div>
         <Link
           to="/"
-          className="inline-block px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition-colors"
+          className="inline-block px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-gray-900 dark:text-white font-medium transition-colors"
         >
           {t('startChain')}
         </Link>
@@ -215,23 +215,23 @@ export default function ChainPage() {
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <Link to="/" className="text-sm text-indigo-400 hover:text-indigo-300 mb-2 inline-block">
+          <Link to="/" className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 mb-2 inline-block">
             &larr; {t('backToChain')}
           </Link>
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {t('yourMovieChain')}
           </h1>
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             {t('linkedMovies', { count: links.length })}
           </p>
           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-gray-500">
             <span>
               {t('challengePointsLabel')}:{' '}
-              <span className="text-indigo-300/90 font-medium">{recap.totalDifficulty}</span>
+              <span className="text-indigo-800/90 dark:text-indigo-800 dark:text-indigo-300/90 font-medium">{recap.totalDifficulty}</span>
             </span>
             <span>
               {t('bestChainLabel')}:{' '}
-              <span className="text-gray-300">{gamificationProfile.longestChainEver}</span>
+              <span className="text-gray-700 dark:text-gray-300">{gamificationProfile.longestChainEver}</span>
             </span>
             {recap.distinctDecades >= 2 && (
               <span>
@@ -245,14 +245,14 @@ export default function ChainPage() {
             <button
               type="button"
               onClick={exportActiveListJson}
-              className="text-sm px-3 py-1.5 rounded-md border border-indigo-600/50 bg-indigo-950/35 text-indigo-200 hover:bg-indigo-900/45 transition-colors"
+              className="text-sm px-3 py-1.5 rounded-md border border-indigo-500/50 dark:border-indigo-600/50 bg-indigo-100/35 dark:bg-indigo-950/35 text-indigo-900 dark:text-indigo-200 hover:bg-indigo-200/70 dark:hover:bg-indigo-900/45 transition-colors"
             >
               {t('listExportJson')}
             </button>
             <button
               type="button"
               onClick={exportActiveListCsv}
-              className="text-sm px-3 py-1.5 rounded-md bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors"
+              className="text-sm px-3 py-1.5 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
             >
               {t('listExportCsv')}
             </button>
@@ -262,7 +262,7 @@ export default function ChainPage() {
               <button
                 type="button"
                 onClick={() => setConfirmAction('undoLast')}
-                className="text-sm px-3 py-1.5 rounded-md bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors"
+                className="text-sm px-3 py-1.5 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
               >
                 {t('undoLast')}
               </button>
@@ -281,7 +281,7 @@ export default function ChainPage() {
                   resetChain();
                 }
               }}
-              className="text-sm px-3 py-1.5 rounded-md bg-gray-800 hover:bg-red-900/50 hover:text-red-300 text-gray-300 transition-colors"
+              className="text-sm px-3 py-1.5 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-red-100 dark:hover:bg-red-900/50 hover:text-red-800 dark:text-red-300 text-gray-700 dark:text-gray-300 transition-colors"
             >
               {t('clearChain')}
             </button>
@@ -341,7 +341,7 @@ export default function ChainPage() {
               startPrependToChain();
               navigate('/');
             }}
-            className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-dashed border-gray-600 text-xl font-medium text-indigo-400 hover:bg-gray-800/80 hover:border-indigo-500/50 transition-colors"
+            className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-dashed border-gray-400 dark:border-gray-600 text-xl font-medium text-indigo-600 dark:text-indigo-400 hover:bg-gray-100/90 dark:bg-gray-800/80 hover:border-indigo-600/50 dark:hover:border-indigo-500/50 transition-colors"
             title={t('addMovieBeforeChainBottom')}
             aria-label={t('addMovieBeforeChainBottom')}
           >
@@ -405,7 +405,7 @@ function ActorAvatar({ actorId, api }: { actorId: number; api: import('../servic
 
   if (!imgSrc) {
     return (
-      <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center flex-shrink-0">
+      <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
         <svg className="w-3 h-3 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
         </svg>

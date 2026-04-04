@@ -53,13 +53,13 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
   return (
     <div>
       <div className="flex items-start gap-2 mb-3">
-        <h3 className="text-lg font-semibold text-gray-200 flex-1 min-w-0">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex-1 min-w-0">
           {prependMode ? t('pickActorToPrepend') : t('pickActorToContinue')}
         </h3>
         <button
           type="button"
           onClick={() => setActorsExpanded((v) => !v)}
-          className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-700 bg-gray-800/80 text-gray-300 hover:bg-gray-800 hover:border-indigo-500/50 hover:text-indigo-300 transition-colors"
+          className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-100/90 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800 hover:border-indigo-600/50 dark:hover:border-indigo-500/50 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
           aria-expanded={actorsExpanded}
           aria-label={actorsExpanded ? t('collapseActorsAria') : t('expandActorsAria')}
         >
@@ -106,7 +106,7 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
             <button
               type="button"
               onClick={() => setShowAll(true)}
-              className="mt-4 text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+              className="mt-4 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
             >
               {t('showAllCast', { count: cast.length })}
             </button>

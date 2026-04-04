@@ -103,7 +103,7 @@ export default function UserStatsPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">{t('userStatsTitle')}</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('userStatsTitle')}</h1>
         <p className="text-sm text-gray-500 mt-1">{t('userStatsSubtitle')}</p>
       </div>
 
@@ -130,7 +130,7 @@ export default function UserStatsPage() {
 
       <div className="mb-10 overflow-visible">
         <ExplainableSectionTitle title={t('heatmapSectionTitle')} explanation={t('heatmapSectionExplain')} />
-        <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-4">
+        <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-100/80 dark:bg-gray-900/40 p-4">
           <ActivityHeatmap moviesAddedByDate={heatmapCounts} />
         </div>
         {busiestDay && (
@@ -161,11 +161,11 @@ export default function UserStatsPage() {
                   <li key={a.id}>
                     <Link
                       to={`/actor/${a.id}?from=bridge`}
-                      className="group flex items-center justify-between gap-3 rounded-lg bg-gray-800/50 border border-gray-800 px-3 py-2 w-full min-w-0 text-left no-underline hover:border-indigo-500/50 hover:bg-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0f]"
+                      className="group flex items-center justify-between gap-3 rounded-lg bg-gray-100/80 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-800 px-3 py-2 w-full min-w-0 text-left no-underline hover:border-indigo-600/50 dark:hover:border-indigo-500/50 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0f]"
                     >
                       <div className="flex items-center gap-2 min-w-0 flex-1">
                         <span className="text-xs text-gray-600 w-5 flex-shrink-0">{i + 1}</span>
-                        <span className="text-sm text-indigo-400 group-hover:text-indigo-300 truncate">
+                        <span className="text-sm text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:hover:text-indigo-300 truncate">
                           <StatsActorDisplayName actorIdStr={a.id} fallbackName={a.name} api={api} />
                         </span>
                       </div>
@@ -198,11 +198,11 @@ export default function UserStatsPage() {
                 <li key={a.id}>
                   <Link
                     to={`/actor/${a.id}?from=cast`}
-                    className="group flex items-center justify-between gap-3 rounded-lg bg-gray-800/50 border border-gray-800 px-3 py-2 w-full min-w-0 text-left no-underline hover:border-indigo-500/50 hover:bg-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0f]"
+                    className="group flex items-center justify-between gap-3 rounded-lg bg-gray-100/80 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-800 px-3 py-2 w-full min-w-0 text-left no-underline hover:border-indigo-600/50 dark:hover:border-indigo-500/50 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0f]"
                   >
                     <div className="flex items-center gap-2 min-w-0 flex-1">
                       <span className="text-xs text-gray-600 w-5 flex-shrink-0">{i + 1}</span>
-                      <span className="text-sm text-indigo-400 group-hover:text-indigo-300 truncate">
+                      <span className="text-sm text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:hover:text-indigo-300 truncate">
                         <StatsActorDisplayName actorIdStr={a.id} fallbackName={a.name} api={api} />
                       </span>
                     </div>
@@ -217,13 +217,13 @@ export default function UserStatsPage() {
         </section>
 
         <section>
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+          <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-3">
             {t('moreStatsSectionTitle')}
           </h2>
-          <ul className="space-y-2 text-sm text-gray-400">
+          <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
             <ExplainableRow
               label={t('statLongestChain')}
-              value={<span className="text-gray-200 tabular-nums">{p.longestChainEver}</span>}
+              value={<span className="text-gray-800 dark:text-gray-200 tabular-nums">{p.longestChainEver}</span>}
               explanation={t('statExplainMoreLongestChain')}
             />
             <AchievementsUnlockedRow
@@ -233,7 +233,7 @@ export default function UserStatsPage() {
             />
             <ExplainableRow
               label={t('statFirstNoteWritten')}
-              value={<span className="text-gray-200">{p.hasWrittenNoteBefore ? t('yes') : t('no')}</span>}
+              value={<span className="text-gray-800 dark:text-gray-200">{p.hasWrittenNoteBefore ? t('yes') : t('no')}</span>}
               explanation={t('statExplainMoreFirstNote')}
             />
           </ul>
@@ -302,16 +302,16 @@ function UnlockedAchievementsModal({
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="w-full max-w-md rounded-xl border border-gray-700 bg-gray-900 shadow-xl max-h-[85vh] flex flex-col"
+        className="w-full max-w-md rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl max-h-[85vh] flex flex-col"
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-800 shrink-0">
-          <h2 id="achievements-modal-title" className="text-lg font-semibold text-white pr-2">
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-800 shrink-0">
+          <h2 id="achievements-modal-title" className="text-lg font-semibold text-gray-900 dark:text-white pr-2">
             {t('statAchievementsModalTitle')}
           </h2>
           <button
             type="button"
-            className="text-sm text-indigo-400 hover:text-indigo-300 px-2 py-1 shrink-0 rounded-lg hover:bg-gray-800/80"
+            className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 px-2 py-1 shrink-0 rounded-lg hover:bg-gray-100/90 dark:bg-gray-800/80"
             onClick={onClose}
           >
             {t('statAchievementsModalClose')}
@@ -345,7 +345,7 @@ function UnlockedAchievementsModal({
                         </svg>
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-gray-100">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                           {achievementTitle(t, id)}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
@@ -360,7 +360,7 @@ function UnlockedAchievementsModal({
                     key={id}
                     className="rounded-lg border border-emerald-900/50 bg-emerald-950/20 px-3 py-2.5"
                   >
-                    <p className="text-sm font-medium text-gray-100">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {achievementTitle(t, id)}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
@@ -386,13 +386,13 @@ function UnlockedAchievementsModal({
                 {lockedDefined.map((id) => (
                   <li
                     key={id}
-                    className="rounded-lg border border-dashed border-amber-900/40 bg-gray-950/80 px-3 py-2.5"
+                    className="rounded-lg border border-dashed border-amber-900/40 bg-gray-50 dark:bg-gray-950/80 px-3 py-2.5"
                   >
                     <div className="flex items-start gap-2">
                       <AchievementLockIcon className="w-4 h-4 text-amber-600/80 shrink-0 mt-0.5" />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium text-gray-400">{achievementTitle(t, id)}</p>
+                          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{achievementTitle(t, id)}</p>
                           <span className="text-[10px] font-medium uppercase tracking-wide text-amber-600/90 shrink-0">
                             {t('achievementLocked')}
                           </span>
@@ -406,7 +406,7 @@ function UnlockedAchievementsModal({
             )}
           </section>
 
-          <p className="text-xs text-gray-600 pt-2 border-t border-gray-800 leading-relaxed">{explanation}</p>
+          <p className="text-xs text-gray-600 pt-2 border-t border-gray-200 dark:border-gray-800 leading-relaxed">{explanation}</p>
         </div>
       </div>
     </div>
@@ -426,18 +426,18 @@ function AchievementsUnlockedRow({
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
-    <li className="border-b border-gray-800/80 pb-2 last:border-0 overflow-visible">
+    <li className="border-b border-gray-200/80 dark:border-gray-800/80 pb-2 last:border-0 overflow-visible">
       <button
         type="button"
-        className="w-full flex justify-between gap-4 items-start text-left rounded-lg -mx-1 px-1 py-0.5 hover:bg-gray-800/50 border border-transparent hover:border-gray-700/40 transition-colors cursor-pointer group"
+        className="w-full flex justify-between gap-4 items-start text-left rounded-lg -mx-1 px-1 py-0.5 hover:bg-gray-100/80 dark:bg-gray-800/50 border border-transparent hover:border-gray-200/80 dark:border-gray-700/40 transition-colors cursor-pointer group"
         onClick={() => setModalOpen(true)}
         aria-expanded={modalOpen}
         aria-haspopup="dialog"
       >
-        <span className="text-gray-400 group-hover:text-indigo-300 transition-colors">
+        <span className="text-gray-600 dark:text-gray-400 group-hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
           {t('statAchievementsUnlocked')}
         </span>
-        <span className="shrink-0 text-right text-gray-200 tabular-nums group-hover:text-indigo-300 transition-colors">
+        <span className="shrink-0 text-right text-gray-800 dark:text-gray-200 tabular-nums group-hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
           {count}
         </span>
       </button>
@@ -469,7 +469,7 @@ function StatCard({
   return (
     <div
       className={
-        'relative rounded-xl border border-gray-800 bg-gray-900/50 px-4 py-3 overflow-visible' +
+        'relative rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 px-4 py-3 overflow-visible' +
         (explanation && narrow ? ' cursor-pointer' : '') +
         (explanation && !narrow ? ' md:group cursor-help' : '')
       }
@@ -487,7 +487,7 @@ function StatCard({
       {explanation && !narrow ? (
         <div
           role="tooltip"
-          className="hidden md:block absolute top-full left-0 right-0 z-50 mt-1 px-3 py-2 rounded-lg border border-gray-700 bg-gray-800 shadow-lg text-xs text-gray-300 leading-snug opacity-0 invisible transition-opacity delay-75 pointer-events-none max-h-48 overflow-y-auto md:group-hover:opacity-100 md:group-hover:visible md:group-hover:delay-100"
+          className="hidden md:block absolute top-full left-0 right-0 z-50 mt-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 shadow-lg text-xs text-gray-700 dark:text-gray-300 leading-snug opacity-0 invisible transition-opacity delay-75 pointer-events-none max-h-48 overflow-y-auto md:group-hover:opacity-100 md:group-hover:visible md:group-hover:delay-100"
         >
           {explanation}
         </div>
@@ -500,10 +500,10 @@ function StatCard({
           </span>
         ) : null}
       </div>
-      <p className="text-2xl font-semibold text-white mt-1 tabular-nums">{value}</p>
+      <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1 tabular-nums">{value}</p>
       {hint ? <p className="text-[10px] text-gray-600 mt-0.5">{hint}</p> : null}
       {explanation && narrow && open ? (
-        <p className="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-800 leading-relaxed">{explanation}</p>
+        <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 pt-2 border-t border-gray-200 dark:border-gray-800 leading-relaxed">{explanation}</p>
       ) : null}
     </div>
   );
@@ -531,7 +531,7 @@ function ExplainableSectionTitle({ title, explanation }: { title: string; explan
         tabIndex={narrow ? 0 : undefined}
         aria-expanded={narrow ? open : undefined}
       >
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider text-left flex-1 min-w-0">
+        <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider text-left flex-1 min-w-0">
           {title}
         </h2>
         {narrow ? (
@@ -541,14 +541,14 @@ function ExplainableSectionTitle({ title, explanation }: { title: string; explan
         ) : (
           <div
             role="tooltip"
-            className="hidden md:block absolute top-full left-0 z-50 mt-1 w-72 max-w-[min(18rem,calc(100vw-2rem))] px-3 py-2 rounded-lg border border-gray-700 bg-gray-800 shadow-lg text-xs text-gray-300 leading-snug opacity-0 invisible transition-opacity pointer-events-none md:group-hover:opacity-100 md:group-hover:visible"
+            className="hidden md:block absolute top-full left-0 z-50 mt-1 w-72 max-w-[min(18rem,calc(100vw-2rem))] px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 shadow-lg text-xs text-gray-700 dark:text-gray-300 leading-snug opacity-0 invisible transition-opacity pointer-events-none md:group-hover:opacity-100 md:group-hover:visible"
           >
             {explanation}
           </div>
         )}
       </div>
       {narrow && open ? (
-        <p className="text-xs text-gray-500 mt-2 leading-relaxed border-l-2 border-gray-700 pl-3">{explanation}</p>
+        <p className="text-xs text-gray-500 mt-2 leading-relaxed border-l-2 border-gray-300 dark:border-gray-700 pl-3">{explanation}</p>
       ) : null}
     </div>
   );
@@ -584,7 +584,7 @@ function ExplainableHint({ children, explanation, className }: { children: React
         ) : (
           <div
             role="tooltip"
-            className="hidden md:block absolute top-full left-0 z-50 mt-1 w-72 max-w-[min(18rem,calc(100vw-2rem))] px-3 py-2 rounded-lg border border-gray-700 bg-gray-800 shadow-lg text-xs text-gray-300 leading-snug opacity-0 invisible transition-opacity pointer-events-none md:group-hover:opacity-100 md:group-hover:visible"
+            className="hidden md:block absolute top-full left-0 z-50 mt-1 w-72 max-w-[min(18rem,calc(100vw-2rem))] px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 shadow-lg text-xs text-gray-700 dark:text-gray-300 leading-snug opacity-0 invisible transition-opacity pointer-events-none md:group-hover:opacity-100 md:group-hover:visible"
           >
             {explanation}
           </div>
@@ -608,7 +608,7 @@ function ExplainableRow({
   const [open, setOpen] = useState(false);
 
   return (
-    <li className="border-b border-gray-800/80 pb-2 last:border-0 overflow-visible">
+    <li className="border-b border-gray-200/80 dark:border-gray-800/80 pb-2 last:border-0 overflow-visible">
       <div
         className={
           'flex justify-between gap-4 items-start' +
@@ -626,7 +626,7 @@ function ExplainableRow({
         aria-expanded={narrow ? open : undefined}
       >
         <div className="flex items-start gap-2 min-w-0 flex-1 relative">
-          <span className="text-gray-400">{label}</span>
+          <span className="text-gray-600 dark:text-gray-400">{label}</span>
           {narrow ? (
             <span className="text-gray-600 text-xs shrink-0 select-none" aria-hidden>
               ⓘ
@@ -634,7 +634,7 @@ function ExplainableRow({
           ) : (
             <div
               role="tooltip"
-              className="hidden md:block absolute top-full left-0 z-50 mt-1 w-72 max-w-[min(18rem,calc(100vw-2rem))] px-3 py-2 rounded-lg border border-gray-700 bg-gray-800 shadow-lg text-xs text-gray-300 leading-snug opacity-0 invisible transition-opacity pointer-events-none md:group-hover:opacity-100 md:group-hover:visible"
+              className="hidden md:block absolute top-full left-0 z-50 mt-1 w-72 max-w-[min(18rem,calc(100vw-2rem))] px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 shadow-lg text-xs text-gray-700 dark:text-gray-300 leading-snug opacity-0 invisible transition-opacity pointer-events-none md:group-hover:opacity-100 md:group-hover:visible"
             >
               {explanation}
             </div>
@@ -643,7 +643,7 @@ function ExplainableRow({
         <span className="shrink-0 text-right">{value}</span>
       </div>
       {narrow && open ? (
-        <p className="text-xs text-gray-500 mt-2 pl-1 leading-relaxed border-l-2 border-gray-700">{explanation}</p>
+        <p className="text-xs text-gray-500 mt-2 pl-1 leading-relaxed border-l-2 border-gray-300 dark:border-gray-700">{explanation}</p>
       ) : null}
     </li>
   );

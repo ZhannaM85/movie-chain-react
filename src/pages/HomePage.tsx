@@ -67,9 +67,9 @@ function ChainView({
   return (
     <div className="max-w-7xl mx-auto py-6 px-0 md:px-4">
       <div className="flex flex-col gap-6">
-        <div className="order-1 min-w-0 w-full flex flex-col gap-6 px-4 md:px-0 md:sticky md:top-20 md:z-10 md:self-start md:w-full md:bg-gray-950 md:pb-2 md:shadow-[0_12px_24px_-8px_rgba(0,0,0,0.45)]">
+        <div className="order-1 min-w-0 w-full flex flex-col gap-6 px-4 md:px-0 md:sticky md:top-20 md:z-10 md:self-start md:w-full md:bg-gray-50 dark:md:bg-gray-950 md:pb-2 md:shadow-[0_12px_24px_-8px_rgba(15,23,42,0.07)] dark:md:shadow-[0_12px_24px_-8px_rgba(0,0,0,0.45)]">
           {loading ? (
-            <div className="flex items-center gap-2 text-gray-400 py-8">
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 py-8">
               <span className="inline-block w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
               {t('loadingMovieDetails')}
             </div>
@@ -88,7 +88,7 @@ function ChainView({
           ) : null}
 
           {pickStepPanel != null && !prependMode && (
-            <div className="order-2 border-t border-gray-800 pt-4 md:pt-6">
+            <div className="order-2 border-t border-gray-200 dark:border-gray-800 pt-4 md:pt-6">
               {pickStepPanel}
             </div>
           )}

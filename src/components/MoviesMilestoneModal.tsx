@@ -29,12 +29,12 @@ export default function MoviesMilestoneModal() {
       onMouseDown={(e) => e.target === e.currentTarget && dismissMoviesMilestoneModal()}
     >
       <div
-        className="w-full max-w-md rounded-xl border border-indigo-500/35 bg-gray-900 shadow-xl shadow-indigo-950/40"
+        className="w-full max-w-md rounded-xl border border-indigo-400/40 dark:border-indigo-500/35 bg-white dark:bg-gray-900 shadow-xl shadow-indigo-950/40"
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <div className="px-5 pt-5 pb-4 border-b border-gray-800">
+        <div className="px-5 pt-5 pb-4 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-start gap-3 mb-1">
-            <span className="mt-0.5 shrink-0 text-indigo-400" aria-hidden>
+            <span className="mt-0.5 shrink-0 text-indigo-600 dark:text-indigo-400" aria-hidden>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -50,18 +50,18 @@ export default function MoviesMilestoneModal() {
                 />
               </svg>
             </span>
-            <h2 id="movies-milestone-modal-title" className="text-lg font-semibold text-white pr-2">
+            <h2 id="movies-milestone-modal-title" className="text-lg font-semibold text-gray-900 dark:text-white pr-2">
               {t('moviesMilestoneModalTitle', { count })}
             </h2>
           </div>
-          <p className="text-sm text-gray-400 leading-relaxed">
+          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
             {t('moviesMilestoneModalBody', { count })}
           </p>
         </div>
         <div className="px-5 py-3 flex justify-end gap-2">
           <button
             type="button"
-            className="rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900"
+            className="rounded-lg bg-indigo-600 hover:bg-indigo-500 text-gray-900 dark:text-white text-sm font-medium px-4 py-2.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:focus-visible:ring-offset-gray-900"
             onClick={dismissMoviesMilestoneModal}
           >
             {t('moviesMilestoneModalCta')}

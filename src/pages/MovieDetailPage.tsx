@@ -34,7 +34,7 @@ export default function MovieDetailPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12 flex items-center gap-2 text-gray-400">
+      <div className="max-w-4xl mx-auto px-4 py-12 flex items-center gap-2 text-gray-600 dark:text-gray-400">
         <span className="inline-block w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
         {t('loadingMovie')}
       </div>
@@ -44,8 +44,8 @@ export default function MovieDetailPage() {
   if (error || !movie) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <p className="text-red-400">{t('failedLoadMovieDetails')}</p>
-        <Link to="/" className="text-indigo-400 hover:text-indigo-300 mt-2 inline-block">
+        <p className="text-red-600 dark:text-red-400">{t('failedLoadMovieDetails')}</p>
+        <Link to="/" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 mt-2 inline-block">
           {t('backToChain')}
         </Link>
       </div>
@@ -86,7 +86,7 @@ function MovieDetailOverview({
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <Link to="/" className="text-sm text-indigo-400 hover:text-indigo-300 mb-4 inline-block">
+      <Link to="/" className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 mb-4 inline-block">
         &larr; {t('backToChain')}
       </Link>
 
@@ -98,21 +98,21 @@ function MovieDetailOverview({
             className="w-full sm:w-64 rounded-xl object-cover flex-shrink-0"
           />
         ) : (
-          <div className="w-full sm:w-64 aspect-[2/3] rounded-xl bg-gray-800 flex items-center justify-center text-gray-600 flex-shrink-0">
+          <div className="w-full sm:w-64 aspect-[2/3] rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 flex-shrink-0">
             {t('noPoster')}
           </div>
         )}
 
         <div className="flex-1">
-          <h1 className="text-3xl font-bold text-white mb-1">{movie.title}</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{movie.title}</h1>
           {movie.tagline && (
             <p className="text-gray-500 italic mb-3">"{movie.tagline}"</p>
           )}
 
-          <div className="flex flex-wrap items-center gap-3 text-sm text-gray-400 mb-4">
+          <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 dark:text-gray-400 mb-4">
             <span>{year}</span>
             {movie.runtime && <span>{movie.runtime} {t('min')}</span>}
-            <ChallengePointsInline points={chainChallengePoints} className="text-indigo-300/90 tabular-nums" />
+            <ChallengePointsInline points={chainChallengePoints} className="text-indigo-800/90 dark:text-indigo-800 dark:text-indigo-300/90 tabular-nums" />
             <span className="flex items-center gap-1">
               <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -124,7 +124,7 @@ function MovieDetailOverview({
           {movie.genres && movie.genres.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
               {movie.genres.map((g) => (
-                <span key={g.id} className="text-xs px-2.5 py-1 rounded-full bg-gray-800 text-gray-300 border border-gray-700">
+                <span key={g.id} className="text-xs px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700">
                   {g.name}
                 </span>
               ))}
@@ -134,14 +134,14 @@ function MovieDetailOverview({
           {movie.overview && (
             <MovieOverviewClamp
               overview={movie.overview}
-              className="text-gray-300 leading-relaxed"
+              className="text-gray-700 dark:text-gray-300 leading-relaxed"
               resetKey={movie.id}
               showLink={false}
             />
           )}
 
           {chainIndex >= 0 && (
-            <div className="mt-4 rounded-lg border border-gray-700/50 bg-gray-800/40 p-3">
+            <div className="mt-4 rounded-lg border border-gray-300/50 dark:border-gray-700/50 bg-gray-50/90 dark:bg-gray-800/40 p-3">
               <ChainWatchedDateField chainIndex={chainIndex} idPrefix="movie-detail" />
             </div>
           )}
@@ -171,13 +171,13 @@ function MovieCastSection({
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-200 mb-4">{t('cast')}</h2>
+      <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('cast')}</h2>
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
         {cast.map((actor) => (
           <Link
             key={actor.id}
             to={`/actor/${actor.id}`}
-            className="rounded-lg overflow-hidden bg-gray-800/50 border border-gray-800 hover:border-indigo-500/50 hover:bg-gray-800 transition-all hover:scale-[1.02]"
+            className="rounded-lg overflow-hidden bg-gray-100/80 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-800 hover:border-indigo-600/50 dark:hover:border-indigo-500/50 hover:bg-gray-200 dark:hover:bg-gray-800 transition-all hover:scale-[1.02]"
           >
             {actor.profile_path ? (
               <img
@@ -186,14 +186,14 @@ function MovieCastSection({
                 className="w-full aspect-[2/3] object-cover"
               />
             ) : (
-              <div className="w-full aspect-[2/3] bg-gray-700 flex items-center justify-center">
+              <div className="w-full aspect-[2/3] bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                 <svg className="w-8 h-8 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
                 </svg>
               </div>
             )}
             <div className="p-2 min-w-0">
-              <p className="text-sm font-medium text-gray-200 line-clamp-2 break-words" title={actor.name}>
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-200 line-clamp-2 break-words" title={actor.name}>
                 {actor.name}
               </p>
               {actor.character && (
@@ -212,7 +212,7 @@ function MovieCastSection({
         <button
           type="button"
           onClick={() => setShowAllCast(true)}
-          className="mt-4 text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+          className="mt-4 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
         >
           {t('showAllCast', { count: allCast.length })}
         </button>

@@ -124,7 +124,7 @@ export default function ChallengePointsInline({
       <button
         ref={buttonRef}
         type="button"
-        className="inline-flex max-w-full items-center gap-0.5 rounded px-0.5 py-0 text-inherit transition-colors hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
+        className="inline-flex max-w-full items-center gap-0.5 rounded px-0.5 py-0 text-inherit transition-colors hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:focus-visible:ring-offset-gray-50 dark:ring-offset-gray-950"
         title={explainText}
         aria-label={ariaLabel}
         aria-expanded={open}
@@ -144,7 +144,7 @@ export default function ChallengePointsInline({
               id={panelId}
               role="region"
               style={panelStyle}
-              className="rounded-md border border-gray-600 bg-gray-900 px-2.5 py-2 text-left text-xs font-normal normal-case leading-snug text-gray-200 shadow-lg break-words"
+              className="rounded-md border border-gray-400 dark:border-gray-600 bg-white dark:bg-gray-900 px-2.5 py-2 text-left text-xs font-normal normal-case leading-snug text-gray-800 dark:text-gray-200 shadow-lg break-words"
             >
               {explainText}
             </div>,

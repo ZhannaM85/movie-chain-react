@@ -167,7 +167,7 @@ export default function ChainListMenu() {
     createPortal(
       <div
         ref={panelRef}
-        className="fixed z-[200] max-w-[min(calc(100vw-1rem),20rem)] rounded-md border border-gray-700 bg-gray-900 py-1 shadow-lg shadow-black/40"
+        className="fixed z-[200] max-w-[min(calc(100vw-1rem),20rem)] rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 py-1 shadow-lg shadow-gray-900/10 dark:shadow-black/40"
         style={{
           top: panelPos.top,
           left: panelPos.left,
@@ -179,15 +179,15 @@ export default function ChainListMenu() {
           {chainLists.map((entry) => (
             <div
               key={entry.id}
-              className={`flex items-center gap-1 border-b border-gray-800/80 px-2 py-1.5 last:border-b-0 ${
-                entry.id === activeListId ? 'bg-indigo-950/40' : ''
+              className={`flex items-center gap-1 border-b border-gray-200/80 dark:border-gray-800/80 px-2 py-1.5 last:border-b-0 ${
+                entry.id === activeListId ? 'bg-indigo-100/40 dark:bg-indigo-950/40' : ''
               }`}
             >
               <button
                 type="button"
                 role="option"
                 aria-selected={entry.id === activeListId}
-                className="min-w-0 flex-1 truncate text-left text-sm text-gray-200 hover:text-indigo-300"
+                className="min-w-0 flex-1 truncate text-left text-sm text-gray-800 dark:text-gray-200 hover:text-indigo-700 dark:hover:text-indigo-300"
                 onClick={() => {
                   setActiveListId(entry.id);
                   setOpen(false);
@@ -198,14 +198,14 @@ export default function ChainListMenu() {
               </button>
               <button
                 type="button"
-                className="shrink-0 rounded px-1.5 py-0.5 text-xs text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                className="shrink-0 rounded px-1.5 py-0.5 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200"
                 onClick={() => handleRename(entry.id, entry.name)}
               >
                 {t('renameList')}
               </button>
               <button
                 type="button"
-                className="shrink-0 rounded px-1.5 py-0.5 text-xs text-red-400/90 hover:bg-red-950/50 hover:text-red-300"
+                className="shrink-0 rounded px-1.5 py-0.5 text-xs text-red-600 dark:text-red-400/90 hover:bg-red-50 dark:hover:bg-red-950/50 hover:text-red-800 dark:text-red-300"
                 onClick={() => handleDelete(entry.id, entry.name)}
               >
                 {t('deleteList')}
@@ -221,17 +221,17 @@ export default function ChainListMenu() {
           aria-label={t('backupImportFileAria')}
           onChange={onImportFileChange}
         />
-        <div className="border-t border-gray-800">
+        <div className="border-t border-gray-200 dark:border-gray-800">
           <button
             type="button"
-            className="w-full px-2 py-2 text-left text-sm text-indigo-400 hover:bg-gray-800/80"
+            className="w-full px-2 py-2 text-left text-sm text-indigo-600 dark:text-indigo-400 hover:bg-gray-100/90 dark:bg-gray-800/80"
             onClick={handleAddEmpty}
           >
             {t('addListEmpty')}
           </button>
           <button
             type="button"
-            className="w-full border-t border-gray-800/80 px-2 py-2 text-left text-sm text-indigo-400 hover:bg-gray-800/80"
+            className="w-full border-t border-gray-200/80 dark:border-gray-800/80 px-2 py-2 text-left text-sm text-indigo-600 dark:text-indigo-400 hover:bg-gray-100/90 dark:bg-gray-800/80"
             onClick={handlePickImport}
           >
             {t('addListImportJson')}
@@ -240,7 +240,7 @@ export default function ChainListMenu() {
         {links.length > 0 && (
           <button
             type="button"
-            className="w-full border-t border-gray-800 px-2 py-2 text-left text-sm text-red-400/95 hover:bg-red-950/40"
+            className="w-full border-t border-gray-200 dark:border-gray-800 px-2 py-2 text-left text-sm text-red-600 dark:text-red-400/95 hover:bg-red-50 dark:hover:bg-red-50/80 dark:bg-red-950/40"
             title={t('clearChainTooltip')}
             onClick={handleClearCurrentChain}
           >
@@ -256,7 +256,7 @@ export default function ChainListMenu() {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex h-9 max-w-[10rem] sm:max-w-[14rem] items-center gap-1 rounded-md border border-gray-700 bg-gray-800 px-2 text-left text-xs text-gray-200 transition-colors hover:border-gray-600 hover:bg-gray-800/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900"
+        className="flex h-9 max-w-[10rem] sm:max-w-[14rem] items-center gap-1 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-2 text-left text-xs text-gray-800 dark:text-gray-200 transition-colors hover:border-gray-400 dark:border-gray-600 hover:bg-gray-100 dark:bg-gray-800/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:focus-visible:ring-offset-gray-900"
         aria-expanded={open}
         aria-haspopup="listbox"
         title={t('chainListMenuAria')}
