@@ -162,6 +162,43 @@ export function buildExportJsonFile(persisted: ChainListsPersisted): string {
   return JSON.stringify(wrapper, null, 2);
 }
 
+/** Single-list snapshot for export (same schema as full backup; one entry in `lists`). */
+export function persistedSnapshotForSingleList(entry: ChainListEntry): ChainListsPersisted {
+  return {
+    version: 1,
+    activeListId: entry.id,
+    lists: [entry],
+  };
+}
+
+/** Safe segment for download filenames (Windows + general). */
+export function sanitizeExportFilenameSegment(name: string, maxLen: number): string {
+  const trimmed = name
+    .trim()
+    .replace(/[<>:"/\\|?*\x00-\x1f]/g, '_')
+    .replace(/\.+$/g, '');
+  const base = trimmed || 'list';
+  return base.length > maxLen ? base.slice(0, maxLen) : base;
+}
+
+export function backupFilenameForListJson(listName: string): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const safe = sanitizeExportFilenameSegment(listName, 48);
+  return `movie-chain-list-${safe}-${y}-${m}-${day}.json`;
+}
+
+export function backupFilenameForListCsv(listName: string): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const safe = sanitizeExportFilenameSegment(listName, 48);
+  return `movie-chain-list-${safe}-${y}-${m}-${day}.csv`;
+}
+
 export function downloadTextFile(filename: string, content: string, mime: string): void {
   const blob = new Blob([content], { type: mime });
   const url = URL.createObjectURL(blob);

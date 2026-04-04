@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useChainContext } from '../context/ChainContext';
 import { buildChainRecap } from '../gamification/chainRecap';
+import { ChainListsBackupError } from '../utils/chainListsBackup';
 
 /**
  * Header control: switch named lists, add, rename, delete.
@@ -19,11 +20,13 @@ export default function ChainListMenu() {
     deleteList,
     getListLinks,
     resetChain,
+    importChainListsFromJson,
   } = useChainContext();
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const importInputRef = useRef<HTMLInputElement>(null);
   const [panelPos, setPanelPos] = useState({ top: 0, left: 0, minWidth: 224 });
 
   const updatePanelPosition = useCallback(() => {
@@ -62,10 +65,50 @@ export default function ChainListMenu() {
     return () => document.removeEventListener('mousedown', onDoc);
   }, [open]);
 
-  const handleAdd = useCallback(() => {
+  const handleAddEmpty = useCallback(() => {
     createList(t('newListNumbered', { n: chainLists.length + 1 }));
     setOpen(false);
   }, [chainLists.length, createList, t]);
+
+  const runImportMerge = useCallback(
+    (text: string) => {
+      try {
+        importChainListsFromJson(text, 'merge');
+        window.alert(t('backupImportSuccess'));
+      } catch (e) {
+        const msg =
+          e instanceof ChainListsBackupError
+            ? e.message
+            : e instanceof Error
+              ? e.message
+              : t('backupImportError');
+        window.alert(msg);
+      }
+      setOpen(false);
+    },
+    [importChainListsFromJson, t]
+  );
+
+  const onImportFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      e.target.value = '';
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        runImportMerge(String(reader.result ?? ''));
+      };
+      reader.onerror = () => {
+        window.alert(t('backupImportError'));
+      };
+      reader.readAsText(file);
+    },
+    [runImportMerge, t]
+  );
+
+  const handlePickImport = useCallback(() => {
+    importInputRef.current?.click();
+  }, []);
 
   const handleRename = useCallback(
     (id: string, current: string) => {
@@ -170,13 +213,30 @@ export default function ChainListMenu() {
             </div>
           ))}
         </div>
-        <button
-          type="button"
-          className="w-full border-t border-gray-800 px-2 py-2 text-left text-sm text-indigo-400 hover:bg-gray-800/80"
-          onClick={handleAdd}
-        >
-          {t('addList')}
-        </button>
+        <input
+          ref={importInputRef}
+          type="file"
+          accept="application/json,.json"
+          className="sr-only"
+          aria-label={t('backupImportFileAria')}
+          onChange={onImportFileChange}
+        />
+        <div className="border-t border-gray-800">
+          <button
+            type="button"
+            className="w-full px-2 py-2 text-left text-sm text-indigo-400 hover:bg-gray-800/80"
+            onClick={handleAddEmpty}
+          >
+            {t('addListEmpty')}
+          </button>
+          <button
+            type="button"
+            className="w-full border-t border-gray-800/80 px-2 py-2 text-left text-sm text-indigo-400 hover:bg-gray-800/80"
+            onClick={handlePickImport}
+          >
+            {t('addListImportJson')}
+          </button>
+        </div>
         {links.length > 0 && (
           <button
             type="button"

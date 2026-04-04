@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import AboutBackupSection from '../components/AboutBackupSection';
 
 /**
  * Static informational page that explains how the Movie Chain app works.
@@ -63,7 +62,10 @@ export default function AboutPage() {
         </p>
       </section>
 
-      <AboutBackupSection />
+      <section className="space-y-2">
+        <h2 className="text-xl font-semibold text-white">{t('aboutDataTitle')}</h2>
+        <p className="text-gray-300">{t('aboutDataExportHint')}</p>
+      </section>
 
       <footer className="pt-4 border-t border-gray-800 mt-4">
         <p className="text-xs text-gray-500 text-center">

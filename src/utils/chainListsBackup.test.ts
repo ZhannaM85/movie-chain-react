@@ -6,6 +6,9 @@ import {
   prepareImportedListsMerge,
   prepareImportedListsReplace,
   buildExportJsonFile,
+  persistedSnapshotForSingleList,
+  sanitizeExportFilenameSegment,
+  backupFilenameForListJson,
 } from './chainListsBackup';
 import { buildChainListsCsv } from './chainListsCsv';
 
@@ -78,6 +81,26 @@ describe('chainListsBackup', () => {
     expect(out.lists[0].id).toBe('test-uuid-1');
     expect(out.activeListId).toBe('test-uuid-1');
     expect(out.lists[0].state.links).toHaveLength(1);
+  });
+
+  it('persistedSnapshotForSingleList round-trips through export wrapper', () => {
+    const entry = samplePersisted.lists[0];
+    const single = persistedSnapshotForSingleList(entry);
+    expect(single.lists).toHaveLength(1);
+    expect(single.activeListId).toBe(entry.id);
+    const json = buildExportJsonFile(single);
+    const parsed = parseChainListsBackupJson(json);
+    expect(parsed.lists[0].name).toBe('My list');
+  });
+
+  it('sanitizeExportFilenameSegment strips unsafe characters', () => {
+    expect(sanitizeExportFilenameSegment('My/List:name', 40)).toBe('My_List_name');
+  });
+
+  it('backupFilenameForListJson includes sanitized name', () => {
+    const name = backupFilenameForListJson('Test List');
+    expect(name).toMatch(/^movie-chain-list-Test List-/);
+    expect(name.endsWith('.json')).toBe(true);
   });
 
   it('prepareImportedListsMerge renames duplicate list names', () => {

@@ -33,8 +33,14 @@ const resources = {
       clearChain: 'Clear chain',
       clearChainTooltip:
         'Remove all movies from this list only. Other lists are not changed.',
-      addListFabAria: 'Add a new list and switch to it',
+      addListFabAria: 'Add a list — empty or import from JSON',
+      addListFabMenuAria: 'Choose how to add a list',
+      addListFabMenuTitle: 'Add a list',
+      addListEmpty: 'Add empty list',
+      addListImportJson: 'Import from JSON…',
       addList: 'Add list',
+      listExportJson: 'Export JSON',
+      listExportCsv: 'Export CSV',
       renameList: 'Rename',
       deleteList: 'Delete',
       renameListPrompt: 'List name',
@@ -237,17 +243,9 @@ const resources = {
       aboutTech: 'Tech behind the scenes',
       aboutTechText:
         'React 19, TypeScript, Vite, Tailwind CSS, React Router, and react-i18next. Movie data comes from the TMDB API. Vitest covers important logic. Everything persists in localStorage on this device.',
-      backupSectionTitle: 'Backup & restore',
-      backupSectionIntro:
-        'Your lists live only in this browser. Export a JSON file from time to time so you can restore after clearing site data, switching devices, or if something goes wrong. CSV is for viewing in Excel only (it cannot restore full movie data).',
-      backupExportJson: 'Export JSON (full backup)',
-      backupExportCsv: 'Export CSV (spreadsheet)',
-      backupCsvNote:
-        'CSV includes titles, dates, and notes per row; use JSON to restore the app exactly. Import only accepts JSON files created by this app.',
-      backupImportReplace: 'Import JSON — replace all lists',
-      backupImportMerge: 'Import JSON — add as new lists',
-      backupImportConfirmReplace:
-        'Replace all current lists with the backup? This cannot be undone. Your current lists will be lost unless you exported them first.',
+      aboutDataTitle: 'Lists & backup',
+      aboutDataExportHint:
+        'Export the current list from the Chain page (JSON restores this app exactly; CSV is for spreadsheets only). To add lists from a backup file, choose Import from JSON in the list menu in the header, or tap the mobile add (+) button and pick import.',
       backupImportSuccess: 'Import completed successfully.',
       backupImportError: 'Could not read the backup file. Check that it is valid JSON from this app.',
       backupImportFileAria: 'Choose JSON backup file',
@@ -341,8 +339,14 @@ const resources = {
       clearChain: 'Очистить цепочку',
       clearChainTooltip:
         'Убрать все фильмы только из этого списка. Остальные списки не затрагиваются.',
-      addListFabAria: 'Новый список и переключиться на него',
+      addListFabAria: 'Добавить список — пустой или импорт из JSON',
+      addListFabMenuAria: 'Как добавить список',
+      addListFabMenuTitle: 'Добавить список',
+      addListEmpty: 'Пустой список',
+      addListImportJson: 'Импорт из JSON…',
       addList: 'Добавить список',
+      listExportJson: 'Экспорт JSON',
+      listExportCsv: 'Экспорт CSV',
       renameList: 'Переименовать',
       deleteList: 'Удалить',
       renameListPrompt: 'Название списка',
@@ -550,17 +554,9 @@ const resources = {
       aboutTech: 'Технологии',
       aboutTechText:
         'React 19, TypeScript, Vite, Tailwind CSS, React Router и react-i18next. Данные о фильмах — TMDB API. Часть логики покрыта тестами Vitest. Всё хранится в localStorage на этом устройстве.',
-      backupSectionTitle: 'Резервная копия и восстановление',
-      backupSectionIntro:
-        'Списки хранятся только в этом браузере. Периодически экспортируйте JSON, чтобы восстановить данные после очистки сайта, смены устройства или сбоя. CSV — для просмотра в Excel (полное восстановление фильмов из него невозможно).',
-      backupExportJson: 'Экспорт JSON (полная копия)',
-      backupExportCsv: 'Экспорт CSV (таблица)',
-      backupCsvNote:
-        'В CSV есть названия, даты и заметки; для точного восстановления приложения используйте JSON. Импорт принимает только JSON, созданный этим приложением.',
-      backupImportReplace: 'Импорт JSON — заменить все списки',
-      backupImportMerge: 'Импорт JSON — добавить как новые списки',
-      backupImportConfirmReplace:
-        'Заменить все текущие списки резервной копией? Это нельзя отменить. Текущие списки будут потеряны, если вы не экспортировали их заранее.',
+      aboutDataTitle: 'Списки и резервные копии',
+      aboutDataExportHint:
+        'Экспортируйте текущий список на странице «Цепочка» (JSON восстанавливает приложение полностью; CSV — для таблиц). Чтобы добавить списки из файла, выберите «Импорт из JSON» в меню списков в шапке или на мобильной кнопке «+».',
       backupImportSuccess: 'Импорт выполнен успешно.',
       backupImportError: 'Не удалось прочитать файл. Убедитесь, что это JSON из этого приложения.',
       backupImportFileAria: 'Выбрать JSON-файл резервной копии',

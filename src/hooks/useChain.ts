@@ -14,9 +14,10 @@ import {
   BACKUP_PENDING_ACTOR_KEY,
   buildExportJsonFile,
   downloadTextFile,
-  backupFilenameJson,
-  backupFilenameCsv,
+  backupFilenameForListJson,
+  backupFilenameForListCsv,
   parseChainListsBackupJson,
+  persistedSnapshotForSingleList,
   prepareImportedListsMerge,
   prepareImportedListsReplace,
 } from '../utils/chainListsBackup';
@@ -557,15 +558,21 @@ export function useChain() {
     [persisted.lists]
   );
 
-  const exportChainListsJson = useCallback(() => {
-    const json = buildExportJsonFile(persisted);
-    downloadTextFile(backupFilenameJson(), json, 'application/json;charset=utf-8');
-  }, [persisted]);
+  const exportActiveListJson = useCallback(() => {
+    const entry = persisted.lists.find((e) => e.id === activeListId);
+    if (!entry) return;
+    const single = persistedSnapshotForSingleList(entry);
+    const json = buildExportJsonFile(single);
+    downloadTextFile(backupFilenameForListJson(entry.name), json, 'application/json;charset=utf-8');
+  }, [persisted, activeListId]);
 
-  const exportChainListsCsv = useCallback(() => {
-    const csv = buildChainListsCsv(persisted);
-    downloadTextFile(backupFilenameCsv(), csv, 'text/csv;charset=utf-8');
-  }, [persisted]);
+  const exportActiveListCsv = useCallback(() => {
+    const entry = persisted.lists.find((e) => e.id === activeListId);
+    if (!entry) return;
+    const single = persistedSnapshotForSingleList(entry);
+    const csv = buildChainListsCsv(single);
+    downloadTextFile(backupFilenameForListCsv(entry.name), csv, 'text/csv;charset=utf-8');
+  }, [persisted, activeListId]);
 
   const importChainListsFromJson = useCallback((text: string, mode: 'replace' | 'merge') => {
     const data = parseChainListsBackupJson(text);
@@ -587,8 +594,8 @@ export function useChain() {
     activeListName,
     chainLists,
     getListLinks,
-    exportChainListsJson,
-    exportChainListsCsv,
+    exportActiveListJson,
+    exportActiveListCsv,
     importChainListsFromJson,
     setActiveListId,
     createList,
