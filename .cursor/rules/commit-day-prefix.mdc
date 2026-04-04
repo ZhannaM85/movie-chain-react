@@ -1,0 +1,24 @@
+---
+description: Prefix git commit messages with [DAY-N] from the current branch name
+alwaysApply: true
+---
+
+# Commit messages: DAY prefix
+
+When creating or suggesting a **git commit message** for this repo, include a **`[DAY-N]`** tag at the start of the subject line, where **N** is taken from the current Git branch name.
+
+## How to derive N
+
+- Run `git branch --show-current` (or use the known branch from context).
+- If the branch name contains a segment like `DAY19`, `DAY18`, etc., use **`[DAY-19]`**, **`[DAY-18]`** (hyphen after `DAY`, same number as in the branch).
+- Examples:
+  - `feat/zhanna-DAY19-implementingMultipleChainsSupport-DEVELOP` → **`[DAY-19]`**
+  - `feat/zhanna-DAY18-some-topic` → **`[DAY-18]`**
+
+## Format
+
+- Subject line: **`[DAY-N] <type>(<scope>): short description`** or **`[DAY-N] Short description`** — the important part is the leading **`[DAY-N]`** matching the branch.
+
+## If no DAY number is found
+
+- If the branch does not match `DAY` + digits, omit the tag or ask the user which day to use.
