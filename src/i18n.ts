@@ -30,6 +30,20 @@ const resources = {
       /** Shorter header label on narrow screens (full phrase still in title/aria). */
       chainCountCompact: '{{count}} in chain',
       newChain: 'New Chain',
+      clearChain: 'Clear chain',
+      clearChainTooltip:
+        'Remove all movies from this list only. Other lists are not changed.',
+      addListFabAria: 'Add a new list and switch to it',
+      addList: 'Add list',
+      renameList: 'Rename',
+      deleteList: 'Delete',
+      renameListPrompt: 'List name',
+      newListNumbered: 'List {{n}}',
+      confirmDeleteListEmpty: 'Delete list "{{name}}"?',
+      confirmDeleteListRecap:
+        'Delete list "{{name}}"? It has {{length}} movies, {{difficulty}} challenge points, {{actors}} unique connecting actors, {{decades}} decades spanned.',
+      chainListMenuAria: 'Movie lists',
+      listNameEmpty: 'Name cannot be empty.',
       confirmNewChain: 'Start a new chain? This will clear your current progress.',
       confirmNewChainRecap:
         'Start a new chain? Your current run: {{length}} movies, {{difficulty}} challenge points, {{actors}} unique connecting actors, {{decades}} decades spanned.',
@@ -310,6 +324,20 @@ const resources = {
       chainCount_other: '{{count}} фильма в цепочке',
       chainCountCompact: '{{count}} в цеп.',
       newChain: 'Новая цепочка',
+      clearChain: 'Очистить цепочку',
+      clearChainTooltip:
+        'Убрать все фильмы только из этого списка. Остальные списки не затрагиваются.',
+      addListFabAria: 'Новый список и переключиться на него',
+      addList: 'Добавить список',
+      renameList: 'Переименовать',
+      deleteList: 'Удалить',
+      renameListPrompt: 'Название списка',
+      newListNumbered: 'Список {{n}}',
+      confirmDeleteListEmpty: 'Удалить список «{{name}}»?',
+      confirmDeleteListRecap:
+        'Удалить список «{{name}}»? В нём {{length}} фильмов, {{difficulty}} очков сложности, {{actors}} уникальных актёров-связок, {{decades}} разных десятилетий.',
+      chainListMenuAria: 'Списки фильмов',
+      listNameEmpty: 'Название не может быть пустым.',
       confirmNewChain: 'Начать новую цепочку? Текущий прогресс будет очищен.',
       confirmNewChainRecap:
         'Начать новую цепочку? Текущая: {{length}} фильмов, {{difficulty}} очков сложности, {{actors}} уникальных актёров-связок, {{decades}} разных десятилетий.',

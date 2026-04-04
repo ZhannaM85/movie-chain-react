@@ -2,8 +2,12 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useChain } from './useChain';
 import type { Movie } from '../types/movie';
+import {
+  CHAIN_LISTS_STORAGE_KEY,
+  LEGACY_CHAIN_STORAGE_KEY,
+} from '../types/chainLists';
 
-const STORAGE_KEY = 'movie-chain-state';
+const STORAGE_KEY = CHAIN_LISTS_STORAGE_KEY;
 const PENDING_ACTOR_KEY = 'pending-actor-pick';
 function createMockStorage() {
   const store: Record<string, string> = {};
@@ -265,5 +269,83 @@ describe('useChain', () => {
     expect(result.current.links).toHaveLength(1);
     expect(result.current.currentStep).toBe('pick-movie');
     expect(result.current.selectedActorId).toBe(42);
+  });
+
+  it('migrates legacy movie-chain-state to movie-chain-lists-v1 and removes legacy key', () => {
+    const legacy = {
+      links: [],
+      currentStep: 'start' as const,
+      selectedActorId: null,
+      selectedActorName: null,
+      prependMode: false,
+      dailyChallengeDate: null,
+    };
+    localStorageMock.setItem(LEGACY_CHAIN_STORAGE_KEY, JSON.stringify(legacy));
+    const { result } = renderHook(() => useChain());
+    expect(localStorageMock.store[LEGACY_CHAIN_STORAGE_KEY]).toBeUndefined();
+    const raw = localStorageMock.store[STORAGE_KEY];
+    expect(raw).toBeDefined();
+    const parsed = JSON.parse(raw!) as { version: number; lists: { name: string }[] };
+    expect(parsed.version).toBe(1);
+    expect(parsed.lists).toHaveLength(1);
+    expect(parsed.lists[0].name).toBe('My list');
+    expect(result.current.links).toEqual([]);
+  });
+
+  it('createList adds a list and switches to the new empty chain', async () => {
+    const { result } = renderHook(() => useChain());
+    const firstId = result.current.activeListId;
+    act(() => result.current.startChain(minimalMovie));
+    await flushMicrotasks();
+    act(() => result.current.createList('Second'));
+    expect(result.current.chainLists).toHaveLength(2);
+    expect(result.current.activeListId).not.toBe(firstId);
+    expect(result.current.links).toEqual([]);
+    expect(result.current.activeListName).toBe('Second');
+  });
+
+  it('setActiveListId switches which chain is active', async () => {
+    const { result } = renderHook(() => useChain());
+    const firstId = result.current.activeListId;
+    act(() => result.current.startChain(minimalMovie));
+    await flushMicrotasks();
+    act(() => result.current.createList('Other'));
+    const secondId = result.current.activeListId;
+    expect(secondId).not.toBe(firstId);
+    expect(result.current.links.length).toBe(0);
+    act(() => result.current.setActiveListId(firstId));
+    expect(result.current.links).toHaveLength(1);
+    expect(result.current.links[0].movie.id).toBe(minimalMovie.id);
+  });
+
+  it('renameList updates the active list name', () => {
+    const { result } = renderHook(() => useChain());
+    const id = result.current.activeListId;
+    act(() => result.current.renameList(id, 'Custom'));
+    expect(result.current.activeListName).toBe('Custom');
+  });
+
+  it('resetChain clears only the active list', async () => {
+    const { result } = renderHook(() => useChain());
+    const idA = result.current.activeListId;
+    act(() => result.current.startChain(minimalMovie));
+    await flushMicrotasks();
+    act(() => result.current.createList());
+    const idB = result.current.activeListId;
+    expect(idA).not.toBe(idB);
+    act(() => result.current.resetChain());
+    await flushMicrotasks();
+    expect(result.current.links).toEqual([]);
+    act(() => result.current.setActiveListId(idA));
+    expect(result.current.links).toHaveLength(1);
+  });
+
+  it('deleteList removes a list and keeps at least one empty list', async () => {
+    const { result } = renderHook(() => useChain());
+    act(() => result.current.createList('Extra'));
+    expect(result.current.chainLists).toHaveLength(2);
+    const extraId = result.current.chainLists.find((c) => c.name === 'Extra')!.id;
+    act(() => result.current.deleteList(extraId));
+    expect(result.current.chainLists).toHaveLength(1);
   });
 });
