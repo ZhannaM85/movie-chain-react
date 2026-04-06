@@ -11,6 +11,7 @@ import ChallengePointsInline from './ChallengePointsInline';
 import { scoreChainStep } from '../gamification/chainScoring';
 import { useChainUiPreferences } from '../hooks/useChainUiPreferences';
 import { findFirstSelectableMovieId } from '../lib/sequentialSelection';
+import { TMDB_GENRE_ANIMATION } from '../lib/tmdbGenres';
 
 type SortOption = 'popularity' | 'title-asc' | 'title-desc' | 'date-newest' | 'date-oldest';
 
@@ -105,6 +106,10 @@ export default function MovieSuggestions() {
         setActor(actorData);
         const filtered = creditsData.cast
           .filter((m) => m.poster_path && m.release_date)
+          .filter((m) => {
+            if (api.source !== 'tmdb') return true;
+            return !m.genre_ids?.includes(TMDB_GENRE_ANIMATION);
+          })
           .sort((a, b) => b.popularity - a.popularity);
         setMovies(filtered);
       })
