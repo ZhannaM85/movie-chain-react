@@ -143,7 +143,7 @@ export default function Layout({ children }: { children: ReactNode }) {
               </Link>
             </nav>
           </div>
-          <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-4">
+          <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-4">
             <ChainListMenu />
             {SHOW_KINOPOISK_TOGGLE && hasKinopoiskKey && (
               <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
