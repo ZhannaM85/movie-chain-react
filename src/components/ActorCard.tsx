@@ -19,6 +19,10 @@ interface ActorCardProps {
   disabled?: boolean;
   /** Compact bridge step (icon + titles on card); `description` used for title tooltip and aria-label. */
   disabledBridge?: ActorDisabledBridgeInfo;
+  /** True when strict list order locks this actor (not the same as bridge-used). */
+  sequentialLocked?: boolean;
+  /** Phrase for aria-label / title when sequentialLocked (includes actor name if needed). */
+  sequentialLockedDescription?: string;
   showLink?: boolean;
   /** Preview difficulty: full step (prepend) or actor-only slice (append pick-actor). */
   challengePoints?: number | null;
@@ -31,6 +35,26 @@ interface ActorCardProps {
  * @param {ActorCardProps} props - The component props.
  * @returns {JSX.Element} The rendered actor card.
  */
+function LockClosedIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className={className}
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+      />
+    </svg>
+  );
+}
+
 function BridgeUsedIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -57,6 +81,8 @@ export default function ActorCard({
   selected,
   disabled,
   disabledBridge,
+  sequentialLocked,
+  sequentialLockedDescription,
   showLink = false,
   challengePoints,
   challengePointsVariant = 'step',
@@ -69,7 +95,10 @@ export default function ActorCard({
         <img
           src={api.profileUrl(actor.profile_path)}
           alt={actor.name}
-          className="w-full aspect-[2/3] object-cover rounded-t-lg"
+          className={
+            'w-full aspect-[2/3] object-cover rounded-t-lg ' +
+            (sequentialLocked ? 'brightness-[0.92]' : '')
+          }
         />
       ) : (
         <div className="w-full aspect-[2/3] bg-gray-200 dark:bg-gray-700 flex items-center justify-center rounded-t-lg">
@@ -93,6 +122,12 @@ export default function ActorCard({
             </p>
           </div>
         )}
+        {sequentialLocked && !disabledBridge && (
+          <div className="mt-1 flex items-center gap-1 min-w-0 text-amber-700/90 dark:text-amber-400/90">
+            <LockClosedIcon className="w-3.5 h-3.5 shrink-0" />
+            <p className="text-[10px] leading-snug">{t('actorSequentialLockedHint')}</p>
+          </div>
+        )}
         {challengePoints != null && (
           <div className="mt-1">
             <ChallengePointsInline
@@ -109,9 +144,13 @@ export default function ActorCard({
   const baseClasses = 'rounded-lg overflow-hidden border transition-all text-left';
   const stateClasses = selected
     ? 'border-indigo-500 bg-indigo-900/30 ring-2 ring-indigo-500/50'
-    : disabled
+    : disabled && disabledBridge
       ? 'border-gray-200 dark:border-gray-800 bg-gray-100/80 dark:bg-gray-800/30 opacity-40 cursor-not-allowed'
-      : 'border-gray-200 dark:border-gray-800 bg-gray-100/80 dark:bg-gray-800/50 hover:border-indigo-600/50 dark:hover:border-indigo-500/50 hover:bg-gray-200 dark:hover:bg-gray-800 hover:scale-[1.02]';
+      : disabled && sequentialLocked
+        ? 'border-amber-400/60 dark:border-amber-600/50 bg-amber-50/50 dark:bg-amber-950/25 ring-2 ring-amber-400/35 dark:ring-amber-600/50 opacity-[0.88] cursor-not-allowed'
+        : disabled
+          ? 'border-gray-200 dark:border-gray-800 bg-gray-100/80 dark:bg-gray-800/30 opacity-40 cursor-not-allowed'
+          : 'border-gray-200 dark:border-gray-800 bg-gray-100/80 dark:bg-gray-800/50 hover:border-indigo-600/50 dark:hover:border-indigo-500/50 hover:bg-gray-200 dark:hover:bg-gray-800 hover:scale-[1.02]';
 
   if (showLink && !onClick) {
     return (
@@ -122,7 +161,11 @@ export default function ActorCard({
   }
 
   const ariaLabel =
-    disabled && disabledBridge ? `${actor.name}. ${disabledBridge.description}` : undefined;
+    disabled && disabledBridge
+      ? `${actor.name}. ${disabledBridge.description}`
+      : sequentialLocked && sequentialLockedDescription
+        ? sequentialLockedDescription
+        : undefined;
 
   return (
     <div
@@ -130,7 +173,13 @@ export default function ActorCard({
       tabIndex={disabled ? -1 : 0}
       aria-disabled={disabled || undefined}
       aria-label={ariaLabel}
-      title={disabled && disabledBridge ? disabledBridge.description : undefined}
+      title={
+        disabled && disabledBridge
+          ? disabledBridge.description
+          : sequentialLocked && sequentialLockedDescription
+            ? sequentialLockedDescription
+            : undefined
+      }
       className={`${baseClasses} ${stateClasses} w-full`}
       onClick={() => {
         if (disabled) return;

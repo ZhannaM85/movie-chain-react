@@ -5,6 +5,8 @@ import ActorCard from './ActorCard';
 import { useTranslation } from 'react-i18next';
 import { scoreActorContribution, scoreChainStep } from '../gamification/chainScoring';
 import { bridgeActorStepByActorId, usedBridgeActorIds } from '../utils/chainLinks';
+import { useChainUiPreferences } from '../hooks/useChainUiPreferences';
+import { findFirstSelectableActorId } from '../lib/sequentialSelection';
 
 interface ActorPickerProps {
   credits: MovieCredits;
@@ -43,11 +45,23 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
 
   const bridgeActorIds = useMemo(() => usedBridgeActorIds(links), [links]);
   const bridgeStepsByActorId = useMemo(() => bridgeActorStepByActorId(links), [links]);
+  const { strictListOrderActors } = useChainUiPreferences();
 
-  const cast = credits.cast.filter(
-    (a) => a.known_for_department === 'Acting' || a.order !== undefined
+  const cast = useMemo(
+    () =>
+      credits.cast.filter(
+        (a) => a.known_for_department === 'Acting' || a.order !== undefined
+      ),
+    [credits.cast]
   );
 
+  /** First billable cast member not already used as a bridge — “next” for strict list order (full cast order). */
+  const firstSelectableActorId = useMemo(
+    () => findFirstSelectableActorId(cast, bridgeActorIds),
+    [cast, bridgeActorIds]
+  );
+
+  /** Collapsed grid shows 12; if strict order’s “next” actor is below that row, user must open “Show all cast”. */
   const displayCast = showAll ? cast : cast.slice(0, 12);
 
   return (
@@ -71,6 +85,12 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
             {displayCast.map((actor) => {
               const isExcluded = bridgeActorIds.has(actor.id);
+              const sequentialLocked =
+                strictListOrderActors &&
+                !isExcluded &&
+                firstSelectableActorId !== null &&
+                actor.id !== firstSelectableActorId;
+              const disabled = isExcluded || sequentialLocked;
               const step = bridgeStepsByActorId.get(actor.id);
               const disabledBridge =
                 isExcluded && step
@@ -93,10 +113,14 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
                 <ActorCard
                   key={actor.id}
                   actor={actor}
-                  disabled={isExcluded}
+                  disabled={disabled}
                   disabledBridge={disabledBridge}
+                  sequentialLocked={sequentialLocked}
+                  sequentialLockedDescription={
+                    sequentialLocked ? t('actorSequentialLockedAria', { name: actor.name }) : undefined
+                  }
                   onClick={() => selectActor(actor.id, actor.name, actor.popularity)}
-                  challengePoints={challengePoints}
+                  challengePoints={sequentialLocked ? null : challengePoints}
                   challengePointsVariant={challengePointsVariant}
                 />
               );

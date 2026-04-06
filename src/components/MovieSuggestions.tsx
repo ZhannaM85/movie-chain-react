@@ -9,8 +9,27 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ChallengePointsInline from './ChallengePointsInline';
 import { scoreChainStep } from '../gamification/chainScoring';
+import { useChainUiPreferences } from '../hooks/useChainUiPreferences';
+import { findFirstSelectableMovieId } from '../lib/sequentialSelection';
 
 type SortOption = 'popularity' | 'title-asc' | 'title-desc' | 'date-newest' | 'date-oldest';
+
+function sortMovies(movies: Movie[], sortBy: SortOption): Movie[] {
+  const sorted = [...movies];
+  switch (sortBy) {
+    case 'title-asc':
+      return sorted.sort((a, b) => a.title.localeCompare(b.title));
+    case 'title-desc':
+      return sorted.sort((a, b) => b.title.localeCompare(a.title));
+    case 'date-newest':
+      return sorted.sort((a, b) => (b.release_date || '').localeCompare(a.release_date || ''));
+    case 'date-oldest':
+      return sorted.sort((a, b) => (a.release_date || '').localeCompare(b.release_date || ''));
+    case 'popularity':
+    default:
+      return sorted.sort((a, b) => b.popularity - a.popularity);
+  }
+}
 
 /**
  * Shows a filtered and sortable list of movies from the selected actor's filmography.
@@ -50,6 +69,20 @@ export default function MovieSuggestions() {
   }, [prependMode, headMovie, actor]);
 
   const chainMovieIds = useMemo(() => new Set(links.map((l) => l.movie.id)), [links]);
+  const { strictListOrderMovies } = useChainUiPreferences();
+
+  /** Full sort + search order (no 20-movie pagination) — defines “next” for strict list order. */
+  const orderedForSequential = useMemo(() => {
+    const sorted = sortMovies(movies, sortBy);
+    const query = searchQuery.trim().toLowerCase();
+    if (query) return sorted.filter((m) => m.title.toLowerCase().includes(query));
+    return sorted;
+  }, [movies, sortBy, searchQuery]);
+
+  const firstSelectableMovieId = useMemo(
+    () => findFirstSelectableMovieId(orderedForSequential, chainMovieIds),
+    [orderedForSequential, chainMovieIds]
+  );
 
   if (selectedActorId !== prevDeps.actorId || links.length !== prevDeps.linksLen) {
     setPrevDeps({ actorId: selectedActorId, linksLen: links.length });
@@ -188,6 +221,8 @@ export default function MovieSuggestions() {
         showAll={showAll}
         prependMode={prependMode === true}
         actorPopularity={actor?.popularity ?? null}
+        strictListOrderMovies={strictListOrderMovies}
+        firstSelectableMovieId={firstSelectableMovieId}
         onSelect={(movie) => addMovie(movie, prependMode ? loggedDateForPastLink : localDateString())}
         posterUrl={api.posterUrl}
         t={t}
@@ -206,30 +241,6 @@ export default function MovieSuggestions() {
       )}
     </div>
   );
-}
-
-/**
- * Sorts a list of movies according to the chosen sort option.
- *
- * @param {Movie[]} movies - The movies to sort.
- * @param {SortOption} sortBy - The active sort option.
- * @returns {Movie[]} A new sorted array of movies.
- */
-function sortMovies(movies: Movie[], sortBy: SortOption): Movie[] {
-  const sorted = [...movies];
-  switch (sortBy) {
-    case 'title-asc':
-      return sorted.sort((a, b) => a.title.localeCompare(b.title));
-    case 'title-desc':
-      return sorted.sort((a, b) => b.title.localeCompare(a.title));
-    case 'date-newest':
-      return sorted.sort((a, b) => (b.release_date || '').localeCompare(a.release_date || ''));
-    case 'date-oldest':
-      return sorted.sort((a, b) => (a.release_date || '').localeCompare(b.release_date || ''));
-    case 'popularity':
-    default:
-      return sorted.sort((a, b) => b.popularity - a.popularity);
-  }
 }
 
 /**
@@ -252,6 +263,8 @@ function MovieGrid({
   showAll,
   prependMode,
   actorPopularity,
+  strictListOrderMovies,
+  firstSelectableMovieId,
   onSelect,
   posterUrl,
   t,
@@ -263,10 +276,13 @@ function MovieGrid({
   showAll: boolean;
   prependMode: boolean;
   actorPopularity: number | null;
+  strictListOrderMovies: boolean;
+  firstSelectableMovieId: number | null;
   onSelect: (movie: Movie) => void;
   posterUrl: (path: string | null, size?: string) => string;
   t: (key: string, options?: Record<string, unknown>) => string;
 }) {
+  /** Pagination is UI-only; `firstSelectableMovieId` uses full sort+search order (see `orderedForSequential` in parent). */
   const displayMovies = useMemo(() => {
     const sorted = sortMovies(movies, sortBy);
     const query = searchQuery.trim().toLowerCase();
@@ -288,25 +304,44 @@ function MovieGrid({
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
       {displayMovies.map((movie) => {
         const inChain = chainMovieIds.has(movie.id);
-        const stepPoints = prependMode || inChain ? null : scoreChainStep(movie, actorPopularity);
+        const sequentialLocked =
+          strictListOrderMovies &&
+          !inChain &&
+          firstSelectableMovieId !== null &&
+          movie.id !== firstSelectableMovieId;
+        const blocked = inChain || sequentialLocked;
+        const stepPoints =
+          prependMode || inChain || sequentialLocked ? null : scoreChainStep(movie, actorPopularity);
+        const ariaLabel = sequentialLocked
+          ? t('movieSequentialLockedAria', { title: movie.title })
+          : undefined;
         return (
           <div
             key={movie.id}
             role="button"
-            tabIndex={inChain ? -1 : 0}
-            aria-disabled={inChain || undefined}
-            title={inChain ? t('movieAlreadyInChain') : undefined}
+            tabIndex={blocked ? -1 : 0}
+            aria-disabled={blocked || undefined}
+            aria-label={ariaLabel}
+            title={
+              inChain
+                ? t('movieAlreadyInChain')
+                : sequentialLocked
+                  ? t('movieSequentialLockedAria', { title: movie.title })
+                  : undefined
+            }
             className={
               'group text-left rounded-lg overflow-hidden border transition-all ' +
               (inChain
                 ? 'cursor-not-allowed opacity-50 bg-gray-100/80 dark:bg-gray-800/30 border-gray-200/80 dark:border-gray-800/80'
-                : 'cursor-pointer bg-gray-100/80 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-800 hover:border-indigo-600/50 dark:hover:border-indigo-500/50 hover:scale-[1.02]')
+                : sequentialLocked
+                  ? 'cursor-not-allowed border-amber-400/60 dark:border-amber-600/50 bg-amber-50/50 dark:bg-amber-950/25 ring-2 ring-amber-400/35 dark:ring-amber-600/50 opacity-[0.88]'
+                  : 'cursor-pointer bg-gray-100/80 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-800 hover:border-indigo-600/50 dark:hover:border-indigo-500/50 hover:scale-[1.02]')
             }
             onClick={() => {
-              if (!inChain) onSelect(movie);
+              if (!blocked) onSelect(movie);
             }}
             onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {
-              if (inChain) return;
+              if (blocked) return;
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 onSelect(movie);
@@ -316,13 +351,20 @@ function MovieGrid({
             <img
               src={posterUrl(movie.poster_path ?? null, 'w342')}
               alt={movie.title}
-              className={'w-full aspect-[2/3] object-cover ' + (inChain ? 'grayscale' : '')}
+              className={
+                'w-full aspect-[2/3] object-cover ' +
+                (inChain ? 'grayscale' : sequentialLocked ? 'brightness-[0.92]' : '')
+              }
             />
             <div className="p-2">
               <h4
                 className={
                   'text-sm font-medium truncate ' +
-                  (inChain ? 'text-gray-500' : 'text-gray-800 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-900 dark:text-white')
+                  (inChain
+                    ? 'text-gray-500'
+                    : sequentialLocked
+                      ? 'text-gray-800 dark:text-gray-200'
+                      : 'text-gray-800 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-900 dark:text-white')
                 }
               >
                 {movie.title}
@@ -337,6 +379,25 @@ function MovieGrid({
               </div>
               {inChain ? (
                 <p className="text-[10px] text-gray-600 mt-1 leading-tight">{t('movieAlreadyInChainHint')}</p>
+              ) : sequentialLocked ? (
+                <p className="text-[10px] text-amber-800/90 dark:text-amber-400/90 mt-1 leading-tight flex items-center gap-1">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-3 h-3 shrink-0"
+                    aria-hidden
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+                    />
+                  </svg>
+                  {t('movieSequentialLockedHint')}
+                </p>
               ) : null}
             </div>
           </div>

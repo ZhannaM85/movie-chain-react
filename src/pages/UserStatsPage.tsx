@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useMatchMedia } from '../hooks/useMatchMedia';
 import { mergeMoviesAddedByDateWithChainLinks } from '../gamification/heatmap';
 import { useResolvedActorName } from '../hooks/useResolvedActorName';
+import { useChainUiPreferences } from '../hooks/useChainUiPreferences';
 import type { MovieApi } from '../services/movieApi';
 
 /** Temporary: bridge leaderboard hidden (one bridge per actor rule); set true to show again. */
@@ -52,6 +53,12 @@ export default function UserStatsPage() {
   const { gamificationProfile: p, links } = useChainContext();
   const api = useMovieApiForChain();
   const { t } = useTranslation();
+  const {
+    strictListOrderActors,
+    strictListOrderMovies,
+    setStrictListOrderActors,
+    setStrictListOrderMovies,
+  } = useChainUiPreferences();
 
   const chainMovieIdsKey = useMemo(() => links.map((l) => l.movie.id).join(','), [links]);
 
@@ -127,6 +134,83 @@ export default function UserStatsPage() {
           explanation={t('statExplainCurrentStreak')}
         />
       </div>
+
+      <section
+        className="mb-10 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 p-4"
+        aria-labelledby="strict-list-order-heading"
+      >
+        <h2
+          id="strict-list-order-heading"
+          className="text-sm font-semibold text-gray-900 dark:text-white mb-1"
+        >
+          {t('strictListOrderSectionTitle')}
+        </h2>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 leading-snug">
+          {t('strictListOrderSectionIntro')}
+        </p>
+        <div className="space-y-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0" id="strict-list-order-cast-desc">
+              <span className="block text-sm font-medium text-gray-800 dark:text-gray-200">
+                {t('strictListOrderCastLabel')}
+              </span>
+              <span className="block text-xs text-gray-500 mt-0.5">{t('strictListOrderCastHint')}</span>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={strictListOrderActors}
+              aria-labelledby="strict-list-order-heading"
+              aria-describedby="strict-list-order-cast-desc"
+              onClick={() => setStrictListOrderActors(!strictListOrderActors)}
+              className={
+                'relative shrink-0 h-7 w-12 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ' +
+                (strictListOrderActors
+                  ? 'bg-indigo-600 dark:bg-indigo-500'
+                  : 'bg-gray-300 dark:bg-gray-600')
+              }
+            >
+              <span
+                className={
+                  'absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ' +
+                  (strictListOrderActors ? 'translate-x-5' : 'translate-x-0')
+                }
+              />
+            </button>
+          </div>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0" id="strict-list-order-movies-desc">
+              <span className="block text-sm font-medium text-gray-800 dark:text-gray-200">
+                {t('strictListOrderFilmographyLabel')}
+              </span>
+              <span className="block text-xs text-gray-500 mt-0.5">
+                {t('strictListOrderFilmographyHint')}
+              </span>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={strictListOrderMovies}
+              aria-labelledby="strict-list-order-heading"
+              aria-describedby="strict-list-order-movies-desc"
+              onClick={() => setStrictListOrderMovies(!strictListOrderMovies)}
+              className={
+                'relative shrink-0 h-7 w-12 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ' +
+                (strictListOrderMovies
+                  ? 'bg-indigo-600 dark:bg-indigo-500'
+                  : 'bg-gray-300 dark:bg-gray-600')
+              }
+            >
+              <span
+                className={
+                  'absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ' +
+                  (strictListOrderMovies ? 'translate-x-5' : 'translate-x-0')
+                }
+              />
+            </button>
+          </div>
+        </div>
+      </section>
 
       <div className="mb-10 overflow-visible">
         <ExplainableSectionTitle title={t('heatmapSectionTitle')} explanation={t('heatmapSectionExplain')} />
