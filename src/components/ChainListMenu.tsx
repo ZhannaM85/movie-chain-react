@@ -252,15 +252,15 @@ export default function ChainListMenu() {
     );
 
   return (
-    <div ref={triggerRef} className="relative shrink-0">
+    <div ref={triggerRef} className="relative min-w-0 flex-1 overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex h-9 max-w-[10rem] sm:max-w-[14rem] items-center gap-1 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-2 text-left text-xs text-gray-800 dark:text-gray-200 transition-colors hover:border-gray-400 dark:border-gray-600 hover:bg-gray-100 dark:bg-gray-800/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:focus-visible:ring-offset-gray-900"
+        className="flex h-9 w-full min-w-0 max-w-full items-center gap-1 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 px-2 text-left text-xs text-gray-800 dark:text-gray-200 transition-colors hover:border-gray-400 dark:border-gray-600 hover:bg-gray-100 dark:bg-gray-800/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:focus-visible:ring-offset-gray-900"
         aria-expanded={open}
         aria-haspopup="listbox"
-        title={t('chainListMenuAria')}
-        aria-label={t('chainListMenuAria')}
+        title={activeListName}
+        aria-label={`${activeListName}. ${t('chainListMenuAria')}`}
       >
         <span className="min-w-0 flex-1 truncate font-medium">{activeListName}</span>
         <svg
