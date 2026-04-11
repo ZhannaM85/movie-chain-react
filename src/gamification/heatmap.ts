@@ -11,6 +11,8 @@ const HEATMAP_MAX_DAYS = 730;
 export interface HeatmapCell {
   date: string;
   count: number;
+  /** Per chain-run counts for this calendar day (string strike ids). */
+  byStrike: Record<string, number>;
 }
 
 export interface CalendarHeatmapResult {
@@ -19,31 +21,99 @@ export interface CalendarHeatmapResult {
   maxCount: number;
 }
 
-function oldestNonZeroDateKey(moviesAddedByDate: Record<string, number>): string | null {
-  const keys = Object.keys(moviesAddedByDate).filter((k) => (moviesAddedByDate[k] ?? 0) > 0);
+export function sumStrikesForDate(byStrike: Record<string, number> | undefined): number {
+  if (!byStrike) return 0;
+  let s = 0;
+  for (const v of Object.values(byStrike)) {
+    if (typeof v === 'number' && v > 0) s += v;
+  }
+  return s;
+}
+
+/** Strike with the largest count; ties break to the lowest numeric id. */
+export function dominantStrikeId(byStrike: Record<string, number> | undefined): number | null {
+  if (!byStrike || Object.keys(byStrike).length === 0) return null;
+  let bestId: number | null = null;
+  let bestN = 0;
+  for (const [k, v] of Object.entries(byStrike)) {
+    if (typeof v !== 'number' || v <= 0) continue;
+    const id = Number(k);
+    if (!Number.isFinite(id)) continue;
+    if (bestId === null || v > bestN || (v === bestN && id < bestId)) {
+      bestId = id;
+      bestN = v;
+    }
+  }
+  return bestId;
+}
+
+function oldestNonZeroDateKeyFromByStrike(map: Record<string, Record<string, number>>): string | null {
+  const keys = Object.keys(map).filter((k) => sumStrikesForDate(map[k]) > 0);
   if (keys.length === 0) return null;
   return keys.sort()[0];
 }
 
+function linkStrikeKey(link: ChainLink): string {
+  return String(link.heatmapStrikeId ?? 0);
+}
+
 /**
- * Merges persisted daily counts with the current chain’s `loggedDate` values.
- * Keeps the heatmap aligned with /chain when profile storage was missing a day.
+ * Merges persisted per-strike daily counts with the current chain’s `loggedDate` + `heatmapStrikeId`.
+ * Per (date, strike), uses `max(persisted, count from links)` — same idea as the legacy flat merge.
+ */
+export function mergeMoviesAddedByDateByStrikeWithChainLinks(
+  moviesAddedByDateByStrike: Record<string, Record<string, number>>,
+  links: ChainLink[]
+): Record<string, Record<string, number>> {
+  const merged: Record<string, Record<string, number>> = {};
+  for (const [date, strikes] of Object.entries(moviesAddedByDateByStrike)) {
+    merged[date] = { ...strikes };
+  }
+  const fromLinks = new Map<string, Map<string, number>>();
+  for (const link of links) {
+    const d = link.loggedDate?.trim();
+    if (!d) continue;
+    const s = linkStrikeKey(link);
+    if (!fromLinks.has(d)) fromLinks.set(d, new Map());
+    const m = fromLinks.get(d)!;
+    m.set(s, (m.get(s) ?? 0) + 1);
+  }
+  for (const [date, strikeMap] of fromLinks) {
+    const existing = merged[date] ?? {};
+    const next = { ...existing };
+    for (const [strike, n] of strikeMap) {
+      next[strike] = Math.max(next[strike] ?? 0, n);
+    }
+    merged[date] = next;
+  }
+  return merged;
+}
+
+/** Flat per-day totals (for streaks, busiest day). */
+export function totalPerDateFromByStrike(
+  byStrikeMap: Record<string, Record<string, number>>
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [date, strikes] of Object.entries(byStrikeMap)) {
+    const t = sumStrikesForDate(strikes);
+    if (t > 0) out[date] = t;
+  }
+  return out;
+}
+
+/**
+ * @deprecated Prefer mergeMoviesAddedByDateByStrikeWithChainLinks + totalPerDateFromByStrike.
+ * Merges flat daily counts with link counts (no strike split).
  */
 export function mergeMoviesAddedByDateWithChainLinks(
   moviesAddedByDate: Record<string, number>,
   links: ChainLink[]
 ): Record<string, number> {
-  const merged: Record<string, number> = { ...moviesAddedByDate };
-  const fromLinks = new Map<string, number>();
-  for (const link of links) {
-    const d = link.loggedDate?.trim();
-    if (!d) continue;
-    fromLinks.set(d, (fromLinks.get(d) ?? 0) + 1);
+  const byStrike: Record<string, Record<string, number>> = {};
+  for (const [d, n] of Object.entries(moviesAddedByDate)) {
+    if (typeof n === 'number' && n > 0) byStrike[d] = { '0': n };
   }
-  for (const [date, n] of fromLinks) {
-    merged[date] = Math.max(merged[date] ?? 0, n);
-  }
-  return merged;
+  return totalPerDateFromByStrike(mergeMoviesAddedByDateByStrikeWithChainLinks(byStrike, links));
 }
 
 /** Local midnight date (no time drift). */
@@ -70,11 +140,13 @@ function addDays(d: Date, n: number): Date {
  * Builds a contribution-style grid: each column is one ISO week (Mon–Sun),
  * each cell one local calendar day. Columns run in chronological order (older left, newer right).
  */
-export function buildCalendarHeatmapWeeks(moviesAddedByDate: Record<string, number>): CalendarHeatmapResult {
+export function buildCalendarHeatmapWeeks(
+  moviesAddedByDateByStrike: Record<string, Record<string, number>>
+): CalendarHeatmapResult {
   const end = calendarDate(new Date());
 
   let totalDays = HEATMAP_TOTAL_DAYS;
-  const oldestKey = oldestNonZeroDateKey(moviesAddedByDate);
+  const oldestKey = oldestNonZeroDateKeyFromByStrike(moviesAddedByDateByStrike);
   if (oldestKey) {
     const oldest = new Date(`${oldestKey}T12:00:00`);
     const diffDays =
@@ -101,11 +173,12 @@ export function buildCalendarHeatmapWeeks(moviesAddedByDate: Record<string, numb
       const d = addDays(monday, dow);
       const ds = localDateString(d);
       const inRange = d.getTime() >= rangeStart.getTime() && d.getTime() <= end.getTime();
-      const count = inRange ? (moviesAddedByDate[ds] ?? 0) : 0;
+      const byStrike = inRange ? { ...(moviesAddedByDateByStrike[ds] ?? {}) } : {};
+      const count = sumStrikesForDate(byStrike);
       if (inRange) {
         maxCount = Math.max(maxCount, count);
       }
-      weekCells.push({ date: ds, count });
+      weekCells.push({ date: ds, count, byStrike });
     }
     columns.push(weekCells);
   }

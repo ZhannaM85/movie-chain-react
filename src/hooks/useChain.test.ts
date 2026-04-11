@@ -160,6 +160,19 @@ describe('useChain', () => {
     expect(result.current.selectedActorId).toBeNull();
   });
 
+  it('startChain sets heatmapStrikeId; resetChain bumps heatmapNextRunId for the next chain', async () => {
+    const { result } = renderHook(() => useChain());
+    act(() => result.current.startChain(minimalMovie));
+    await flushMicrotasks();
+    expect(result.current.links[0].heatmapStrikeId).toBe(0);
+    act(() => result.current.resetChain());
+    await flushMicrotasks();
+    expect(result.current.gamificationProfile.heatmapNextRunId).toBe(1);
+    act(() => result.current.startChain({ ...minimalMovie, id: 99, title: 'Second start' }));
+    await flushMicrotasks();
+    expect(result.current.links[0].heatmapStrikeId).toBe(1);
+  });
+
   it('cancelActorSelection clears selectedActorId and step to pick-actor', async () => {
     const { result } = renderHook(() => useChain());
     act(() => result.current.startChain(minimalMovie));

@@ -29,7 +29,7 @@ import {
   adjustDailyForLoggedDateChange,
   afterAddMovie,
   afterFirstNote,
-  decrementDailyMovies,
+  decrementDailyMoviesByStrike,
   ensureDailyCountsFromLinks,
   finalizeChainReset,
   getPendingMoviesMilestoneModal,
@@ -66,9 +66,13 @@ function applyGamificationForClearingList(
     setGamificationProfile((p) => {
       let next = finalizeChainReset(p, linksSnapshot, dailySnapshot);
       for (const link of linksSnapshot) {
-        if (link.loggedDate) {
-          next = decrementDailyMovies(next, link.loggedDate);
+        const d = link.loggedDate?.trim();
+        if (d) {
+          next = decrementDailyMoviesByStrike(next, link.heatmapStrikeId ?? 0, d);
         }
+      }
+      if (linksSnapshot.length > 0) {
+        next = { ...next, heatmapNextRunId: next.heatmapNextRunId + 1 };
       }
       saveGamificationProfile(next);
       return next;
@@ -226,34 +230,39 @@ export function useChain() {
     []
   );
 
-  const startChain = useCallback((movie: Movie, source?: MovieSource, options?: StartChainOptions) => {
-    const logged = normalizeLoggedDateForHeatmap(options?.loggedDate);
-    updateActiveState(() => ({
-      source: source ?? 'tmdb',
-      links: [
-        {
-          movie,
-          connectingActorId: null,
-          connectingActorName: null,
-          comment: '',
-          loggedDate: logged,
-          entryKind: 'start',
-        },
-      ],
-      currentStep: 'pick-actor',
-      selectedActorId: null,
-      selectedActorName: null,
-      prependMode: false,
-      dailyChallengeDate: options?.dailyChallenge ? utcDateString() : null,
-    }));
-    queueMicrotask(() => {
-      setGamificationProfile((p) => {
-        const next = recordStartMovie(p, logged);
-        saveGamificationProfile(next);
-        return next;
+  const startChain = useCallback(
+    (movie: Movie, source?: MovieSource, options?: StartChainOptions) => {
+      const logged = normalizeLoggedDateForHeatmap(options?.loggedDate);
+      const strikeForRun = gamificationProfile.heatmapNextRunId;
+      updateActiveState(() => ({
+        source: source ?? 'tmdb',
+        links: [
+          {
+            movie,
+            connectingActorId: null,
+            connectingActorName: null,
+            comment: '',
+            loggedDate: logged,
+            entryKind: 'start',
+            heatmapStrikeId: strikeForRun,
+          },
+        ],
+        currentStep: 'pick-actor',
+        selectedActorId: null,
+        selectedActorName: null,
+        prependMode: false,
+        dailyChallengeDate: options?.dailyChallenge ? utcDateString() : null,
+      }));
+      queueMicrotask(() => {
+        setGamificationProfile((p) => {
+          const next = recordStartMovie(p, logged);
+          saveGamificationProfile(next);
+          return next;
+        });
       });
-    });
-  }, [updateActiveState]);
+    },
+    [gamificationProfile.heatmapNextRunId, updateActiveState]
+  );
 
   const startPrependToChain = useCallback(() => {
     updateActiveState((prev) => {
@@ -316,6 +325,7 @@ export function useChain() {
       }
       const day = normalizeLoggedDateForHeatmap(loggedDate);
       const prependMode = prev.prependMode === true && prev.links.length > 0;
+      const strikeForNew = prev.links[0]?.heatmapStrikeId ?? 0;
 
       let newLinks: typeof prev.links;
       let newLinkIndex: number;
@@ -331,6 +341,7 @@ export function useChain() {
             comment: '',
             loggedDate: day,
             entryKind: 'prepend',
+            heatmapStrikeId: strikeForNew,
           },
           {
             ...first,
@@ -353,6 +364,7 @@ export function useChain() {
             loggedDate: day,
             stepDifficulty,
             entryKind: 'append',
+            heatmapStrikeId: strikeForNew,
           },
         ];
         newLinkIndex = newLinks.length - 1;
@@ -397,7 +409,12 @@ export function useChain() {
       links[index] = { ...link, loggedDate };
       queueMicrotask(() => {
         setGamificationProfile((p) => {
-          const next = adjustDailyForLoggedDateChange(p, oldDate, loggedDate);
+          const next = adjustDailyForLoggedDateChange(
+            p,
+            oldDate,
+            loggedDate,
+            link.heatmapStrikeId ?? 0
+          );
           saveGamificationProfile(next);
           return next;
         });
