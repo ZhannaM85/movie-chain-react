@@ -1,5 +1,6 @@
 import type { ChainState } from '../types/movie';
 import {
+  assignHeatmapListRunIds,
   CHAIN_LIST_NAME_MAX_LENGTH,
   normalizeChainState,
   type ChainListEntry,
@@ -53,10 +54,12 @@ function validateChainListsPersisted(raw: unknown): ChainListsPersisted {
     if (!Array.isArray(entry.state.links)) {
       throw new ChainListsBackupError('Invalid backup: list state.links must be an array');
     }
+    const hr = entry.heatmapListRunId;
     lists.push({
       id: typeof entry.id === 'string' ? entry.id : '',
       name: entry.name,
       state: entry.state as unknown as ChainState,
+      ...(typeof hr === 'number' && Number.isFinite(hr) && hr >= 0 ? { heatmapListRunId: Math.floor(hr) } : {}),
     });
   }
 
@@ -100,11 +103,12 @@ export function prepareImportedListsReplace(
   data: ChainListsPersisted,
   pendingKey: string
 ): ChainListsPersisted {
-  const lists = data.lists.map((entry) => ({
+  const mapped = data.lists.map((entry) => ({
     id: crypto.randomUUID(),
     name: entry.name.slice(0, CHAIN_LIST_NAME_MAX_LENGTH),
     state: normalizeChainState(entry.state, pendingKey),
   }));
+  const lists = assignHeatmapListRunIds(mapped).lists;
   return {
     version: 1,
     activeListId: lists[0].id,
@@ -144,11 +148,12 @@ export function prepareImportedListsMerge(
     });
   }
 
-  const activeExists = nextLists.some((e) => e.id === current.activeListId);
+  const lists = assignHeatmapListRunIds(nextLists).lists;
+  const activeExists = lists.some((e) => e.id === current.activeListId);
   return {
     version: 1,
-    activeListId: activeExists ? current.activeListId : nextLists[0].id,
-    lists: nextLists,
+    activeListId: activeExists ? current.activeListId : lists[0].id,
+    lists,
   };
 }
 
