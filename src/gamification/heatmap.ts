@@ -47,6 +47,33 @@ export function dominantStrikeId(byStrike: Record<string, number> | undefined): 
   return bestId;
 }
 
+/**
+ * Hue for heatmap cells: when strike `0` (legacy / default run) mixes with another run on the same day,
+ * cap how much `0` competes so newer runs can still show their color while intensity stays total-based.
+ */
+export function dominantStrikeIdForHeatmapHue(byStrike: Record<string, number> | undefined): number | null {
+  if (!byStrike || Object.keys(byStrike).length === 0) return null;
+  let maxOther = 0;
+  for (const [k, v] of Object.entries(byStrike)) {
+    if (typeof v !== 'number' || v <= 0) continue;
+    if (k === '0') continue;
+    maxOther = Math.max(maxOther, v);
+  }
+  let bestId: number | null = null;
+  let bestAdj = -1;
+  for (const [k, v] of Object.entries(byStrike)) {
+    if (typeof v !== 'number' || v <= 0) continue;
+    const id = Number(k);
+    if (!Number.isFinite(id)) continue;
+    const adj = k === '0' && maxOther > 0 ? Math.min(v, maxOther) : v;
+    if (bestId === null || adj > bestAdj || (adj === bestAdj && id > bestId)) {
+      bestId = id;
+      bestAdj = adj;
+    }
+  }
+  return bestId;
+}
+
 function oldestNonZeroDateKeyFromByStrike(map: Record<string, Record<string, number>>): string | null {
   const keys = Object.keys(map).filter((k) => sumStrikesForDate(map[k]) > 0);
   if (keys.length === 0) return null;

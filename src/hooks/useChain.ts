@@ -169,16 +169,20 @@ export function useChain() {
   const createList = useCallback((name?: string) => {
     const label = name?.trim() || `List ${persisted.lists.length + 1}`;
     const trimmed = label.slice(0, CHAIN_LIST_NAME_MAX_LENGTH);
-    const newEntry: ChainListEntry = {
-      id: crypto.randomUUID(),
-      name: trimmed,
-      state: createEmptyChainState(),
-    };
-    setPersisted((prev) => ({
-      version: 1,
-      activeListId: newEntry.id,
-      lists: [...prev.lists, newEntry],
-    }));
+    setPersisted((prev) => {
+      const maxRun = prev.lists.reduce((m, e) => Math.max(m, e.heatmapListRunId ?? -1), -1);
+      const newEntry: ChainListEntry = {
+        id: crypto.randomUUID(),
+        name: trimmed,
+        state: createEmptyChainState(),
+        heatmapListRunId: maxRun + 1,
+      };
+      return {
+        version: 1,
+        activeListId: newEntry.id,
+        lists: [...prev.lists, newEntry],
+      };
+    });
   }, [persisted.lists.length]);
 
   const renameList = useCallback((id: string, name: string) => {
@@ -207,10 +211,12 @@ export function useChain() {
 
         const remaining = prev.lists.filter((e) => e.id !== id);
         if (remaining.length === 0) {
+          const maxRun = prev.lists.reduce((m, e) => Math.max(m, e.heatmapListRunId ?? -1), -1);
           const fresh: ChainListEntry = {
             id: crypto.randomUUID(),
             name: DEFAULT_MIGRATED_LIST_NAME,
             state: createEmptyChainState(),
+            heatmapListRunId: maxRun + 1,
           };
           return { version: 1, activeListId: fresh.id, lists: [fresh] };
         }
@@ -233,7 +239,8 @@ export function useChain() {
   const startChain = useCallback(
     (movie: Movie, source?: MovieSource, options?: StartChainOptions) => {
       const logged = normalizeLoggedDateForHeatmap(options?.loggedDate);
-      const strikeForRun = gamificationProfile.heatmapNextRunId;
+      const listRun = activeEntry?.heatmapListRunId ?? 0;
+      const strikeForRun = Math.max(gamificationProfile.heatmapNextRunId, listRun);
       updateActiveState(() => ({
         source: source ?? 'tmdb',
         links: [
@@ -255,13 +262,13 @@ export function useChain() {
       }));
       queueMicrotask(() => {
         setGamificationProfile((p) => {
-          const next = recordStartMovie(p, logged);
+          const next = recordStartMovie(p, logged, strikeForRun);
           saveGamificationProfile(next);
           return next;
         });
       });
     },
-    [gamificationProfile.heatmapNextRunId, updateActiveState]
+    [activeEntry?.heatmapListRunId, gamificationProfile.heatmapNextRunId, updateActiveState]
   );
 
   const startPrependToChain = useCallback(() => {

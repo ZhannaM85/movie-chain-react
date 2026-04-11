@@ -281,7 +281,7 @@ const resources = {
       heatmapStrikeBreakdownJoiner: '; ',
       heatmapStrikeLegendLabel: 'Chain runs:',
       heatmapLocalHint:
-        'Each square is one calendar day. Columns are ISO weeks (Monday through Sunday, top to bottom); time goes left to right (older weeks on the left). Hue shows which chain run (after a full clear) contributed the most films that day; darker means more movies total (see “logged date” per film).',
+        'Each square is one calendar day. Columns are ISO weeks (Monday through Sunday, top to bottom); time goes left to right (older weeks on the left). Hue shows which chain run contributed the most that day: separate named lists get distinct colors, and clearing a list starts a new run. Older stats without a list split stay in “run 1” (green); mixed days favor newer runs for color while darkness still reflects the total count (see “logged date” per film).',
       loggedDateForStartMovie: 'Count first movie toward',
       loggedDateForNextMovie: 'Count next pick toward',
       loggedDateForPastMovie: 'Day for this older film',
@@ -611,7 +611,7 @@ const resources = {
       heatmapStrikeBreakdownJoiner: '; ',
       heatmapStrikeLegendLabel: 'Заходы цепочки:',
       heatmapLocalHint:
-        'Каждый квадрат — один календарный день. Столбцы — календарные недели (пн–вс сверху вниз); время идёт слева направо (более ранние недели слева). Оттенок — какой заход цепочки (после полной очистки списка) дал больше всего фильмов в этот день; темнее — больше фильмов всего (см. «день» у каждого фильма).',
+        'Каждый квадрат — один календарный день. Столбцы — календарные недели (пн–вс сверху вниз); время идёт слева направо (более ранние недели слева). Оттенок — какой заход цепочки дал больше всего в этот день: у отдельных именованных списков свои цвета, после очистки списка начинается новый заход. Старые данные без разбивки по спискам остаются в «заходе 1» (зелёный); в смешанные дни для цвета приоритет у более новых заходов, насыщенность по-прежнему от общего числа фильмов (см. «день» у каждого фильма).',
       loggedDateForStartMovie: 'Учитывать первый фильм за',
       loggedDateForNextMovie: 'Учитывать следующий выбор за',
       loggedDateForPastMovie: 'День для этого более раннего фильма',

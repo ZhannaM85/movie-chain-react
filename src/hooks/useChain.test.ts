@@ -298,10 +298,11 @@ describe('useChain', () => {
     expect(localStorageMock.store[LEGACY_CHAIN_STORAGE_KEY]).toBeUndefined();
     const raw = localStorageMock.store[STORAGE_KEY];
     expect(raw).toBeDefined();
-    const parsed = JSON.parse(raw!) as { version: number; lists: { name: string }[] };
+    const parsed = JSON.parse(raw!) as { version: number; lists: { name: string; heatmapListRunId?: number }[] };
     expect(parsed.version).toBe(1);
     expect(parsed.lists).toHaveLength(1);
     expect(parsed.lists[0].name).toBe('My list');
+    expect(parsed.lists[0].heatmapListRunId).toBe(0);
     expect(result.current.links).toEqual([]);
   });
 
@@ -315,6 +316,15 @@ describe('useChain', () => {
     expect(result.current.activeListId).not.toBe(firstId);
     expect(result.current.links).toEqual([]);
     expect(result.current.activeListName).toBe('Second');
+  });
+
+  it('new named list uses a higher heatmap strike id when starting a chain', async () => {
+    const { result } = renderHook(() => useChain());
+    act(() => result.current.createList('Second'));
+    await flushMicrotasks();
+    act(() => result.current.startChain({ ...minimalMovie, id: 77, title: 'On second list' }));
+    await flushMicrotasks();
+    expect(result.current.links[0].heatmapStrikeId).toBe(1);
   });
 
   it('setActiveListId switches which chain is active', async () => {

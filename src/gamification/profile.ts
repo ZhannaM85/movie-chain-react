@@ -348,8 +348,13 @@ export function syncProfileStreakFromHeatmapData(
 }
 
 /** One movie logged for the chosen calendar day (starting a chain). */
-export function recordStartMovie(profile: GamificationProfile, loggedDateForHeatmap: string): GamificationProfile {
-  let next = incrementDailyMoviesByStrike(profile, profile.heatmapNextRunId, 1, loggedDateForHeatmap);
+export function recordStartMovie(
+  profile: GamificationProfile,
+  loggedDateForHeatmap: string,
+  heatmapStrikeId?: number
+): GamificationProfile {
+  const sid = heatmapStrikeId ?? profile.heatmapNextRunId;
+  let next = incrementDailyMoviesByStrike(profile, sid, 1, loggedDateForHeatmap);
   return syncProfileStreakFromHeatmapData(next, []);
 }
 

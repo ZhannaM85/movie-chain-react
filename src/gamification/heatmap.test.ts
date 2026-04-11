@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   buildCalendarHeatmapWeeks,
   dominantStrikeId,
+  dominantStrikeIdForHeatmapHue,
   HEATMAP_TOTAL_DAYS,
   intensityLevel,
   maxHeatmapCount,
@@ -73,6 +74,12 @@ describe('heatmap', () => {
     expect(dominantStrikeId({ '0': 2, '1': 3 })).toBe(1);
     expect(dominantStrikeId({ '0': 2, '1': 2 })).toBe(0);
     expect(dominantStrikeId({})).toBeNull();
+  });
+
+  it('dominantStrikeIdForHeatmapHue caps strike 0 when another run exists', () => {
+    expect(dominantStrikeIdForHeatmapHue({ '0': 26, '1': 2 })).toBe(1);
+    expect(dominantStrikeIdForHeatmapHue({ '0': 5 })).toBe(0);
+    expect(dominantStrikeIdForHeatmapHue({ '0': 3, '1': 3 })).toBe(1);
   });
 
   it('mergeMoviesAddedByDateByStrikeWithChainLinks mirrors max per date and strike', () => {

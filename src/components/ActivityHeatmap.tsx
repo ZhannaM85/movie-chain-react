@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback, useRef, useLayoutEffect } from 'react';
 import {
   buildCalendarHeatmapWeeks,
-  dominantStrikeId,
+  dominantStrikeIdForHeatmapHue,
   intensityLevel,
 } from '../gamification/heatmap';
 import { useTranslation } from 'react-i18next';
@@ -158,7 +158,7 @@ export default function ActivityHeatmap({ moviesAddedByDateByStrike }: ActivityH
               >
                 {week.map((cell) => {
                   const level = intensityLevel(cell.count, maxCount) as Level;
-                  const dom = cell.count > 0 ? dominantStrikeId(cell.byStrike) : null;
+                  const dom = cell.count > 0 ? dominantStrikeIdForHeatmapHue(cell.byStrike) : null;
                   const paletteIdx =
                     dom != null ? dom % HEATMAP_STRIKE_PALETTES.length : 0;
                   const dateLabel = formatDayLabel(cell.date);
