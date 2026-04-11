@@ -12,7 +12,10 @@ import { achievementDesc, achievementTitle } from '../gamification/achievementLa
 import { ACHIEVEMENT_IDS } from '../gamification/types';
 import { useTranslation } from 'react-i18next';
 import { useMatchMedia } from '../hooks/useMatchMedia';
-import { mergeMoviesAddedByDateWithChainLinks } from '../gamification/heatmap';
+import {
+  mergeMoviesAddedByDateByStrikeWithChainLinks,
+  totalPerDateFromByStrike,
+} from '../gamification/heatmap';
 import { useResolvedActorName } from '../hooks/useResolvedActorName';
 import { useChainUiPreferences } from '../hooks/useChainUiPreferences';
 import type { MovieApi } from '../services/movieApi';
@@ -85,10 +88,12 @@ export default function UserStatsPage() {
     };
   }, [api, chainMovieIdsKey]);
 
-  const heatmapCounts = useMemo(
-    () => mergeMoviesAddedByDateWithChainLinks(p.moviesAddedByDate, links),
-    [p.moviesAddedByDate, links]
+  const heatmapByStrike = useMemo(
+    () => mergeMoviesAddedByDateByStrikeWithChainLinks(p.moviesAddedByDateByStrike, links),
+    [p.moviesAddedByDateByStrike, links]
   );
+
+  const heatmapTotals = useMemo(() => totalPerDateFromByStrike(heatmapByStrike), [heatmapByStrike]);
 
   const topActors = useMemo(
     () => (SHOW_TOP_BRIDGE_ACTORS ? getTopActorBridges(p, 12) : []),
@@ -98,14 +103,14 @@ export default function UserStatsPage() {
   const busiestDay = useMemo(() => {
     let bestDate: string | null = null;
     let bestCount = 0;
-    for (const [date, count] of Object.entries(heatmapCounts)) {
+    for (const [date, count] of Object.entries(heatmapTotals)) {
       if (count > bestCount) {
         bestCount = count;
         bestDate = date;
       }
     }
     return bestDate && bestCount > 0 ? { date: bestDate, count: bestCount } : null;
-  }, [heatmapCounts]);
+  }, [heatmapTotals]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -215,7 +220,7 @@ export default function UserStatsPage() {
       <div className="mb-10 overflow-visible">
         <ExplainableSectionTitle title={t('heatmapSectionTitle')} explanation={t('heatmapSectionExplain')} />
         <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-100/80 dark:bg-gray-900/40 p-4">
-          <ActivityHeatmap moviesAddedByDate={heatmapCounts} />
+          <ActivityHeatmap moviesAddedByDateByStrike={heatmapByStrike} />
         </div>
         {busiestDay && (
           <ExplainableHint

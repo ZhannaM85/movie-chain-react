@@ -1,5 +1,9 @@
 import { normalizeLoggedDateForHeatmap } from '../lib/dateUtils';
-import { mergeMoviesAddedByDateWithChainLinks } from './heatmap';
+import {
+  mergeMoviesAddedByDateByStrikeWithChainLinks,
+  sumStrikesForDate,
+  totalPerDateFromByStrike,
+} from './heatmap';
 import { computeStreakMetricsFromDailyCounts } from './streakFromHeatmap';
 import type { ChainLink } from '../types/movie';
 import type { GamificationProfile } from './types';
@@ -78,52 +82,79 @@ function countDistinctDecades(links: ChainLink[]): number {
   return decades.size;
 }
 
-export function incrementDailyMovies(
+export function incrementDailyMoviesByStrike(
   profile: GamificationProfile,
+  strikeId: number,
   by: number,
   dateStr?: string
 ): GamificationProfile {
+  if (by === 0) return profile;
   const key = normalizeLoggedDateForHeatmap(dateStr);
-  const next = (profile.moviesAddedByDate[key] ?? 0) + by;
-  return {
-    ...profile,
-    moviesAddedByDate: {
-      ...profile.moviesAddedByDate,
-      [key]: next,
-    },
-  };
+  const sk = String(strikeId);
+  const prevByDate = { ...(profile.moviesAddedByDateByStrike[key] ?? {}) };
+  const nextVal = (prevByDate[sk] ?? 0) + by;
+  if (nextVal < 0) return profile;
+  if (nextVal === 0) delete prevByDate[sk];
+  else prevByDate[sk] = nextVal;
+  const nextStrikeMap = { ...profile.moviesAddedByDateByStrike };
+  if (Object.keys(prevByDate).length === 0) delete nextStrikeMap[key];
+  else nextStrikeMap[key] = prevByDate;
+  const total = sumStrikesForDate(prevByDate);
+  const moviesAddedByDate = { ...profile.moviesAddedByDate };
+  if (total <= 0) delete moviesAddedByDate[key];
+  else moviesAddedByDate[key] = total;
+  return { ...profile, moviesAddedByDateByStrike: nextStrikeMap, moviesAddedByDate };
 }
 
-export function decrementDailyMovies(profile: GamificationProfile, dateStr: string): GamificationProfile {
+export function decrementDailyMoviesByStrike(
+  profile: GamificationProfile,
+  strikeId: number,
+  dateStr: string,
+  by = 1
+): GamificationProfile {
   const key = dateStr?.trim();
-  if (!key) return profile;
-  const prev = profile.moviesAddedByDate[key] ?? 0;
+  if (!key || by <= 0) return profile;
+  const sk = String(strikeId);
+  const prevByDate = { ...(profile.moviesAddedByDateByStrike[key] ?? {}) };
+  const prev = prevByDate[sk] ?? 0;
   if (prev <= 0) return profile;
-  const next = prev - 1;
+  const nextVal = Math.max(0, prev - by);
+  if (nextVal === 0) delete prevByDate[sk];
+  else prevByDate[sk] = nextVal;
+  const nextStrikeMap = { ...profile.moviesAddedByDateByStrike };
+  if (Object.keys(prevByDate).length === 0) delete nextStrikeMap[key];
+  else nextStrikeMap[key] = prevByDate;
+  const total = sumStrikesForDate(prevByDate);
   const moviesAddedByDate = { ...profile.moviesAddedByDate };
-  if (next <= 0) delete moviesAddedByDate[key];
-  else moviesAddedByDate[key] = next;
-  return { ...profile, moviesAddedByDate };
+  if (total <= 0) delete moviesAddedByDate[key];
+  else moviesAddedByDate[key] = total;
+  return { ...profile, moviesAddedByDateByStrike: nextStrikeMap, moviesAddedByDate };
 }
 
 /**
- * Ensures moviesAddedByDate reflects every link’s logged date (fixes missed increments, e.g. prepend / past dates).
+ * Ensures per-strike daily counts reflect every link’s logged date (fixes missed increments, e.g. prepend / past dates).
  */
 export function ensureDailyCountsFromLinks(
   profile: GamificationProfile,
   links: ChainLink[]
 ): GamificationProfile {
-  const wanted = new Map<string, number>();
+  const wanted = new Map<string, Map<string, number>>();
   for (const link of links) {
     const d = link.loggedDate?.trim();
     if (!d) continue;
-    wanted.set(d, (wanted.get(d) ?? 0) + 1);
+    const sk = String(link.heatmapStrikeId ?? 0);
+    if (!wanted.has(d)) wanted.set(d, new Map());
+    const m = wanted.get(d)!;
+    m.set(sk, (m.get(sk) ?? 0) + 1);
   }
   let next = profile;
-  for (const [date, need] of wanted) {
-    const have = next.moviesAddedByDate[date] ?? 0;
-    if (need > have) {
-      next = incrementDailyMovies(next, need - have, date);
+  for (const [date, strikeMap] of wanted) {
+    for (const [strike, need] of strikeMap) {
+      const sid = Number(strike);
+      const have = next.moviesAddedByDateByStrike[date]?.[strike] ?? 0;
+      if (need > have) {
+        next = incrementDailyMoviesByStrike(next, sid, need - have, date);
+      }
     }
   }
   return next;
@@ -136,14 +167,15 @@ export function ensureDailyCountsFromLinks(
 export function adjustDailyForLoggedDateChange(
   profile: GamificationProfile,
   oldDate: string | null | undefined,
-  newDate: string | null | undefined
+  newDate: string | null | undefined,
+  strikeId = 0
 ): GamificationProfile {
   const o = oldDate == null || oldDate === '' ? null : oldDate;
   const n = newDate == null || newDate === '' ? null : newDate;
   if (o === n) return profile;
   let next = profile;
-  if (o) next = decrementDailyMovies(next, o);
-  if (n) next = incrementDailyMovies(next, 1, n);
+  if (o) next = decrementDailyMoviesByStrike(next, strikeId, o);
+  if (n) next = incrementDailyMoviesByStrike(next, strikeId, 1, n);
   return next;
 }
 
@@ -231,7 +263,7 @@ export function reverseAfterRemoveLast(profile: GamificationProfile, linksBefore
     next = decrementActorBridge(next, L.connectingActorId, L.movie.id);
   }
   if (L.loggedDate?.trim()) {
-    next = decrementDailyMovies(next, L.loggedDate.trim());
+    next = decrementDailyMoviesByStrike(next, L.heatmapStrikeId ?? 0, L.loggedDate.trim());
   }
   return next;
 }
@@ -248,7 +280,7 @@ export function reverseAfterRemoveFirst(profile: GamificationProfile, linksBefor
   if (linksBefore.length === 1) {
     let next = profile;
     if (removed.loggedDate?.trim()) {
-      next = decrementDailyMovies(next, removed.loggedDate.trim());
+      next = decrementDailyMoviesByStrike(next, removed.heatmapStrikeId ?? 0, removed.loggedDate.trim());
     }
     return next;
   }
@@ -279,7 +311,7 @@ export function reverseAfterRemoveFirst(profile: GamificationProfile, linksBefor
   }
 
   if ((kind === 'start' || kind === 'prepend') && removed.loggedDate?.trim()) {
-    next = decrementDailyMovies(next, removed.loggedDate.trim());
+    next = decrementDailyMoviesByStrike(next, removed.heatmapStrikeId ?? 0, removed.loggedDate.trim());
   }
 
   return next;
@@ -293,7 +325,11 @@ export function syncProfileStreakFromHeatmapData(
   profile: GamificationProfile,
   links: ChainLink[]
 ): GamificationProfile {
-  const merged = mergeMoviesAddedByDateWithChainLinks(profile.moviesAddedByDate, links);
+  const mergedByStrike = mergeMoviesAddedByDateByStrikeWithChainLinks(
+    profile.moviesAddedByDateByStrike,
+    links
+  );
+  const merged = totalPerDateFromByStrike(mergedByStrike);
   const m = computeStreakMetricsFromDailyCounts(merged);
   const longestEver = Math.max(profile.longestStreakEver, m.longestConsecutiveEver);
   if (
@@ -312,8 +348,13 @@ export function syncProfileStreakFromHeatmapData(
 }
 
 /** One movie logged for the chosen calendar day (starting a chain). */
-export function recordStartMovie(profile: GamificationProfile, loggedDateForHeatmap: string): GamificationProfile {
-  let next = incrementDailyMovies(profile, 1, loggedDateForHeatmap);
+export function recordStartMovie(
+  profile: GamificationProfile,
+  loggedDateForHeatmap: string,
+  heatmapStrikeId?: number
+): GamificationProfile {
+  const sid = heatmapStrikeId ?? profile.heatmapNextRunId;
+  let next = incrementDailyMoviesByStrike(profile, sid, 1, loggedDateForHeatmap);
   return syncProfileStreakFromHeatmapData(next, []);
 }
 
@@ -340,6 +381,7 @@ export function afterAddMovie(
   const stepPoints = stepLink?.stepDifficulty ?? 0;
 
   const newMovieLink = linksAfterAdd[newLinkIndex];
+  const strikeForLink = newMovieLink.heatmapStrikeId ?? 0;
 
   let next: GamificationProfile = {
     ...profile,
@@ -347,7 +389,7 @@ export function afterAddMovie(
     longestChainEver: Math.max(profile.longestChainEver, newLength),
     totalChallengePointsAllTime: profile.totalChallengePointsAllTime + stepPoints,
   };
-  next = incrementDailyMovies(next, 1, newMovieLink.loggedDate ?? undefined);
+  next = incrementDailyMoviesByStrike(next, strikeForLink, 1, newMovieLink.loggedDate ?? undefined);
   if (stepLink?.connectingActorId != null && stepLink.connectingActorName) {
     next = incrementActorBridge(
       next,

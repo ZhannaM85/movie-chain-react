@@ -29,7 +29,7 @@ import {
   adjustDailyForLoggedDateChange,
   afterAddMovie,
   afterFirstNote,
-  decrementDailyMovies,
+  decrementDailyMoviesByStrike,
   ensureDailyCountsFromLinks,
   finalizeChainReset,
   getPendingMoviesMilestoneModal,
@@ -66,9 +66,13 @@ function applyGamificationForClearingList(
     setGamificationProfile((p) => {
       let next = finalizeChainReset(p, linksSnapshot, dailySnapshot);
       for (const link of linksSnapshot) {
-        if (link.loggedDate) {
-          next = decrementDailyMovies(next, link.loggedDate);
+        const d = link.loggedDate?.trim();
+        if (d) {
+          next = decrementDailyMoviesByStrike(next, link.heatmapStrikeId ?? 0, d);
         }
+      }
+      if (linksSnapshot.length > 0) {
+        next = { ...next, heatmapNextRunId: next.heatmapNextRunId + 1 };
       }
       saveGamificationProfile(next);
       return next;
@@ -165,16 +169,20 @@ export function useChain() {
   const createList = useCallback((name?: string) => {
     const label = name?.trim() || `List ${persisted.lists.length + 1}`;
     const trimmed = label.slice(0, CHAIN_LIST_NAME_MAX_LENGTH);
-    const newEntry: ChainListEntry = {
-      id: crypto.randomUUID(),
-      name: trimmed,
-      state: createEmptyChainState(),
-    };
-    setPersisted((prev) => ({
-      version: 1,
-      activeListId: newEntry.id,
-      lists: [...prev.lists, newEntry],
-    }));
+    setPersisted((prev) => {
+      const maxRun = prev.lists.reduce((m, e) => Math.max(m, e.heatmapListRunId ?? -1), -1);
+      const newEntry: ChainListEntry = {
+        id: crypto.randomUUID(),
+        name: trimmed,
+        state: createEmptyChainState(),
+        heatmapListRunId: maxRun + 1,
+      };
+      return {
+        version: 1,
+        activeListId: newEntry.id,
+        lists: [...prev.lists, newEntry],
+      };
+    });
   }, [persisted.lists.length]);
 
   const renameList = useCallback((id: string, name: string) => {
@@ -203,10 +211,12 @@ export function useChain() {
 
         const remaining = prev.lists.filter((e) => e.id !== id);
         if (remaining.length === 0) {
+          const maxRun = prev.lists.reduce((m, e) => Math.max(m, e.heatmapListRunId ?? -1), -1);
           const fresh: ChainListEntry = {
             id: crypto.randomUUID(),
             name: DEFAULT_MIGRATED_LIST_NAME,
             state: createEmptyChainState(),
+            heatmapListRunId: maxRun + 1,
           };
           return { version: 1, activeListId: fresh.id, lists: [fresh] };
         }
@@ -226,34 +236,40 @@ export function useChain() {
     []
   );
 
-  const startChain = useCallback((movie: Movie, source?: MovieSource, options?: StartChainOptions) => {
-    const logged = normalizeLoggedDateForHeatmap(options?.loggedDate);
-    updateActiveState(() => ({
-      source: source ?? 'tmdb',
-      links: [
-        {
-          movie,
-          connectingActorId: null,
-          connectingActorName: null,
-          comment: '',
-          loggedDate: logged,
-          entryKind: 'start',
-        },
-      ],
-      currentStep: 'pick-actor',
-      selectedActorId: null,
-      selectedActorName: null,
-      prependMode: false,
-      dailyChallengeDate: options?.dailyChallenge ? utcDateString() : null,
-    }));
-    queueMicrotask(() => {
-      setGamificationProfile((p) => {
-        const next = recordStartMovie(p, logged);
-        saveGamificationProfile(next);
-        return next;
+  const startChain = useCallback(
+    (movie: Movie, source?: MovieSource, options?: StartChainOptions) => {
+      const logged = normalizeLoggedDateForHeatmap(options?.loggedDate);
+      const listRun = activeEntry?.heatmapListRunId ?? 0;
+      const strikeForRun = Math.max(gamificationProfile.heatmapNextRunId, listRun);
+      updateActiveState(() => ({
+        source: source ?? 'tmdb',
+        links: [
+          {
+            movie,
+            connectingActorId: null,
+            connectingActorName: null,
+            comment: '',
+            loggedDate: logged,
+            entryKind: 'start',
+            heatmapStrikeId: strikeForRun,
+          },
+        ],
+        currentStep: 'pick-actor',
+        selectedActorId: null,
+        selectedActorName: null,
+        prependMode: false,
+        dailyChallengeDate: options?.dailyChallenge ? utcDateString() : null,
+      }));
+      queueMicrotask(() => {
+        setGamificationProfile((p) => {
+          const next = recordStartMovie(p, logged, strikeForRun);
+          saveGamificationProfile(next);
+          return next;
+        });
       });
-    });
-  }, [updateActiveState]);
+    },
+    [activeEntry?.heatmapListRunId, gamificationProfile.heatmapNextRunId, updateActiveState]
+  );
 
   const startPrependToChain = useCallback(() => {
     updateActiveState((prev) => {
@@ -316,6 +332,7 @@ export function useChain() {
       }
       const day = normalizeLoggedDateForHeatmap(loggedDate);
       const prependMode = prev.prependMode === true && prev.links.length > 0;
+      const strikeForNew = prev.links[0]?.heatmapStrikeId ?? 0;
 
       let newLinks: typeof prev.links;
       let newLinkIndex: number;
@@ -331,6 +348,7 @@ export function useChain() {
             comment: '',
             loggedDate: day,
             entryKind: 'prepend',
+            heatmapStrikeId: strikeForNew,
           },
           {
             ...first,
@@ -353,6 +371,7 @@ export function useChain() {
             loggedDate: day,
             stepDifficulty,
             entryKind: 'append',
+            heatmapStrikeId: strikeForNew,
           },
         ];
         newLinkIndex = newLinks.length - 1;
@@ -397,7 +416,12 @@ export function useChain() {
       links[index] = { ...link, loggedDate };
       queueMicrotask(() => {
         setGamificationProfile((p) => {
-          const next = adjustDailyForLoggedDateChange(p, oldDate, loggedDate);
+          const next = adjustDailyForLoggedDateChange(
+            p,
+            oldDate,
+            loggedDate,
+            link.heatmapStrikeId ?? 0
+          );
           saveGamificationProfile(next);
           return next;
         });

@@ -276,8 +276,12 @@ const resources = {
       heatmapSectionTitle: 'Movies per day',
       heatmapDayEmpty: '{{date}}: no movies',
       heatmapDayMovies: '{{date}}: {{count}} movies',
+      heatmapStrikeRun: 'Run {{n}}',
+      heatmapDayStrikePart: '{{run}}: {{count}}',
+      heatmapStrikeBreakdownJoiner: '; ',
+      heatmapStrikeLegendLabel: 'Chain runs:',
       heatmapLocalHint:
-        'Each square is one calendar day. Columns are ISO weeks (Monday through Sunday, top to bottom); time goes left to right (older weeks on the left). Darker green means more movies counted for that day (see “logged date” per film).',
+        'Each square is one calendar day. Columns are ISO weeks (Monday through Sunday, top to bottom); time goes left to right (older weeks on the left). Hue shows which chain run contributed the most that day: separate named lists get distinct colors, and clearing a list starts a new run. Older stats without a list split stay in “run 1” (green); mixed days favor newer runs for color while darkness still reflects the total count (see “logged date” per film).',
       loggedDateForStartMovie: 'Count first movie toward',
       loggedDateForNextMovie: 'Count next pick toward',
       loggedDateForPastMovie: 'Day for this older film',
@@ -313,7 +317,7 @@ const resources = {
       statExplainCurrentStreak:
         'How many consecutive local calendar days with at least one logged movie, counting backward from your most recent activity day until a gap. Matches the heatmap.',
       heatmapSectionExplain:
-        'Each cell is one local calendar day. Columns are weeks; earlier weeks appear to the left of later weeks. The color shows how many movies count toward that day using each link’s “logged date” (defaults to today when you add the film). Darker green means more movies.',
+        'Each cell is one local calendar day. Columns are weeks; earlier weeks appear to the left of later weeks. Color intensity shows how many movies count toward that day using each link’s “logged date” (defaults to today when you add the film). Different hues separate chain runs (each time you clear the list and start again, that is a new run). When a day mixes runs, the square uses the run with the most films that day.',
       statExplainBusiestDay:
         'The local calendar day on which the most movies were counted toward your activity (same per-day counts as the heatmap).',
       statExplainTopBridge:
@@ -602,8 +606,12 @@ const resources = {
       heatmapSectionTitle: 'Фильмов за день',
       heatmapDayEmpty: '{{date}}: нет фильмов',
       heatmapDayMovies: '{{date}}: {{count}} фильм.',
+      heatmapStrikeRun: 'Заход {{n}}',
+      heatmapDayStrikePart: '{{run}}: {{count}}',
+      heatmapStrikeBreakdownJoiner: '; ',
+      heatmapStrikeLegendLabel: 'Заходы цепочки:',
       heatmapLocalHint:
-        'Каждый квадрат — один календарный день. Столбцы — календарные недели (пн–вс сверху вниз); время идёт слева направо (более ранние недели слева). Насыщеннее зелёный — больше фильмов за этот день (см. «день» у каждого фильма).',
+        'Каждый квадрат — один календарный день. Столбцы — календарные недели (пн–вс сверху вниз); время идёт слева направо (более ранние недели слева). Оттенок — какой заход цепочки дал больше всего в этот день: у отдельных именованных списков свои цвета, после очистки списка начинается новый заход. Старые данные без разбивки по спискам остаются в «заходе 1» (зелёный); в смешанные дни для цвета приоритет у более новых заходов, насыщенность по-прежнему от общего числа фильмов (см. «день» у каждого фильма).',
       loggedDateForStartMovie: 'Учитывать первый фильм за',
       loggedDateForNextMovie: 'Учитывать следующий выбор за',
       loggedDateForPastMovie: 'День для этого более раннего фильма',
@@ -643,7 +651,7 @@ const resources = {
       statExplainCurrentStreak:
         'Сколько подряд календарных дней с хотя бы одним залогированным фильмом, считая назад от последнего дня с активностью до разрыва. Совпадает с теплокартой.',
       heatmapSectionExplain:
-        'Каждая ячейка — один календарный день в вашем часовом поясе. Столбцы — недели; более ранние недели слева от более поздних. Цвет показывает, сколько фильмов учтено за этот день по полю «день» у звена (по умолчанию — день добавления). Темнее зелёный — больше фильмов.',
+        'Каждая ячейка — один календарный день в вашем часовом поясе. Столбцы — недели; более ранние недели слева от более поздних. Насыщенность показывает, сколько фильмов учтено за этот день по полю «день» у звена (по умолчанию — день добавления). Разные оттенки разделяют заходы цепочки (каждый раз после полной очистки списка — новый заход). Если в один день несколько заходов, квадрат берёт тот, у которого больше фильмов в этот день.',
       statExplainBusiestDay:
         'Календарный день, в который учтено больше всего фильмов (те же счётчики, что и на теплокарте).',
       statExplainTopBridge:

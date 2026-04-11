@@ -23,6 +23,28 @@ export function loadGamificationProfile(): GamificationProfile {
         parsed.moviesAddedByDate && typeof parsed.moviesAddedByDate === 'object'
           ? parsed.moviesAddedByDate
           : {},
+      moviesAddedByDateByStrike: (() => {
+        const raw = (parsed as { moviesAddedByDateByStrike?: unknown }).moviesAddedByDateByStrike;
+        if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+          const out: Record<string, Record<string, number>> = {};
+          for (const [date, strikes] of Object.entries(raw)) {
+            if (strikes && typeof strikes === 'object' && !Array.isArray(strikes)) {
+              const inner: Record<string, number> = {};
+              for (const [sk, v] of Object.entries(strikes)) {
+                if (typeof v === 'number' && Number.isFinite(v) && v > 0) inner[sk] = v;
+              }
+              if (Object.keys(inner).length > 0) out[date] = inner;
+            }
+          }
+          return out;
+        }
+        return {};
+      })(),
+      heatmapNextRunId:
+        typeof (parsed as { heatmapNextRunId?: unknown }).heatmapNextRunId === 'number' &&
+        Number.isFinite((parsed as { heatmapNextRunId: number }).heatmapNextRunId)
+          ? Math.max(0, Math.floor((parsed as { heatmapNextRunId: number }).heatmapNextRunId))
+          : 0,
       actorBridgeCounts:
         parsed.actorBridgeCounts && typeof parsed.actorBridgeCounts === 'object'
           ? parsed.actorBridgeCounts
@@ -64,6 +86,24 @@ export function loadGamificationProfile(): GamificationProfile {
         return {};
       })(),
     };
+
+    let migratedStrike = false;
+    if (Object.keys(merged.moviesAddedByDateByStrike).length === 0) {
+      const flat = merged.moviesAddedByDate;
+      if (flat && typeof flat === 'object') {
+        const nextByStrike: Record<string, Record<string, number>> = {};
+        for (const [date, n] of Object.entries(flat)) {
+          if (typeof n === 'number' && Number.isFinite(n) && n > 0) {
+            nextByStrike[date] = { '0': n };
+          }
+        }
+        if (Object.keys(nextByStrike).length > 0) {
+          merged.moviesAddedByDateByStrike = nextByStrike;
+          migratedStrike = true;
+        }
+      }
+    }
+
     merged.longestStreakEver = Math.max(merged.longestStreakEver, merged.currentStreak);
 
     const hasCastSnapshots = Object.keys(merged.movieCastByMovie).length > 0;
@@ -75,7 +115,7 @@ export function loadGamificationProfile(): GamificationProfile {
     }
 
     const result = ensureMoviesMilestoneAchievements(merged);
-    if (hadSeenWithoutSnapshots || result !== merged) {
+    if (hadSeenWithoutSnapshots || migratedStrike || result !== merged) {
       saveGamificationProfile(result);
     }
     return result;

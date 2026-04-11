@@ -1,9 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildCalendarHeatmapWeeks,
+  dominantStrikeId,
+  dominantStrikeIdForHeatmapHue,
   HEATMAP_TOTAL_DAYS,
   intensityLevel,
   maxHeatmapCount,
+  mergeMoviesAddedByDateByStrikeWithChainLinks,
   mergeMoviesAddedByDateWithChainLinks,
   startOfWeekMonday,
 } from './heatmap';
@@ -40,7 +43,7 @@ describe('heatmap', () => {
   });
 
   it('extends backward when activity is older than default window', () => {
-    const { columns } = buildCalendarHeatmapWeeks({ '2020-06-01': 2 });
+    const { columns } = buildCalendarHeatmapWeeks({ '2020-06-01': { '0': 2 } });
     const cellCount = columns.reduce((n, w) => n + w.length, 0);
     expect(cellCount).toBeGreaterThanOrEqual(HEATMAP_TOTAL_DAYS);
   });
@@ -59,7 +62,58 @@ describe('heatmap', () => {
   });
 
   it('maxHeatmapCount', () => {
-    expect(maxHeatmapCount([{ date: 'a', count: 0 }, { date: 'b', count: 5 }])).toBe(5);
+    expect(
+      maxHeatmapCount([
+        { date: 'a', count: 0, byStrike: {} },
+        { date: 'b', count: 5, byStrike: { '0': 5 } },
+      ])
+    ).toBe(5);
+  });
+
+  it('dominantStrikeId picks max count, tie-break lower id', () => {
+    expect(dominantStrikeId({ '0': 2, '1': 3 })).toBe(1);
+    expect(dominantStrikeId({ '0': 2, '1': 2 })).toBe(0);
+    expect(dominantStrikeId({})).toBeNull();
+  });
+
+  it('dominantStrikeIdForHeatmapHue caps strike 0 when another run exists', () => {
+    expect(dominantStrikeIdForHeatmapHue({ '0': 26, '1': 2 })).toBe(1);
+    expect(dominantStrikeIdForHeatmapHue({ '0': 5 })).toBe(0);
+    expect(dominantStrikeIdForHeatmapHue({ '0': 3, '1': 3 })).toBe(1);
+  });
+
+  it('mergeMoviesAddedByDateByStrikeWithChainLinks mirrors max per date and strike', () => {
+    const movie = {
+      id: 1,
+      title: 'A',
+      overview: '',
+      poster_path: null,
+      backdrop_path: null,
+      release_date: '',
+      vote_average: 0,
+      vote_count: 0,
+      popularity: 0,
+    };
+    const linkBase = {
+      movie,
+      connectingActorId: null,
+      connectingActorName: null,
+      comment: '',
+    };
+    const merged = mergeMoviesAddedByDateByStrikeWithChainLinks(
+      { '2026-03-22': { '0': 2 } },
+      [{ ...linkBase, loggedDate: '2026-03-08', heatmapStrikeId: 0 }]
+    );
+    expect(merged['2026-03-08']).toEqual({ '0': 1 });
+    expect(merged['2026-03-22']).toEqual({ '0': 2 });
+    const merged2 = mergeMoviesAddedByDateByStrikeWithChainLinks(
+      { '2026-04-01': { '0': 1, '1': 1 } },
+      [
+        { ...linkBase, loggedDate: '2026-04-01', heatmapStrikeId: 0 },
+        { ...linkBase, loggedDate: '2026-04-01', heatmapStrikeId: 1 },
+      ]
+    );
+    expect(merged2['2026-04-01']).toEqual({ '0': 1, '1': 1 });
   });
 
   it('mergeMoviesAddedByDateWithChainLinks fills missing days from chain loggedDate', () => {

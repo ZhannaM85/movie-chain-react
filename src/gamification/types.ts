@@ -19,8 +19,12 @@ export interface GamificationProfile {
   longestStreakEver: number;
   /** Total challenge points earned across all sessions */
   totalChallengePointsAllTime: number;
-  /** Movies added to a chain per calendar day (start + each link) — for activity heatmap */
+  /** Movies added to a chain per calendar day (start + each link) — denormalized total for streaks / busiest day */
   moviesAddedByDate: Record<string, number>;
+  /** Per calendar day, per chain run (strike id) — source of truth for heatmap breakdown */
+  moviesAddedByDateByStrike: Record<string, Record<string, number>>;
+  /** Run id assigned to the next chain started after a full list clear (reset / delete list). */
+  heatmapNextRunId: number;
   /** Count of times each actor was chosen as the bridge to the next film (key = TMDB/KP id string) */
   actorBridgeCounts: Record<string, { name: string; count: number }>;
   /** Destination movie ids (one per distinct film) when that actor was the bridge — for stats / actor page */
@@ -47,6 +51,8 @@ export const DEFAULT_GAMIFICATION_PROFILE: GamificationProfile = {
   longestStreakEver: 0,
   totalChallengePointsAllTime: 0,
   moviesAddedByDate: {},
+  moviesAddedByDateByStrike: {},
+  heatmapNextRunId: 0,
   actorBridgeCounts: {},
   actorBridgeMovieIds: {},
   actorCastAppearanceCounts: {},

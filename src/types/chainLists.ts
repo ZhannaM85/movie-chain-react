@@ -12,6 +12,8 @@ export interface ChainListEntry {
   id: string;
   name: string;
   state: ChainState;
+  /** Distinct heatmap run id for this list (older saves omit — assigned on load). */
+  heatmapListRunId?: number;
 }
 
 export interface ChainListsPersisted {
@@ -68,13 +70,45 @@ export function normalizeChainState(
   };
 }
 
-function newListEntry(name: string, state: ChainState, fallbackName: string): ChainListEntry {
+function newListEntry(
+  name: string,
+  state: ChainState,
+  fallbackName: string,
+  heatmapListRunId?: number
+): ChainListEntry {
   const n = (name.trim() || fallbackName).slice(0, CHAIN_LIST_NAME_MAX_LENGTH);
   return {
     id: crypto.randomUUID(),
     name: n,
     state,
+    ...(typeof heatmapListRunId === 'number' && Number.isFinite(heatmapListRunId) && heatmapListRunId >= 0
+      ? { heatmapListRunId }
+      : {}),
   };
+}
+
+/** Ensures every list has a heatmapListRunId and returns max id. */
+export function assignHeatmapListRunIds(lists: ChainListEntry[]): {
+  lists: ChainListEntry[];
+  changed: boolean;
+} {
+  let maxId = lists.reduce((m, e) => {
+    const r = e.heatmapListRunId;
+    return typeof r === 'number' && Number.isFinite(r) && r >= 0 ? Math.max(m, r) : m;
+  }, -1);
+  let changed = false;
+  const next = lists.map((e) => {
+    let runId = e.heatmapListRunId;
+    if (typeof runId !== 'number' || !Number.isFinite(runId) || runId < 0) {
+      maxId += 1;
+      runId = maxId;
+      changed = true;
+      return { ...e, heatmapListRunId: runId };
+    }
+    maxId = Math.max(maxId, runId);
+    return e;
+  });
+  return { lists: next, changed };
 }
 
 /**
@@ -95,14 +129,23 @@ export function loadChainListsPersisted(
         Array.isArray(parsed.lists) &&
         parsed.lists.length > 0
       ) {
-        const lists = parsed.lists.map((e) => ({
+        const listsRaw = parsed.lists.map((e) => ({
           ...e,
           name: typeof e.name === 'string' ? e.name : defaultListName,
           state: normalizeChainState(e.state, pendingActorKey),
         }));
+        const { lists, changed } = assignHeatmapListRunIds(listsRaw);
         const activeExists = lists.some((l) => l.id === parsed.activeListId);
         const activeListId = activeExists ? parsed.activeListId : lists[0].id;
-        return { version: 1, activeListId, lists };
+        const result = { version: 1, activeListId, lists };
+        if (changed) {
+          try {
+            localStorage.setItem(CHAIN_LISTS_STORAGE_KEY, JSON.stringify(result));
+          } catch {
+            // ignore
+          }
+        }
+        return result;
       }
     }
   } catch {
@@ -114,7 +157,7 @@ export function loadChainListsPersisted(
     if (legacy) {
       const parsed = JSON.parse(legacy) as ChainState;
       const state = normalizeChainState(parsed, pendingActorKey);
-      const entry = newListEntry(defaultListName, state, defaultListName);
+      const entry = newListEntry(defaultListName, state, defaultListName, 0);
       const blob: ChainListsPersisted = {
         version: 1,
         activeListId: entry.id,
@@ -128,7 +171,7 @@ export function loadChainListsPersisted(
     // ignore
   }
 
-  const entry = newListEntry(defaultListName, createEmptyChainState(), defaultListName);
+  const entry = newListEntry(defaultListName, createEmptyChainState(), defaultListName, 0);
   const blob: ChainListsPersisted = {
     version: 1,
     activeListId: entry.id,

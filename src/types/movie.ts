@@ -56,6 +56,8 @@ export interface ChainLink {
   stepDifficulty?: number;
   /** Set when the link is created; older saves omit — first link defaults to `start`. */
   entryKind?: ChainLinkEntryKind;
+  /** Chain run id for heatmap coloring; assigned when the link is created (older saves omit → 0). */
+  heatmapStrikeId?: number;
 }
 
 export type MovieSource = 'tmdb' | 'kinopoisk';
