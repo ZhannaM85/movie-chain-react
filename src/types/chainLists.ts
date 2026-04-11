@@ -137,7 +137,7 @@ export function loadChainListsPersisted(
         const { lists, changed } = assignHeatmapListRunIds(listsRaw);
         const activeExists = lists.some((l) => l.id === parsed.activeListId);
         const activeListId = activeExists ? parsed.activeListId : lists[0].id;
-        const result = { version: 1, activeListId, lists };
+        const result: ChainListsPersisted = { version: 1, activeListId, lists };
         if (changed) {
           try {
             localStorage.setItem(CHAIN_LISTS_STORAGE_KEY, JSON.stringify(result));
