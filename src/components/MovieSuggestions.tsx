@@ -11,7 +11,7 @@ import ChallengePointsInline from './ChallengePointsInline';
 import { scoreChainStep } from '../gamification/chainScoring';
 import { useChainUiPreferences } from '../hooks/useChainUiPreferences';
 import { findFirstSelectableMovieId } from '../lib/sequentialSelection';
-import { eligibleMovieIdsForRandomPick, pickRandomSelectableId } from '../lib/randomSinglePick';
+import { eligibleMovieIdsForRandomPick, pickRandomSelectableId, stableRng } from '../lib/randomSinglePick';
 import { TMDB_GENRE_ANIMATION } from '../lib/tmdbGenres';
 
 type SortOption = 'popularity' | 'title-asc' | 'title-desc' | 'date-newest' | 'date-oldest';
@@ -105,8 +105,9 @@ export default function MovieSuggestions() {
 
   const randomChosenMovieId = useMemo(() => {
     if (!randomSinglePickMovies || eligibleMovieIdsInOrder.length === 0) return null;
-    return pickRandomSelectableId(eligibleMovieIdsInOrder, Math.random);
-  }, [randomSinglePickMovies, eligibleMovieIdsInOrder]);
+    const seed = `movie|${selectedActorId}|${links.length}|${eligibleMovieIdsInOrder.join(',')}`;
+    return pickRandomSelectableId(eligibleMovieIdsInOrder, stableRng(seed));
+  }, [randomSinglePickMovies, eligibleMovieIdsInOrder, selectedActorId, links.length]);
 
   if (selectedActorId !== prevDeps.actorId || links.length !== prevDeps.linksLen) {
     setPrevDeps({ actorId: selectedActorId, linksLen: links.length });

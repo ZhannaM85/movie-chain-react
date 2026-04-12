@@ -64,3 +64,18 @@ export function pickRandomSelectableId(ids: number[], rng: () => number): number
   const idx = Math.floor(rng() * ids.length);
   return ids[Math.min(idx, ids.length - 1)];
 }
+
+/**
+ * FNV-1a hash of a string → a single value in [0, 1).
+ * Deterministic: same input always gives the same output,
+ * so the random pick is stable across page reloads for a given chain state.
+ */
+export function stableRng(seed: string): () => number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  const val = (h >>> 0) / 0x100000000;
+  return () => val;
+}
