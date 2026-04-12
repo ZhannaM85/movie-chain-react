@@ -168,7 +168,11 @@ export function useChain() {
   }, []);
 
   const createList = useCallback((name?: string) => {
-    const label = name?.trim() || `List ${persisted.lists.length + 1}`;
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const yyyy = today.getFullYear();
+    const label = name?.trim() || `List ${dd}-${mm}-${yyyy}`;
     const trimmed = label.slice(0, CHAIN_LIST_NAME_MAX_LENGTH);
     setPersisted((prev) => {
       const maxRun = prev.lists.reduce((m, e) => Math.max(m, e.heatmapListRunId ?? -1), -1);

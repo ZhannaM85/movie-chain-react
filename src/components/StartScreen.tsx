@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { getDailyMovieIndex } from '../gamification/dailyChallenge';
 import { utcDateString } from '../gamification/profile';
 import { useChainUiPreferences } from '../hooks/useChainUiPreferences';
+import { formatCrossListEntries } from '../utils/chainLinks';
 
 /**
  * Landing screen where the user can search or browse movies to start a new chain.
@@ -121,7 +122,7 @@ export default function StartScreen() {
                 <p className="text-base font-semibold text-gray-900 dark:text-white truncate mt-1">{dailyMovie.title}</p>
                 <p className="text-xs text-gray-500 mt-1">
                   {dailyBlocked
-                    ? t('movieCrossListBlocked', { lists: dailyCrossListNames.join(', ') })
+                    ? t('movieCrossListBlocked', { lists: formatCrossListEntries(dailyCrossListNames) })
                     : t('dailyChallengeBest', { count: dailyBest })}
                 </p>
               </div>
@@ -152,7 +153,7 @@ export default function StartScreen() {
               key={movie.id}
               disabled={isCrossBlocked}
               onClick={() => { if (!isCrossBlocked) startChain(movie, api.source); }}
-              title={isCrossBlocked ? t('movieCrossListBlocked', { lists: crossListNames.join(', ') }) : undefined}
+              title={isCrossBlocked ? t('movieCrossListBlocked', { lists: formatCrossListEntries(crossListNames) }) : undefined}
               className={
                 'group text-left rounded-lg overflow-hidden border transition-all ' +
                 (isCrossBlocked
@@ -200,7 +201,7 @@ export default function StartScreen() {
                         d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
                       />
                     </svg>
-                    {t('movieCrossListBlocked', { lists: crossListNames.join(', ') })}
+                    {t('movieCrossListBlocked', { lists: formatCrossListEntries(crossListNames) })}
                   </p>
                 )}
               </div>
