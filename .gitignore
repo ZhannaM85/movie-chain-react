@@ -30,3 +30,6 @@ dist-ssr
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# E2E generated screenshots (see e2e/*.spec.ts)
+e2e/screenshots/
