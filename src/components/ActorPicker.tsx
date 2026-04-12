@@ -49,6 +49,14 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
   const { strictListOrderActors, randomSinglePickActors, randomSinglePickLimitToTop12, crossListMemory } =
     useChainUiPreferences();
 
+  /** Union of within-chain bridge IDs and cross-list bridge IDs so pick modes never land on a warned actor. */
+  const excludedActorIds = useMemo(() => {
+    if (!crossListMemory || crossListData.bridgeActorIds.size === 0) return bridgeActorIds;
+    const merged = new Set(bridgeActorIds);
+    for (const id of crossListData.bridgeActorIds.keys()) merged.add(id);
+    return merged;
+  }, [bridgeActorIds, crossListMemory, crossListData.bridgeActorIds]);
+
   const cast = useMemo(
     () =>
       credits.cast.filter(
@@ -59,17 +67,17 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
 
   /** First billable cast member not already used as a bridge — “next” for strict list order (full cast order). */
   const firstSelectableActorId = useMemo(
-    () => findFirstSelectableActorId(cast, bridgeActorIds),
-    [cast, bridgeActorIds]
+    () => findFirstSelectableActorId(cast, excludedActorIds),
+    [cast, excludedActorIds]
   );
 
   const eligibleActorIdsInOrder = useMemo(() => {
     if (!randomSinglePickActors) return [];
     if (!randomSinglePickLimitToTop12) {
-      return cast.filter((a) => !bridgeActorIds.has(a.id)).map((a) => a.id);
+      return cast.filter((a) => !excludedActorIds.has(a.id)).map((a) => a.id);
     }
-    return eligibleActorIdsForRandomPick(cast, bridgeActorIds);
-  }, [randomSinglePickActors, randomSinglePickLimitToTop12, cast, bridgeActorIds]);
+    return eligibleActorIdsForRandomPick(cast, excludedActorIds);
+  }, [randomSinglePickActors, randomSinglePickLimitToTop12, cast, excludedActorIds]);
 
   const randomChosenActorId = useMemo(() => {
     if (!randomSinglePickActors || eligibleActorIdsInOrder.length === 0) return null;
