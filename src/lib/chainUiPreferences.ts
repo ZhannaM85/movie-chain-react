@@ -13,6 +13,11 @@ export interface ChainUiPreferences {
    * When false, the full eligible lists are used (full-access randomizer).
    */
   randomSinglePickLimitToTop12: boolean;
+  /**
+   * When true, movies from other lists are hard-blocked and bridge actors from other lists
+   * show a warning badge, nudging the user toward fresh picks across lists.
+   */
+  crossListMemory: boolean;
 }
 
 export const DEFAULT_CHAIN_UI_PREFERENCES: ChainUiPreferences = {
@@ -22,6 +27,7 @@ export const DEFAULT_CHAIN_UI_PREFERENCES: ChainUiPreferences = {
   randomSinglePickMovies: false,
   /** Only applies when at least one single-random mode is on; see {@link normalizeChainUiPickModes}. */
   randomSinglePickLimitToTop12: false,
+  crossListMemory: false,
 };
 
 /**
@@ -67,6 +73,10 @@ export function loadChainUiPreferences(): ChainUiPreferences {
         typeof parsed.randomSinglePickLimitToTop12 === 'boolean'
           ? parsed.randomSinglePickLimitToTop12
           : DEFAULT_CHAIN_UI_PREFERENCES.randomSinglePickLimitToTop12,
+      crossListMemory:
+        typeof parsed.crossListMemory === 'boolean'
+          ? parsed.crossListMemory
+          : DEFAULT_CHAIN_UI_PREFERENCES.crossListMemory,
     };
     const normalized = normalizeChainUiPickModes(merged);
     if (JSON.stringify(merged) !== JSON.stringify(normalized)) {

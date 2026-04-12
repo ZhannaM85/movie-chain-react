@@ -40,7 +40,7 @@ function sortMovies(movies: Movie[], sortBy: SortOption): Movie[] {
  */
 export default function MovieSuggestions() {
   const api = useMovieApiForChain();
-  const { selectedActorId, addMovie, links, cancelActorSelection, prependMode } = useChainContext();
+  const { selectedActorId, addMovie, links, cancelActorSelection, prependMode, crossListData } = useChainContext();
   const headMovie = prependMode && links[0] ? links[0].movie : null;
   const { t, i18n } = useTranslation();
   const [loggedDateForPastLink, setLoggedDateForPastLink] = useState(() =>
@@ -71,7 +71,7 @@ export default function MovieSuggestions() {
   }, [prependMode, headMovie, actor]);
 
   const chainMovieIds = useMemo(() => new Set(links.map((l) => l.movie.id)), [links]);
-  const { strictListOrderMovies, randomSinglePickMovies, randomSinglePickLimitToTop12 } =
+  const { strictListOrderMovies, randomSinglePickMovies, randomSinglePickLimitToTop12, crossListMemory } =
     useChainUiPreferences();
 
   /** Full sort + search order (no 20-movie pagination) — defines “next” for strict list order. */
@@ -245,6 +245,7 @@ export default function MovieSuggestions() {
         randomSinglePickMovies={randomSinglePickMovies}
         firstSelectableMovieId={firstSelectableMovieId}
         randomChosenMovieId={randomChosenMovieId}
+        crossListMovieIds={crossListMemory ? crossListData.movieIds : null}
         onSelect={(movie) => addMovie(movie, prependMode ? loggedDateForPastLink : localDateString())}
         posterUrl={api.posterUrl}
         t={t}
@@ -289,6 +290,7 @@ function MovieGrid({
   randomSinglePickMovies,
   firstSelectableMovieId,
   randomChosenMovieId,
+  crossListMovieIds,
   onSelect,
   posterUrl,
   t,
@@ -304,6 +306,7 @@ function MovieGrid({
   randomSinglePickMovies: boolean;
   firstSelectableMovieId: number | null;
   randomChosenMovieId: number | null;
+  crossListMovieIds: Map<number, string[]> | null;
   onSelect: (movie: Movie) => void;
   posterUrl: (path: string | null, size?: string) => string;
   t: (key: string, options?: Record<string, unknown>) => string;
@@ -330,26 +333,35 @@ function MovieGrid({
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
       {displayMovies.map((movie) => {
         const inChain = chainMovieIds.has(movie.id);
+        const crossListNames = crossListMovieIds?.get(movie.id);
+        const inCrossList = !!crossListNames && crossListNames.length > 0;
         const randomLocked =
           randomSinglePickMovies &&
           !inChain &&
+          !inCrossList &&
           randomChosenMovieId !== null &&
           movie.id !== randomChosenMovieId;
         const sequentialLocked =
           !randomSinglePickMovies &&
           strictListOrderMovies &&
           !inChain &&
+          !inCrossList &&
           firstSelectableMovieId !== null &&
           movie.id !== firstSelectableMovieId;
         const listOrderLocked = randomLocked || sequentialLocked;
-        const blocked = inChain || listOrderLocked;
+        const blocked = inChain || inCrossList || listOrderLocked;
         const stepPoints =
-          prependMode || inChain || listOrderLocked ? null : scoreChainStep(movie, actorPopularity);
-        const ariaLabel = randomLocked
-          ? t('movieRandomPickLockedAria', { title: movie.title })
-          : sequentialLocked
-            ? t('movieSequentialLockedAria', { title: movie.title })
-            : undefined;
+          prependMode || blocked ? null : scoreChainStep(movie, actorPopularity);
+        const crossListHint = inCrossList
+          ? t('movieCrossListBlocked', { lists: crossListNames.join(', ') })
+          : undefined;
+        const ariaLabel = inCrossList
+          ? crossListHint
+          : randomLocked
+            ? t('movieRandomPickLockedAria', { title: movie.title })
+            : sequentialLocked
+              ? t('movieSequentialLockedAria', { title: movie.title })
+              : undefined;
         return (
           <div
             key={movie.id}
@@ -361,15 +373,17 @@ function MovieGrid({
             title={
               inChain
                 ? t('movieAlreadyInChain')
-                : randomLocked
-                  ? t('movieRandomPickLockedAria', { title: movie.title })
-                  : sequentialLocked
-                    ? t('movieSequentialLockedAria', { title: movie.title })
-                    : undefined
+                : inCrossList
+                  ? crossListHint
+                  : randomLocked
+                    ? t('movieRandomPickLockedAria', { title: movie.title })
+                    : sequentialLocked
+                      ? t('movieSequentialLockedAria', { title: movie.title })
+                      : undefined
             }
             className={
               'group text-left rounded-lg overflow-hidden border transition-all ' +
-              (inChain
+              (inChain || inCrossList
                 ? 'cursor-not-allowed opacity-50 bg-gray-100/80 dark:bg-gray-800/30 border-gray-200/80 dark:border-gray-800/80'
                 : listOrderLocked
                   ? 'cursor-not-allowed border-amber-400/60 dark:border-amber-600/50 bg-amber-50/50 dark:bg-amber-950/25 ring-2 ring-amber-400/35 dark:ring-amber-600/50 opacity-[0.88]'
@@ -391,14 +405,14 @@ function MovieGrid({
               alt={movie.title}
               className={
                 'w-full aspect-[2/3] object-cover ' +
-                (inChain ? 'grayscale' : listOrderLocked ? 'brightness-[0.92]' : '')
+                (inChain || inCrossList ? 'grayscale' : listOrderLocked ? 'brightness-[0.92]' : '')
               }
             />
             <div className="p-2">
               <h4
                 className={
                   'text-sm font-medium truncate ' +
-                  (inChain
+                  (inChain || inCrossList
                     ? 'text-gray-500'
                     : listOrderLocked
                       ? 'text-gray-800 dark:text-gray-200'
@@ -417,6 +431,25 @@ function MovieGrid({
               </div>
               {inChain ? (
                 <p className="text-[10px] text-gray-600 mt-1 leading-tight">{t('movieAlreadyInChainHint')}</p>
+              ) : inCrossList ? (
+                <p className="text-[10px] text-orange-700/90 dark:text-orange-400/90 mt-1 leading-tight flex items-center gap-1">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-3 h-3 shrink-0"
+                    aria-hidden
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+                    />
+                  </svg>
+                  {crossListHint}
+                </p>
               ) : randomLocked ? (
                 <p className="text-[10px] text-amber-800/90 dark:text-amber-400/90 mt-1 leading-tight flex items-center gap-1">
                   <svg

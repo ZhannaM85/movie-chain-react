@@ -29,6 +29,8 @@ interface ActorCardProps {
   /** Preview difficulty: full step (prepend) or actor-only slice (append pick-actor). */
   challengePoints?: number | null;
   challengePointsVariant?: 'step' | 'actorOnly';
+  /** When set, shows a cross-list warning (actor still selectable). */
+  crossListWarning?: string;
 }
 
 /**
@@ -52,6 +54,26 @@ function LockClosedIcon({ className }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+      />
+    </svg>
+  );
+}
+
+function CrossListWarningIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className={className}
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
       />
     </svg>
   );
@@ -89,6 +111,7 @@ export default function ActorCard({
   showLink = false,
   challengePoints,
   challengePointsVariant = 'step',
+  crossListWarning,
 }: ActorCardProps) {
   const api = useMovieApiForChain();
   const { t } = useTranslation();
@@ -130,6 +153,14 @@ export default function ActorCard({
             <LockClosedIcon className="w-3.5 h-3.5 shrink-0" />
             <p className="text-[10px] leading-snug">
               {sequentialLockedHintOverride ?? t('actorSequentialLockedHint')}
+            </p>
+          </div>
+        )}
+        {crossListWarning && !disabled && (
+          <div className="mt-1 flex items-start gap-1 min-w-0 text-orange-700/90 dark:text-orange-400/90">
+            <CrossListWarningIcon className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+            <p className="text-[10px] leading-snug min-w-0 break-words line-clamp-2">
+              {crossListWarning}
             </p>
           </div>
         )}
