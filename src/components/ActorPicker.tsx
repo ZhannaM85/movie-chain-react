@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { eligibleActorIdsForRandomPick, pickRandomSelectableId } from '../lib/randomSinglePick';
+import { eligibleActorIdsForRandomPick, pickRandomSelectableId, stableRng } from '../lib/randomSinglePick';
 import type { MovieCredits } from '../types/movie';
 import { useChainContext } from '../context/ChainContext';
 import ActorCard from './ActorCard';
@@ -81,8 +81,9 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
 
   const randomChosenActorId = useMemo(() => {
     if (!randomSinglePickActors || eligibleActorIdsInOrder.length === 0) return null;
-    return pickRandomSelectableId(eligibleActorIdsInOrder, Math.random);
-  }, [randomSinglePickActors, eligibleActorIdsInOrder]);
+    const seed = `actor|${links.length}|${eligibleActorIdsInOrder.join(',')}`;
+    return pickRandomSelectableId(eligibleActorIdsInOrder, stableRng(seed));
+  }, [randomSinglePickActors, eligibleActorIdsInOrder, links.length]);
 
   /** Collapsed grid shows 12; if strict order’s “next” actor is below that row, user must open “Show all cast”. */
   const displayCast = showAll ? cast : cast.slice(0, 12);
