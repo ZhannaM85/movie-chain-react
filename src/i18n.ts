@@ -368,12 +368,12 @@ const resources = {
         'Whether you have saved at least one text note on a movie in a chain.',
       crossListMemorySectionTitle: 'Cross-list memory',
       crossListMemorySectionIntro:
-        'When enabled, movies already watched in other lists are blocked and bridge actors from other lists show a warning. Encourages picking fresh movies and actors across lists.',
+        'When enabled, movies and bridge actors from other lists are blocked. Encourages picking fresh movies and actors across lists.',
       crossListMemoryLabel: 'Enable cross-list memory',
       crossListMemoryHint:
-        'Movies from other lists become unselectable; actors used as bridges in other lists show a warning badge but remain clickable.',
+        'Movies and bridge actors from other lists become unselectable.',
       movieCrossListBlocked: 'Watched in {{lists}}',
-      actorCrossListWarning: 'Bridged in {{lists}}',
+      actorCrossListBlocked: 'Bridged in {{lists}}',
       yes: 'Yes',
       no: 'No',
     },
@@ -741,12 +741,12 @@ const resources = {
         'Была ли сохранена хотя бы одна текстовая заметка к фильму в цепочке.',
       crossListMemorySectionTitle: 'Память между списками',
       crossListMemorySectionIntro:
-        'Если включено, фильмы из других списков блокируются, а актёры-мосты из других списков отмечаются предупреждением. Стимулирует выбор новых фильмов и актёров в разных списках.',
+        'Если включено, фильмы и актёры-мосты из других списков блокируются. Стимулирует выбор новых фильмов и актёров в разных списках.',
       crossListMemoryLabel: 'Включить память между списками',
       crossListMemoryHint:
-        'Фильмы из других списков становятся недоступными; актёры-мосты из других списков показывают предупреждение, но остаются доступными для выбора.',
+        'Фильмы и актёры-мосты из других списков становятся недоступными.',
       movieCrossListBlocked: 'Просмотрен в {{lists}}',
-      actorCrossListWarning: 'Был мостом в {{lists}}',
+      actorCrossListBlocked: 'Был мостом в {{lists}}',
       yes: 'Да',
       no: 'Нет',
     },

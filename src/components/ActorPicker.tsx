@@ -5,7 +5,7 @@ import { useChainContext } from '../context/ChainContext';
 import ActorCard from './ActorCard';
 import { useTranslation } from 'react-i18next';
 import { scoreActorContribution, scoreChainStep } from '../gamification/chainScoring';
-import { bridgeActorStepByActorId, usedBridgeActorIds } from '../utils/chainLinks';
+import { bridgeActorStepByActorId, usedBridgeActorIds, formatCrossListEntries } from '../utils/chainLinks';
 import { useChainUiPreferences } from '../hooks/useChainUiPreferences';
 import { findFirstSelectableActorId } from '../lib/sequentialSelection';
 
@@ -109,19 +109,25 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
             {displayCast.map((actor) => {
               const isExcluded = bridgeActorIds.has(actor.id);
+              const crossListEntries = crossListMemory
+                ? crossListData.bridgeActorIds.get(actor.id)
+                : undefined;
+              const isCrossListBlocked = !!crossListEntries && crossListEntries.length > 0;
               const randomLocked =
                 randomSinglePickActors &&
                 !isExcluded &&
+                !isCrossListBlocked &&
                 randomChosenActorId !== null &&
                 actor.id !== randomChosenActorId;
               const sequentialLocked =
                 !randomSinglePickActors &&
                 strictListOrderActors &&
                 !isExcluded &&
+                !isCrossListBlocked &&
                 firstSelectableActorId !== null &&
                 actor.id !== firstSelectableActorId;
               const listOrderLocked = sequentialLocked || randomLocked;
-              const disabled = isExcluded || listOrderLocked;
+              const disabled = isExcluded || isCrossListBlocked || listOrderLocked;
               const step = bridgeStepsByActorId.get(actor.id);
               const disabledBridge =
                 isExcluded && step
@@ -140,13 +146,9 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
                   ? scoreChainStep(headMovie, actor.popularity)
                   : scoreActorContribution(actor.popularity);
               const challengePointsVariant = prependMode ? 'step' : 'actorOnly';
-              const crossListActorNames = crossListMemory
-                ? crossListData.bridgeActorIds.get(actor.id)
+              const crossListBlocked = isCrossListBlocked
+                ? t('actorCrossListBlocked', { lists: formatCrossListEntries(crossListEntries) })
                 : undefined;
-              const crossListWarning =
-                crossListActorNames && crossListActorNames.length > 0
-                  ? t('actorCrossListWarning', { lists: crossListActorNames.join(', ') })
-                  : undefined;
               return (
                 <ActorCard
                   key={actor.id}
@@ -167,7 +169,7 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
                   onClick={() => selectActor(actor.id, actor.name, actor.popularity)}
                   challengePoints={listOrderLocked ? null : challengePoints}
                   challengePointsVariant={challengePointsVariant}
-                  crossListWarning={crossListWarning}
+                  crossListBlocked={crossListBlocked}
                 />
               );
             })}

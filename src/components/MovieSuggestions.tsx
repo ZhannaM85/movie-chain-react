@@ -13,6 +13,7 @@ import { useChainUiPreferences } from '../hooks/useChainUiPreferences';
 import { findFirstSelectableMovieId } from '../lib/sequentialSelection';
 import { eligibleMovieIdsForRandomPick, pickRandomSelectableId, stableRng } from '../lib/randomSinglePick';
 import { TMDB_GENRE_ANIMATION } from '../lib/tmdbGenres';
+import { formatCrossListEntries, type CrossListEntry } from '../utils/chainLinks';
 
 type SortOption = 'popularity' | 'title-asc' | 'title-desc' | 'date-newest' | 'date-oldest';
 
@@ -315,7 +316,7 @@ function MovieGrid({
   randomSinglePickMovies: boolean;
   firstSelectableMovieId: number | null;
   randomChosenMovieId: number | null;
-  crossListMovieIds: Map<number, string[]> | null;
+  crossListMovieIds: Map<number, CrossListEntry[]> | null;
   onSelect: (movie: Movie) => void;
   posterUrl: (path: string | null, size?: string) => string;
   t: (key: string, options?: Record<string, unknown>) => string;
@@ -362,7 +363,7 @@ function MovieGrid({
         const stepPoints =
           prependMode || blocked ? null : scoreChainStep(movie, actorPopularity);
         const crossListHint = inCrossList
-          ? t('movieCrossListBlocked', { lists: crossListNames.join(', ') })
+          ? t('movieCrossListBlocked', { lists: formatCrossListEntries(crossListNames) })
           : undefined;
         const ariaLabel = inCrossList
           ? crossListHint
