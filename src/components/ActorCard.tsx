@@ -19,10 +19,12 @@ interface ActorCardProps {
   disabled?: boolean;
   /** Compact bridge step (icon + titles on card); `description` used for title tooltip and aria-label. */
   disabledBridge?: ActorDisabledBridgeInfo;
-  /** True when strict list order locks this actor (not the same as bridge-used). */
+  /** True when strict list order or random single pick locks this actor (not the same as bridge-used). */
   sequentialLocked?: boolean;
   /** Phrase for aria-label / title when sequentialLocked (includes actor name if needed). */
   sequentialLockedDescription?: string;
+  /** Replaces the default strict-order hint under the lock icon when set. */
+  sequentialLockedHintOverride?: string;
   showLink?: boolean;
   /** Preview difficulty: full step (prepend) or actor-only slice (append pick-actor). */
   challengePoints?: number | null;
@@ -83,6 +85,7 @@ export default function ActorCard({
   disabledBridge,
   sequentialLocked,
   sequentialLockedDescription,
+  sequentialLockedHintOverride,
   showLink = false,
   challengePoints,
   challengePointsVariant = 'step',
@@ -125,7 +128,9 @@ export default function ActorCard({
         {sequentialLocked && !disabledBridge && (
           <div className="mt-1 flex items-center gap-1 min-w-0 text-amber-700/90 dark:text-amber-400/90">
             <LockClosedIcon className="w-3.5 h-3.5 shrink-0" />
-            <p className="text-[10px] leading-snug">{t('actorSequentialLockedHint')}</p>
+            <p className="text-[10px] leading-snug">
+              {sequentialLockedHintOverride ?? t('actorSequentialLockedHint')}
+            </p>
           </div>
         )}
         {challengePoints != null && (
@@ -170,6 +175,7 @@ export default function ActorCard({
   return (
     <div
       role="button"
+      data-selectable={disabled ? undefined : 'true'}
       tabIndex={disabled ? -1 : 0}
       aria-disabled={disabled || undefined}
       aria-label={ariaLabel}
