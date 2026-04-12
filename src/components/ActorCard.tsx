@@ -123,7 +123,7 @@ export default function ActorCard({
           alt={actor.name}
           className={
             'w-full aspect-[2/3] object-cover rounded-t-lg ' +
-            (sequentialLocked ? 'brightness-[0.92]' : '')
+            (sequentialLocked ? 'grayscale brightness-[0.85]' : '')
           }
         />
       ) : (
@@ -183,7 +183,7 @@ export default function ActorCard({
     : disabled && disabledBridge
       ? 'border-gray-200 dark:border-gray-800 bg-gray-100/80 dark:bg-gray-800/30 opacity-40 cursor-not-allowed'
       : disabled && sequentialLocked
-        ? 'border-amber-400/60 dark:border-amber-600/50 bg-amber-50/50 dark:bg-amber-950/25 ring-2 ring-amber-400/35 dark:ring-amber-600/50 opacity-[0.88] cursor-not-allowed'
+        ? 'border-amber-400/60 dark:border-amber-600/50 bg-amber-50/50 dark:bg-amber-950/25 ring-2 ring-amber-400/35 dark:ring-amber-600/50 opacity-50 cursor-not-allowed'
         : disabled
           ? 'border-gray-200 dark:border-gray-800 bg-gray-100/80 dark:bg-gray-800/30 opacity-40 cursor-not-allowed'
           : 'border-gray-200 dark:border-gray-800 bg-gray-100/80 dark:bg-gray-800/50 hover:border-indigo-600/50 dark:hover:border-indigo-500/50 hover:bg-gray-200 dark:hover:bg-gray-800 hover:scale-[1.02]';
