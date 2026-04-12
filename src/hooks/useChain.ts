@@ -23,6 +23,7 @@ import {
 } from '../utils/chainListsBackup';
 import { buildChainListsCsv } from '../utils/chainListsCsv';
 import { recordCastAppearancesForMovie, rebuildActorCastAppearanceCounts } from '../gamification/castAppearances';
+import { crossListUsage, type CrossListUsage } from '../utils/chainLinks';
 import { scoreChainStep } from '../gamification/chainScoring';
 import {
   acknowledgeMoviesMilestoneModal,
@@ -577,6 +578,11 @@ export function useChain() {
   );
   const activeListName = activeEntry?.name ?? '';
 
+  const crossListData: CrossListUsage = useMemo(
+    () => crossListUsage(lists, activeListId),
+    [lists, activeListId]
+  );
+
   const getListLinks = useCallback(
     (id: string) => persisted.lists.find((e) => e.id === id)?.state.links ?? [],
     [persisted.lists]
@@ -617,6 +623,7 @@ export function useChain() {
     activeListId,
     activeListName,
     chainLists,
+    crossListData,
     getListLinks,
     exportActiveListJson,
     exportActiveListCsv,

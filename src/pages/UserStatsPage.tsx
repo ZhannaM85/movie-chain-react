@@ -74,11 +74,13 @@ export default function UserStatsPage() {
     randomSinglePickActors,
     randomSinglePickMovies,
     randomSinglePickLimitToTop12,
+    crossListMemory,
     setStrictListOrderActors,
     setStrictListOrderMovies,
     setRandomSinglePickActors,
     setRandomSinglePickMovies,
     setRandomSinglePickLimitToTop12,
+    setCrossListMemory,
   } = useChainUiPreferences();
 
   const chainMovieIdsKey = useMemo(() => links.map((l) => l.movie.id).join(','), [links]);
@@ -412,6 +414,50 @@ export default function UserStatsPage() {
               />
             </button>
           </div>
+        </div>
+      </section>
+
+      <section
+        className="mb-10 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 p-4"
+        aria-labelledby="cross-list-memory-heading"
+      >
+        <h2
+          id="cross-list-memory-heading"
+          className="text-sm font-semibold text-gray-900 dark:text-white mb-1"
+        >
+          {t('crossListMemorySectionTitle')}
+        </h2>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 leading-snug">
+          {t('crossListMemorySectionIntro')}
+        </p>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0" id="cross-list-memory-desc">
+            <span className="block text-sm font-medium text-gray-800 dark:text-gray-200">
+              {t('crossListMemoryLabel')}
+            </span>
+            <span className="block text-xs text-gray-500 mt-0.5">{t('crossListMemoryHint')}</span>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={crossListMemory}
+            aria-labelledby="cross-list-memory-heading"
+            aria-describedby="cross-list-memory-desc"
+            onClick={() => setCrossListMemory(!crossListMemory)}
+            className={
+              'relative shrink-0 h-7 w-12 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ' +
+              (crossListMemory
+                ? 'bg-indigo-600 dark:bg-indigo-500'
+                : 'bg-gray-300 dark:bg-gray-600')
+            }
+          >
+            <span
+              className={
+                'absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ' +
+                (crossListMemory ? 'translate-x-5' : 'translate-x-0')
+              }
+            />
+          </button>
         </div>
       </section>
 

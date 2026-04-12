@@ -5,6 +5,7 @@ import { useChainContext } from '../context/ChainContext';
 import { useTranslation } from 'react-i18next';
 import { getDailyMovieIndex } from '../gamification/dailyChallenge';
 import { utcDateString } from '../gamification/profile';
+import { useChainUiPreferences } from '../hooks/useChainUiPreferences';
 
 /**
  * Landing screen where the user can search or browse movies to start a new chain.
@@ -13,8 +14,10 @@ import { utcDateString } from '../gamification/profile';
  */
 export default function StartScreen() {
   const api = useMovieApi();
-  const { startChain, gamificationProfile } = useChainContext();
+  const { startChain, gamificationProfile, crossListData } = useChainContext();
   const { t } = useTranslation();
+  const { crossListMemory } = useChainUiPreferences();
+  const crossListMovieIds = crossListMemory ? crossListData.movieIds : null;
   const [trending, setTrending] = useState<Movie[]>([]);
   const [searchResults, setSearchResults] = useState<Movie[]>([]);
   const [query, setQuery] = useState('');
@@ -96,66 +99,114 @@ export default function StartScreen() {
         )}
       </h2>
 
-      {!query.trim() && !loading && dailyMovie && (
-        <div className="mb-8 rounded-xl border border-indigo-400/40 dark:border-indigo-500/35 bg-gradient-to-br from-indigo-100/40 dark:from-indigo-950/40 to-gray-100/40 dark:to-gray-900/40 p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-          <div className="flex gap-4 min-w-0">
-            {dailyMovie.poster_path ? (
-              <img
-                src={api.posterUrl(dailyMovie.poster_path, 'w185')}
-                alt=""
-                className="w-16 sm:w-20 rounded-lg object-cover flex-shrink-0 aspect-[2/3]"
-              />
-            ) : (
-              <div className="w-16 sm:w-20 aspect-[2/3] rounded-lg bg-gray-100 dark:bg-gray-800 flex-shrink-0" />
-            )}
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                {t('dailyChallengeTitle')}
-              </p>
-              <p className="text-base font-semibold text-gray-900 dark:text-white truncate mt-1">{dailyMovie.title}</p>
-              <p className="text-xs text-gray-500 mt-1">
-                {t('dailyChallengeBest', { count: dailyBest })}
-              </p>
+      {!query.trim() && !loading && dailyMovie && (() => {
+        const dailyCrossListNames = crossListMovieIds?.get(dailyMovie.id);
+        const dailyBlocked = !!dailyCrossListNames && dailyCrossListNames.length > 0;
+        return (
+          <div className="mb-8 rounded-xl border border-indigo-400/40 dark:border-indigo-500/35 bg-gradient-to-br from-indigo-100/40 dark:from-indigo-950/40 to-gray-100/40 dark:to-gray-900/40 p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
+            <div className="flex gap-4 min-w-0">
+              {dailyMovie.poster_path ? (
+                <img
+                  src={api.posterUrl(dailyMovie.poster_path, 'w185')}
+                  alt=""
+                  className={'w-16 sm:w-20 rounded-lg object-cover flex-shrink-0 aspect-[2/3]' + (dailyBlocked ? ' grayscale opacity-60' : '')}
+                />
+              ) : (
+                <div className="w-16 sm:w-20 aspect-[2/3] rounded-lg bg-gray-100 dark:bg-gray-800 flex-shrink-0" />
+              )}
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                  {t('dailyChallengeTitle')}
+                </p>
+                <p className="text-base font-semibold text-gray-900 dark:text-white truncate mt-1">{dailyMovie.title}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {dailyBlocked
+                    ? t('movieCrossListBlocked', { lists: dailyCrossListNames.join(', ') })
+                    : t('dailyChallengeBest', { count: dailyBest })}
+                </p>
+              </div>
             </div>
+            <button
+              type="button"
+              disabled={dailyBlocked}
+              onClick={() => { if (!dailyBlocked) startChain(dailyMovie, api.source, { dailyChallenge: true }); }}
+              className={
+                'shrink-0 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors w-full sm:w-auto ' +
+                (dailyBlocked
+                  ? 'bg-gray-400 dark:bg-gray-600 text-gray-200 dark:text-gray-400 cursor-not-allowed'
+                  : 'bg-indigo-600 hover:bg-indigo-500 text-gray-900 dark:text-white')
+              }
+            >
+              {t('dailyChallengeCta')}
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => startChain(dailyMovie, api.source, { dailyChallenge: true })}
-            className="shrink-0 px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-gray-900 dark:text-white text-sm font-medium transition-colors w-full sm:w-auto"
-          >
-            {t('dailyChallengeCta')}
-          </button>
-        </div>
-      )}
+        );
+      })()}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {movies.map((movie) => (
-          <button
-            key={movie.id}
-            onClick={() => startChain(movie, api.source)}
-            className="group text-left rounded-lg overflow-hidden bg-gray-100/80 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-800 hover:border-indigo-600/50 dark:hover:border-indigo-500/50 transition-all hover:scale-[1.02]"
-          >
-            {movie.poster_path ? (
-              <img
-                src={api.posterUrl(movie.poster_path, 'w342')}
-                alt={movie.title}
-                className="w-full aspect-[2/3] object-cover"
-              />
-            ) : (
-              <div className="w-full aspect-[2/3] bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 text-sm">
-                {t('noPoster')}
+        {movies.map((movie) => {
+          const crossListNames = crossListMovieIds?.get(movie.id);
+          const isCrossBlocked = !!crossListNames && crossListNames.length > 0;
+          return (
+            <button
+              key={movie.id}
+              disabled={isCrossBlocked}
+              onClick={() => { if (!isCrossBlocked) startChain(movie, api.source); }}
+              title={isCrossBlocked ? t('movieCrossListBlocked', { lists: crossListNames.join(', ') }) : undefined}
+              className={
+                'group text-left rounded-lg overflow-hidden border transition-all ' +
+                (isCrossBlocked
+                  ? 'cursor-not-allowed opacity-50 bg-gray-100/80 dark:bg-gray-800/30 border-gray-200/80 dark:border-gray-800/80'
+                  : 'bg-gray-100/80 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-800 hover:border-indigo-600/50 dark:hover:border-indigo-500/50 hover:scale-[1.02]')
+              }
+            >
+              {movie.poster_path ? (
+                <img
+                  src={api.posterUrl(movie.poster_path, 'w342')}
+                  alt={movie.title}
+                  className={'w-full aspect-[2/3] object-cover' + (isCrossBlocked ? ' grayscale' : '')}
+                />
+              ) : (
+                <div className="w-full aspect-[2/3] bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 text-sm">
+                  {t('noPoster')}
+                </div>
+              )}
+              <div className="p-2">
+                <h3 className={
+                  'text-sm font-medium truncate ' +
+                  (isCrossBlocked
+                    ? 'text-gray-500'
+                    : 'text-gray-800 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-900 dark:text-white')
+                }>
+                  {movie.title}
+                </h3>
+                <p className="text-xs text-gray-500">
+                  {movie.release_date ? new Date(movie.release_date).getFullYear() : t('na')}
+                </p>
+                {isCrossBlocked && (
+                  <p className="text-[10px] text-orange-700/90 dark:text-orange-400/90 mt-1 leading-tight flex items-center gap-1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-3 h-3 shrink-0"
+                      aria-hidden
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+                      />
+                    </svg>
+                    {t('movieCrossListBlocked', { lists: crossListNames.join(', ') })}
+                  </p>
+                )}
               </div>
-            )}
-            <div className="p-2">
-              <h3 className="text-sm font-medium text-gray-800 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-900 dark:text-white truncate">
-                {movie.title}
-              </h3>
-              <p className="text-xs text-gray-500">
-                {movie.release_date ? new Date(movie.release_date).getFullYear() : t('na')}
-              </p>
-            </div>
-          </button>
-        ))}
+            </button>
+          );
+        })}
       </div>
 
       {!loading && !searching && movies.length === 0 && query.trim() && (
