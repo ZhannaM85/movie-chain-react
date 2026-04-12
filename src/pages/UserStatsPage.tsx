@@ -56,6 +56,18 @@ export default function UserStatsPage() {
   const { gamificationProfile: p, links } = useChainContext();
   const api = useMovieApiForChain();
   const { t } = useTranslation();
+  /** No reliable hover tooltip (touch or narrow layout); blocked switches stay clickable to show a toast. */
+  const prefersCoarsePointer = useMatchMedia('(hover: none) and (pointer: coarse)');
+  const isNarrowViewport = useMatchMedia('(max-width: 767px)');
+  const isTouchPrimaryUi = prefersCoarsePointer || isNarrowViewport;
+  const [pickModeBlockedHint, setPickModeBlockedHint] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (pickModeBlockedHint == null) return;
+    const timer = window.setTimeout(() => setPickModeBlockedHint(null), 5_000);
+    return () => window.clearTimeout(timer);
+  }, [pickModeBlockedHint]);
+
   const {
     strictListOrderActors,
     strictListOrderMovies,
@@ -172,13 +184,22 @@ export default function UserStatsPage() {
               aria-disabled={randomSinglePickActors}
               aria-labelledby="strict-list-order-heading"
               aria-describedby="strict-list-order-cast-desc"
-              disabled={randomSinglePickActors}
+              disabled={randomSinglePickActors && !isTouchPrimaryUi}
               title={
                 randomSinglePickActors ? t('strictCastSwitchDisabledWhileRandomOn') : undefined
               }
-              onClick={() => setStrictListOrderActors(!strictListOrderActors)}
+              onClick={() => {
+                if (randomSinglePickActors) {
+                  if (isTouchPrimaryUi) {
+                    setPickModeBlockedHint(t('strictCastSwitchDisabledWhileRandomOn'));
+                  }
+                  return;
+                }
+                setStrictListOrderActors(!strictListOrderActors);
+              }}
               className={
                 'relative shrink-0 h-7 w-12 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:opacity-45 disabled:cursor-not-allowed ' +
+                (randomSinglePickActors && isTouchPrimaryUi ? 'opacity-45 cursor-not-allowed ' : '') +
                 (strictListOrderActors
                   ? 'bg-indigo-600 dark:bg-indigo-500'
                   : 'bg-gray-300 dark:bg-gray-600')
@@ -208,13 +229,22 @@ export default function UserStatsPage() {
               aria-disabled={randomSinglePickMovies}
               aria-labelledby="strict-list-order-heading"
               aria-describedby="strict-list-order-movies-desc"
-              disabled={randomSinglePickMovies}
+              disabled={randomSinglePickMovies && !isTouchPrimaryUi}
               title={
                 randomSinglePickMovies ? t('strictFilmographySwitchDisabledWhileRandomOn') : undefined
               }
-              onClick={() => setStrictListOrderMovies(!strictListOrderMovies)}
+              onClick={() => {
+                if (randomSinglePickMovies) {
+                  if (isTouchPrimaryUi) {
+                    setPickModeBlockedHint(t('strictFilmographySwitchDisabledWhileRandomOn'));
+                  }
+                  return;
+                }
+                setStrictListOrderMovies(!strictListOrderMovies);
+              }}
               className={
                 'relative shrink-0 h-7 w-12 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:opacity-45 disabled:cursor-not-allowed ' +
+                (randomSinglePickMovies && isTouchPrimaryUi ? 'opacity-45 cursor-not-allowed ' : '') +
                 (strictListOrderMovies
                   ? 'bg-indigo-600 dark:bg-indigo-500'
                   : 'bg-gray-300 dark:bg-gray-600')
@@ -259,13 +289,22 @@ export default function UserStatsPage() {
               aria-disabled={strictListOrderActors}
               aria-labelledby="random-single-pick-heading"
               aria-describedby="random-single-pick-cast-desc"
-              disabled={strictListOrderActors}
+              disabled={strictListOrderActors && !isTouchPrimaryUi}
               title={
                 strictListOrderActors ? t('randomCastSwitchDisabledWhileStrictOn') : undefined
               }
-              onClick={() => setRandomSinglePickActors(!randomSinglePickActors)}
+              onClick={() => {
+                if (strictListOrderActors) {
+                  if (isTouchPrimaryUi) {
+                    setPickModeBlockedHint(t('randomCastSwitchDisabledWhileStrictOn'));
+                  }
+                  return;
+                }
+                setRandomSinglePickActors(!randomSinglePickActors);
+              }}
               className={
                 'relative shrink-0 h-7 w-12 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:opacity-45 disabled:cursor-not-allowed ' +
+                (strictListOrderActors && isTouchPrimaryUi ? 'opacity-45 cursor-not-allowed ' : '') +
                 (randomSinglePickActors
                   ? 'bg-indigo-600 dark:bg-indigo-500'
                   : 'bg-gray-300 dark:bg-gray-600')
@@ -295,13 +334,22 @@ export default function UserStatsPage() {
               aria-disabled={strictListOrderMovies}
               aria-labelledby="random-single-pick-heading"
               aria-describedby="random-single-pick-movies-desc"
-              disabled={strictListOrderMovies}
+              disabled={strictListOrderMovies && !isTouchPrimaryUi}
               title={
                 strictListOrderMovies ? t('randomFilmographySwitchDisabledWhileStrictOn') : undefined
               }
-              onClick={() => setRandomSinglePickMovies(!randomSinglePickMovies)}
+              onClick={() => {
+                if (strictListOrderMovies) {
+                  if (isTouchPrimaryUi) {
+                    setPickModeBlockedHint(t('randomFilmographySwitchDisabledWhileStrictOn'));
+                  }
+                  return;
+                }
+                setRandomSinglePickMovies(!randomSinglePickMovies);
+              }}
               className={
                 'relative shrink-0 h-7 w-12 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:opacity-45 disabled:cursor-not-allowed ' +
+                (strictListOrderMovies && isTouchPrimaryUi ? 'opacity-45 cursor-not-allowed ' : '') +
                 (randomSinglePickMovies
                   ? 'bg-indigo-600 dark:bg-indigo-500'
                   : 'bg-gray-300 dark:bg-gray-600')
@@ -429,6 +477,25 @@ export default function UserStatsPage() {
           </ul>
         </section>
       </div>
+
+      {pickModeBlockedHint != null ? (
+        <div className="fixed bottom-4 left-4 right-4 z-[100] sm:left-auto sm:right-4 sm:max-w-md w-auto pointer-events-none flex justify-center sm:justify-end">
+          <div
+            role="status"
+            aria-live="polite"
+            className="pointer-events-auto rounded-lg border border-amber-500/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur px-4 py-3 shadow-lg shadow-amber-950/20 max-w-full"
+          >
+            <p className="text-sm text-gray-800 dark:text-gray-200 leading-snug">{pickModeBlockedHint}</p>
+            <button
+              type="button"
+              onClick={() => setPickModeBlockedHint(null)}
+              className="mt-2 text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+            >
+              {t('toastDismiss')}
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
