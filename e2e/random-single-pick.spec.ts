@@ -7,6 +7,7 @@ import {
   actor200MovieCredits,
   movie100Details,
 } from './tmdbFixtures';
+import { registerTmdbImageMocks } from './mockTmdbImages';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const screenshotDir = path.join(__dirname, 'screenshots');
@@ -161,6 +162,7 @@ test.describe('random single pick', () => {
   test('actor step: only one selectable card when random single pick is on', async ({
     page,
   }, testInfo) => {
+    await registerTmdbImageMocks(page);
     await page.route('https://api.themoviedb.org/3/**', fulfillTmdb);
     await page.addInitScript(
       ([listsJson, uiJson]) => {
@@ -184,6 +186,7 @@ test.describe('random single pick', () => {
   test('movie step: only one selectable card when random single pick is on', async ({
     page,
   }, testInfo) => {
+    await registerTmdbImageMocks(page);
     await page.route('https://api.themoviedb.org/3/**', fulfillTmdb);
     await page.addInitScript(
       ([listsJson, uiJson]) => {
