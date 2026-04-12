@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { pickRandomSelectableId } from '../lib/randomSinglePick';
+import { eligibleActorIdsForRandomPick, pickRandomSelectableId } from '../lib/randomSinglePick';
 import type { MovieCredits } from '../types/movie';
 import { useChainContext } from '../context/ChainContext';
 import ActorCard from './ActorCard';
@@ -46,7 +46,8 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
 
   const bridgeActorIds = useMemo(() => usedBridgeActorIds(links), [links]);
   const bridgeStepsByActorId = useMemo(() => bridgeActorStepByActorId(links), [links]);
-  const { strictListOrderActors, randomSinglePickActors } = useChainUiPreferences();
+  const { strictListOrderActors, randomSinglePickActors, randomSinglePickLimitToTop12 } =
+    useChainUiPreferences();
 
   const cast = useMemo(
     () =>
@@ -62,10 +63,13 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
     [cast, bridgeActorIds]
   );
 
-  const eligibleActorIdsInOrder = useMemo(
-    () => cast.filter((a) => !bridgeActorIds.has(a.id)).map((a) => a.id),
-    [cast, bridgeActorIds]
-  );
+  const eligibleActorIdsInOrder = useMemo(() => {
+    if (!randomSinglePickActors) return [];
+    if (!randomSinglePickLimitToTop12) {
+      return cast.filter((a) => !bridgeActorIds.has(a.id)).map((a) => a.id);
+    }
+    return eligibleActorIdsForRandomPick(cast, bridgeActorIds);
+  }, [randomSinglePickActors, randomSinglePickLimitToTop12, cast, bridgeActorIds]);
 
   const randomChosenActorId = useMemo(() => {
     if (!randomSinglePickActors || eligibleActorIdsInOrder.length === 0) return null;

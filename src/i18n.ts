@@ -273,10 +273,13 @@ const resources = {
         'Optional: only one randomly chosen eligible pick is clickable per step (actors not used as bridges, movies not already in the chain). Only one mode per axis: while Strict list order is on for that axis, this toggle stays disabled until you turn strict off.',
       randomSinglePickCastLabel: 'Random single actor',
       randomSinglePickCastHint:
-        'Only one random eligible cast member can be chosen each time you pick an actor (still skips bridge actors).',
+        'One random eligible cast member per step (bridge actors skipped). When “Limit random pool to top 12” is on, only the first 12 billing slots are used.',
       randomSinglePickFilmographyLabel: 'Random single movie',
       randomSinglePickFilmographyHint:
-        'Only one random eligible title can be chosen from the current sort and search (still skips movies already in the chain).',
+        'One random eligible title per step (skips movies already in the chain). When “Limit random pool to top 12” is on, only the first 12 eligible titles in the current list are used.',
+      randomSinglePickLimitPoolLabel: 'Limit random pool to top 12',
+      randomSinglePickLimitPoolHint:
+        'When on, random picks use a window from the top of each list (bridge actors and in-chain movies excluded). If the first 12 rows are all excluded, the window grows by 5 rows at a time until something is available. Turn off to allow a random pick anywhere in the full lists.',
       actorRandomPickLockedHint: 'Single random pick is on — only the chosen actor can be selected',
       actorRandomPickLockedAria:
         '{{name}}. Single random pick is on; only one randomly chosen eligible actor is selectable.',
@@ -626,10 +629,13 @@ const resources = {
         'По желанию: на каждом шаге доступен только один случайно выбранный подходящий вариант (актёры не-мосты, фильмы ещё не в цепочке). Только один режим на ось: пока включён строгий порядок для этой оси, этот переключатель недоступен, пока не выключите строгий порядок.',
       randomSinglePickCastLabel: 'Один случайный актёр',
       randomSinglePickCastHint:
-        'Каждый раз при выборе актёра доступен только один случайный подходящий из состава (мосты по-прежнему пропускаются).',
+        'Один случайный подходящий актёр за шаг (мосты пропускаются). Если включено «Ограничить пул до топ-12», используются только первые 12 мест в составе.',
       randomSinglePickFilmographyLabel: 'Один случайный фильм',
       randomSinglePickFilmographyHint:
-        'Доступен только один случайный подходящий фильм в текущей сортировке и поиску (уже в цепочке по-прежнему недоступны).',
+        'Один случайный подходящий фильм за шаг (уже в цепочке недоступны). Если включено «Ограничить пул до топ-12», используются только первые 12 подходящих в текущем списке.',
+      randomSinglePickLimitPoolLabel: 'Ограничить пул случайного выбора топ-12',
+      randomSinglePickLimitPoolHint:
+        'Если включено: случайный выбор из «окна» с верха списка (мосты и фильмы в цепочке исключаются). Если первые 12 строк все недоступны, окно увеличивается по 5 строк, пока не появится вариант. Выключите для выбора из полного списка.',
       actorRandomPickLockedHint:
         'Включён режим «один случайный выбор» — можно выбрать только отмеченного актёра',
       actorRandomPickLockedAria:
