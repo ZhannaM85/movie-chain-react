@@ -258,7 +258,7 @@ const resources = {
       userStatsSubtitle: 'Activity and records stored only in this browser.',
       strictListOrderSectionTitle: 'Strict list order',
       strictListOrderSectionIntro:
-        'Optional: only the next pick in the current list order is clickable (skipping actors already used as bridges or movies already in the chain).',
+        'Optional: only the next pick in the current list order is clickable (skipping actors already used as bridges or movies already in the chain). Only one mode per axis: while Single random pick is on for that axis, this toggle stays disabled until you turn random off.',
       strictListOrderCastLabel: 'Cast list order',
       strictListOrderCastHint: 'Only the next actor in the cast list (after skipping bridge actors).',
       strictListOrderFilmographyLabel: 'Filmography order',
@@ -268,6 +268,29 @@ const resources = {
       actorSequentialLockedAria: '{{name}}. Pick the next actor in the cast list first.',
       movieSequentialLockedHint: 'Pick the next title in the list first',
       movieSequentialLockedAria: '{{title}}. Pick the next movie in the list first.',
+      randomSinglePickSectionTitle: 'Single random pick',
+      randomSinglePickSectionIntro:
+        'Optional: only one randomly chosen eligible pick is clickable per step (actors not used as bridges, movies not already in the chain). Only one mode per axis: while Strict list order is on for that axis, this toggle stays disabled until you turn strict off.',
+      randomSinglePickCastLabel: 'Random single actor',
+      randomSinglePickCastHint:
+        'Only one random eligible cast member can be chosen each time you pick an actor (still skips bridge actors).',
+      randomSinglePickFilmographyLabel: 'Random single movie',
+      randomSinglePickFilmographyHint:
+        'Only one random eligible title can be chosen from the current sort and search (still skips movies already in the chain).',
+      actorRandomPickLockedHint: 'Single random pick is on — only the chosen actor can be selected',
+      actorRandomPickLockedAria:
+        '{{name}}. Single random pick is on; only one randomly chosen eligible actor is selectable.',
+      movieRandomPickLockedHint: 'Single random pick is on — only the chosen title can be selected',
+      movieRandomPickLockedAria:
+        '{{title}}. Single random pick is on; only one randomly chosen eligible movie is selectable.',
+      strictCastSwitchDisabledWhileRandomOn:
+        'Random single actor is on. Turn it off to use cast list order.',
+      strictFilmographySwitchDisabledWhileRandomOn:
+        'Random single movie is on. Turn it off to use filmography order.',
+      randomCastSwitchDisabledWhileStrictOn:
+        'Cast list order is on. Turn it off to use random single actor.',
+      randomFilmographySwitchDisabledWhileStrictOn:
+        'Filmography order is on. Turn it off to use random single movie.',
       statTotalMoviesLogged: 'Movies logged',
       statChallengePointsTotal: 'Challenge points (all time)',
       statLongestStreak: 'Longest streak',
@@ -588,7 +611,7 @@ const resources = {
       userStatsSubtitle: 'Активность и рекорды хранятся только в этом браузере.',
       strictListOrderSectionTitle: 'Строгий порядок списка',
       strictListOrderSectionIntro:
-        'По желанию: доступен только следующий выбор в текущем порядке списка (с пропуском актёров-мостов и фильмов, уже в цепочке).',
+        'По желанию: доступен только следующий выбор в текущем порядке списка (с пропуском актёров-мостов и фильмов, уже в цепочке). Только один режим на ось: пока включён «Один случайный выбор» для этой оси, этот переключатель недоступен, пока не выключите случайный выбор.',
       strictListOrderCastLabel: 'Порядок в списке актёров',
       strictListOrderCastHint: 'Только следующий актёр в списке состава (после пропуска уже использованных мостов).',
       strictListOrderFilmographyLabel: 'Порядок в фильмографии',
@@ -598,6 +621,31 @@ const resources = {
       actorSequentialLockedAria: '{{name}}. Сначала выберите следующего актёра в списке состава.',
       movieSequentialLockedHint: 'Сначала выберите следующий фильм в списке',
       movieSequentialLockedAria: '{{title}}. Сначала выберите следующий фильм в списке.',
+      randomSinglePickSectionTitle: 'Один случайный выбор',
+      randomSinglePickSectionIntro:
+        'По желанию: на каждом шаге доступен только один случайно выбранный подходящий вариант (актёры не-мосты, фильмы ещё не в цепочке). Только один режим на ось: пока включён строгий порядок для этой оси, этот переключатель недоступен, пока не выключите строгий порядок.',
+      randomSinglePickCastLabel: 'Один случайный актёр',
+      randomSinglePickCastHint:
+        'Каждый раз при выборе актёра доступен только один случайный подходящий из состава (мосты по-прежнему пропускаются).',
+      randomSinglePickFilmographyLabel: 'Один случайный фильм',
+      randomSinglePickFilmographyHint:
+        'Доступен только один случайный подходящий фильм в текущей сортировке и поиску (уже в цепочке по-прежнему недоступны).',
+      actorRandomPickLockedHint:
+        'Включён режим «один случайный выбор» — можно выбрать только отмеченного актёра',
+      actorRandomPickLockedAria:
+        '{{name}}. Включён режим одного случайного выбора; доступен только один случайно выбранный подходящий актёр.',
+      movieRandomPickLockedHint:
+        'Включён режим «один случайный выбор» — можно выбрать только отмеченный фильм',
+      movieRandomPickLockedAria:
+        '{{title}}. Включён режим одного случайного выбора; доступен только один случайно выбранный подходящий фильм.',
+      strictCastSwitchDisabledWhileRandomOn:
+        'Включён «Один случайный актёр». Выключите его, чтобы использовать порядок в списке актёров.',
+      strictFilmographySwitchDisabledWhileRandomOn:
+        'Включён «Один случайный фильм». Выключите его, чтобы использовать порядок в фильмографии.',
+      randomCastSwitchDisabledWhileStrictOn:
+        'Включён порядок в списке актёров. Выключите его, чтобы использовать одного случайного актёра.',
+      randomFilmographySwitchDisabledWhileStrictOn:
+        'Включён порядок в фильмографии. Выключите его, чтобы использовать один случайный фильм.',
       statTotalMoviesLogged: 'Фильмов в цепочках',
       statChallengePointsTotal: 'Очки сложности (всего)',
       statLongestStreak: 'Самая длинная серия',
