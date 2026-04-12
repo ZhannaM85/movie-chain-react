@@ -158,7 +158,9 @@ async function fulfillTmdb(route: Route) {
 }
 
 test.describe('random single pick', () => {
-  test('actor step: only one selectable card when random single pick is on', async ({ page }) => {
+  test('actor step: only one selectable card when random single pick is on', async ({
+    page,
+  }, testInfo) => {
     await page.route('https://api.themoviedb.org/3/**', fulfillTmdb);
     await page.addInitScript(
       ([listsJson, uiJson]) => {
@@ -174,12 +176,14 @@ test.describe('random single pick', () => {
     await expect(page.locator('[data-selectable="true"]')).toHaveCount(1, { timeout: 15_000 });
 
     await page.screenshot({
-      path: path.join(screenshotDir, 'random-single-actor.png'),
+      path: path.join(screenshotDir, `random-single-actor-${testInfo.project.name}.png`),
       fullPage: true,
     });
   });
 
-  test('movie step: only one selectable card when random single pick is on', async ({ page }) => {
+  test('movie step: only one selectable card when random single pick is on', async ({
+    page,
+  }, testInfo) => {
     await page.route('https://api.themoviedb.org/3/**', fulfillTmdb);
     await page.addInitScript(
       ([listsJson, uiJson]) => {
@@ -197,7 +201,7 @@ test.describe('random single pick', () => {
     await expect(page.getByText('Bravo')).toBeVisible();
 
     await page.screenshot({
-      path: path.join(screenshotDir, 'random-single-movie.png'),
+      path: path.join(screenshotDir, `random-single-movie-${testInfo.project.name}.png`),
       fullPage: true,
     });
   });
