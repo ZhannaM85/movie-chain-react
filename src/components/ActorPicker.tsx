@@ -39,14 +39,14 @@ function ChevronToggleIcon({ expanded }: { expanded: boolean }) {
 }
 
 export default function ActorPicker({ credits }: ActorPickerProps) {
-  const { selectActor, prependMode, links } = useChainContext();
+  const { selectActor, prependMode, links, crossListData } = useChainContext();
   const { t } = useTranslation();
   const [showAll, setShowAll] = useState(false);
   const [actorsExpanded, setActorsExpanded] = useState(true);
 
   const bridgeActorIds = useMemo(() => usedBridgeActorIds(links), [links]);
   const bridgeStepsByActorId = useMemo(() => bridgeActorStepByActorId(links), [links]);
-  const { strictListOrderActors, randomSinglePickActors, randomSinglePickLimitToTop12 } =
+  const { strictListOrderActors, randomSinglePickActors, randomSinglePickLimitToTop12, crossListMemory } =
     useChainUiPreferences();
 
   const cast = useMemo(
@@ -131,6 +131,13 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
                   ? scoreChainStep(headMovie, actor.popularity)
                   : scoreActorContribution(actor.popularity);
               const challengePointsVariant = prependMode ? 'step' : 'actorOnly';
+              const crossListActorNames = crossListMemory
+                ? crossListData.bridgeActorIds.get(actor.id)
+                : undefined;
+              const crossListWarning =
+                crossListActorNames && crossListActorNames.length > 0
+                  ? t('actorCrossListWarning', { lists: crossListActorNames.join(', ') })
+                  : undefined;
               return (
                 <ActorCard
                   key={actor.id}
@@ -151,6 +158,7 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
                   onClick={() => selectActor(actor.id, actor.name, actor.popularity)}
                   challengePoints={listOrderLocked ? null : challengePoints}
                   challengePointsVariant={challengePointsVariant}
+                  crossListWarning={crossListWarning}
                 />
               );
             })}
