@@ -4,7 +4,6 @@ import {
   eligibleMovieIdsForRandomPick,
   pickRandomSelectableId,
   RANDOM_SINGLE_PICK_POOL_EXPAND_STEP,
-  RANDOM_SINGLE_PICK_POOL_MAX,
 } from './randomSinglePick';
 
 describe('pickRandomSelectableId', () => {
