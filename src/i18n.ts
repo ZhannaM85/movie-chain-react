@@ -294,6 +294,8 @@ const resources = {
         'Cast list order is on. Turn it off to use random single actor.',
       randomFilmographySwitchDisabledWhileStrictOn:
         'Filmography order is on. Turn it off to use random single movie.',
+      randomLimitPoolSwitchDisabledNoRandomOn:
+        'Turn on “Random single actor” or “Random single movie” first — this option only applies to single random pick.',
       statTotalMoviesLogged: 'Movies logged',
       statChallengePointsTotal: 'Challenge points (all time)',
       statLongestStreak: 'Longest streak',
@@ -652,6 +654,8 @@ const resources = {
         'Включён порядок в списке актёров. Выключите его, чтобы использовать одного случайного актёра.',
       randomFilmographySwitchDisabledWhileStrictOn:
         'Включён порядок в фильмографии. Выключите его, чтобы использовать один случайный фильм.',
+      randomLimitPoolSwitchDisabledNoRandomOn:
+        'Сначала включите «Один случайный актёр» или «Один случайный фильм» — эта настройка действует только для режима одного случайного выбора.',
       statTotalMoviesLogged: 'Фильмов в цепочках',
       statChallengePointsTotal: 'Очки сложности (всего)',
       statLongestStreak: 'Самая длинная серия',

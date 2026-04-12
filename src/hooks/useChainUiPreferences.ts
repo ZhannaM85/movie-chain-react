@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import {
   loadChainUiPreferences,
+  normalizeChainUiPickModes,
   saveChainUiPreferences,
   type ChainUiPreferences,
 } from '../lib/chainUiPreferences';
@@ -30,7 +31,7 @@ export function useChainUiPreferences() {
 
   const setRandomSinglePickActors = useCallback((value: boolean) => {
     setPrefs((p) => {
-      const next = { ...p, randomSinglePickActors: value };
+      const next = normalizeChainUiPickModes({ ...p, randomSinglePickActors: value });
       saveChainUiPreferences(next);
       return next;
     });
@@ -38,7 +39,7 @@ export function useChainUiPreferences() {
 
   const setRandomSinglePickMovies = useCallback((value: boolean) => {
     setPrefs((p) => {
-      const next = { ...p, randomSinglePickMovies: value };
+      const next = normalizeChainUiPickModes({ ...p, randomSinglePickMovies: value });
       saveChainUiPreferences(next);
       return next;
     });
@@ -46,7 +47,8 @@ export function useChainUiPreferences() {
 
   const setRandomSinglePickLimitToTop12 = useCallback((value: boolean) => {
     setPrefs((p) => {
-      const next = { ...p, randomSinglePickLimitToTop12: value };
+      const canUse = p.randomSinglePickActors || p.randomSinglePickMovies;
+      const next = { ...p, randomSinglePickLimitToTop12: canUse ? value : false };
       saveChainUiPreferences(next);
       return next;
     });
