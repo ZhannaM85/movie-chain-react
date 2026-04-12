@@ -392,9 +392,9 @@ function MovieGrid({
             className={
               'group text-left rounded-lg overflow-hidden border transition-all ' +
               (inChain || inCrossList
-                ? 'cursor-not-allowed opacity-50 bg-gray-100/80 dark:bg-gray-800/30 border-gray-200/80 dark:border-gray-800/80'
+                ? 'cursor-not-allowed opacity-40 bg-gray-100/80 dark:bg-gray-800/30 border-gray-200/80 dark:border-gray-800/80'
                 : listOrderLocked
-                  ? 'cursor-not-allowed border-amber-400/60 dark:border-amber-600/50 bg-amber-50/50 dark:bg-amber-950/25 ring-2 ring-amber-400/35 dark:ring-amber-600/50 opacity-[0.88]'
+                  ? 'cursor-not-allowed border-amber-400/60 dark:border-amber-600/50 bg-amber-50/50 dark:bg-amber-950/25 ring-2 ring-amber-400/35 dark:ring-amber-600/50 opacity-50'
                   : 'cursor-pointer bg-gray-100/80 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-800 hover:border-indigo-600/50 dark:hover:border-indigo-500/50 hover:scale-[1.02]')
             }
             onClick={() => {
@@ -413,7 +413,7 @@ function MovieGrid({
               alt={movie.title}
               className={
                 'w-full aspect-[2/3] object-cover ' +
-                (inChain || inCrossList ? 'grayscale' : listOrderLocked ? 'brightness-[0.92]' : '')
+                (inChain || inCrossList ? 'grayscale' : listOrderLocked ? 'grayscale brightness-[0.85]' : '')
               }
             />
             <div className="p-2">
