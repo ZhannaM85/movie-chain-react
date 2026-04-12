@@ -31,4 +31,21 @@ describe('normalizeChainUiPickModes', () => {
     expect(out.strictListOrderActors).toBe(true);
     expect(out.strictListOrderMovies).toBe(false);
   });
+
+  it('clears limit-to-top-12 when both random single picks are off', () => {
+    const out = normalizeChainUiPickModes({
+      ...DEFAULT_CHAIN_UI_PREFERENCES,
+      randomSinglePickLimitToTop12: true,
+    });
+    expect(out.randomSinglePickLimitToTop12).toBe(false);
+  });
+
+  it('keeps limit-to-top-12 when at least one random single pick is on', () => {
+    const out = normalizeChainUiPickModes({
+      ...DEFAULT_CHAIN_UI_PREFERENCES,
+      randomSinglePickActors: true,
+      randomSinglePickLimitToTop12: true,
+    });
+    expect(out.randomSinglePickLimitToTop12).toBe(true);
+  });
 });

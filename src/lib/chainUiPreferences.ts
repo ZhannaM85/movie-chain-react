@@ -20,18 +20,24 @@ export const DEFAULT_CHAIN_UI_PREFERENCES: ChainUiPreferences = {
   strictListOrderMovies: false,
   randomSinglePickActors: false,
   randomSinglePickMovies: false,
-  randomSinglePickLimitToTop12: true,
+  /** Only applies when at least one single-random mode is on; see {@link normalizeChainUiPickModes}. */
+  randomSinglePickLimitToTop12: false,
 };
 
 /**
  * Legacy / migration: if both modes were true for an axis (should not happen with UI),
  * keep random and clear strict so stored prefs stay consistent.
+ * Also clears “limit pool to top 12” when neither random single pick mode is on.
  */
 export function normalizeChainUiPickModes(prefs: ChainUiPreferences): ChainUiPreferences {
+  const strictListOrderActors = prefs.strictListOrderActors && !prefs.randomSinglePickActors;
+  const strictListOrderMovies = prefs.strictListOrderMovies && !prefs.randomSinglePickMovies;
+  const randomSinglePickAnyOn = prefs.randomSinglePickActors || prefs.randomSinglePickMovies;
   return {
     ...prefs,
-    strictListOrderActors: prefs.strictListOrderActors && !prefs.randomSinglePickActors,
-    strictListOrderMovies: prefs.strictListOrderMovies && !prefs.randomSinglePickMovies,
+    strictListOrderActors,
+    strictListOrderMovies,
+    randomSinglePickLimitToTop12: randomSinglePickAnyOn ? prefs.randomSinglePickLimitToTop12 : false,
   };
 }
 
