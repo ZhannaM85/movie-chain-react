@@ -7,6 +7,7 @@ import {
   actor200MovieCredits,
   movie100Details,
 } from './tmdbFixtures';
+import { registerTmdbImageMocks } from './mockTmdbImages';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const screenshotDir = path.join(__dirname, 'screenshots');
@@ -96,6 +97,7 @@ const uiPrefsRandomActors = JSON.stringify({
   strictListOrderMovies: false,
   randomSinglePickActors: true,
   randomSinglePickMovies: false,
+  randomSinglePickLimitToTop12: true,
 });
 
 const uiPrefsRandomMovies = JSON.stringify({
@@ -103,6 +105,7 @@ const uiPrefsRandomMovies = JSON.stringify({
   strictListOrderMovies: false,
   randomSinglePickActors: false,
   randomSinglePickMovies: true,
+  randomSinglePickLimitToTop12: true,
 });
 
 async function fulfillTmdb(route: Route) {
@@ -161,6 +164,7 @@ test.describe('random single pick', () => {
   test('actor step: only one selectable card when random single pick is on', async ({
     page,
   }, testInfo) => {
+    await registerTmdbImageMocks(page);
     await page.route('https://api.themoviedb.org/3/**', fulfillTmdb);
     await page.addInitScript(
       ([listsJson, uiJson]) => {
@@ -184,6 +188,7 @@ test.describe('random single pick', () => {
   test('movie step: only one selectable card when random single pick is on', async ({
     page,
   }, testInfo) => {
+    await registerTmdbImageMocks(page);
     await page.route('https://api.themoviedb.org/3/**', fulfillTmdb);
     await page.addInitScript(
       ([listsJson, uiJson]) => {

@@ -44,14 +44,24 @@ export function useChainUiPreferences() {
     });
   }, []);
 
+  const setRandomSinglePickLimitToTop12 = useCallback((value: boolean) => {
+    setPrefs((p) => {
+      const next = { ...p, randomSinglePickLimitToTop12: value };
+      saveChainUiPreferences(next);
+      return next;
+    });
+  }, []);
+
   return {
     strictListOrderActors: prefs.strictListOrderActors,
     strictListOrderMovies: prefs.strictListOrderMovies,
     randomSinglePickActors: prefs.randomSinglePickActors,
     randomSinglePickMovies: prefs.randomSinglePickMovies,
+    randomSinglePickLimitToTop12: prefs.randomSinglePickLimitToTop12,
     setStrictListOrderActors,
     setStrictListOrderMovies,
     setRandomSinglePickActors,
     setRandomSinglePickMovies,
+    setRandomSinglePickLimitToTop12,
   };
 }
