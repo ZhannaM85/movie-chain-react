@@ -73,10 +73,12 @@ export default function UserStatsPage() {
     strictListOrderMovies,
     randomSinglePickActors,
     randomSinglePickMovies,
+    randomSinglePickLimitToTop12,
     setStrictListOrderActors,
     setStrictListOrderMovies,
     setRandomSinglePickActors,
     setRandomSinglePickMovies,
+    setRandomSinglePickLimitToTop12,
   } = useChainUiPreferences();
 
   const chainMovieIdsKey = useMemo(() => links.map((l) => l.movie.id).join(','), [links]);
@@ -359,6 +361,37 @@ export default function UserStatsPage() {
                 className={
                   'absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ' +
                   (randomSinglePickMovies ? 'translate-x-5' : 'translate-x-0')
+                }
+              />
+            </button>
+          </div>
+          <div className="flex items-start justify-between gap-3 pt-3 border-t border-gray-200 dark:border-gray-800">
+            <div className="min-w-0" id="random-single-pick-limit-desc">
+              <span className="block text-sm font-medium text-gray-800 dark:text-gray-200">
+                {t('randomSinglePickLimitPoolLabel')}
+              </span>
+              <span className="block text-xs text-gray-500 mt-0.5">
+                {t('randomSinglePickLimitPoolHint')}
+              </span>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={randomSinglePickLimitToTop12}
+              aria-labelledby="random-single-pick-heading"
+              aria-describedby="random-single-pick-limit-desc"
+              onClick={() => setRandomSinglePickLimitToTop12(!randomSinglePickLimitToTop12)}
+              className={
+                'relative shrink-0 h-7 w-12 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ' +
+                (randomSinglePickLimitToTop12
+                  ? 'bg-indigo-600 dark:bg-indigo-500'
+                  : 'bg-gray-300 dark:bg-gray-600')
+              }
+            >
+              <span
+                className={
+                  'absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ' +
+                  (randomSinglePickLimitToTop12 ? 'translate-x-5' : 'translate-x-0')
                 }
               />
             </button>

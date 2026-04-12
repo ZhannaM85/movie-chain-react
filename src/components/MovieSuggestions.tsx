@@ -11,7 +11,7 @@ import ChallengePointsInline from './ChallengePointsInline';
 import { scoreChainStep } from '../gamification/chainScoring';
 import { useChainUiPreferences } from '../hooks/useChainUiPreferences';
 import { findFirstSelectableMovieId } from '../lib/sequentialSelection';
-import { pickRandomSelectableId } from '../lib/randomSinglePick';
+import { eligibleMovieIdsForRandomPick, pickRandomSelectableId } from '../lib/randomSinglePick';
 import { TMDB_GENRE_ANIMATION } from '../lib/tmdbGenres';
 
 type SortOption = 'popularity' | 'title-asc' | 'title-desc' | 'date-newest' | 'date-oldest';
@@ -71,7 +71,8 @@ export default function MovieSuggestions() {
   }, [prependMode, headMovie, actor]);
 
   const chainMovieIds = useMemo(() => new Set(links.map((l) => l.movie.id)), [links]);
-  const { strictListOrderMovies, randomSinglePickMovies } = useChainUiPreferences();
+  const { strictListOrderMovies, randomSinglePickMovies, randomSinglePickLimitToTop12 } =
+    useChainUiPreferences();
 
   /** Full sort + search order (no 20-movie pagination) — defines “next” for strict list order. */
   const orderedForSequential = useMemo(() => {
@@ -86,10 +87,13 @@ export default function MovieSuggestions() {
     [orderedForSequential, chainMovieIds]
   );
 
-  const eligibleMovieIdsInOrder = useMemo(
-    () => orderedForSequential.filter((m) => !chainMovieIds.has(m.id)).map((m) => m.id),
-    [orderedForSequential, chainMovieIds]
-  );
+  const eligibleMovieIdsInOrder = useMemo(() => {
+    if (!randomSinglePickMovies) return [];
+    if (!randomSinglePickLimitToTop12) {
+      return orderedForSequential.filter((m) => !chainMovieIds.has(m.id)).map((m) => m.id);
+    }
+    return eligibleMovieIdsForRandomPick(orderedForSequential, chainMovieIds);
+  }, [randomSinglePickMovies, randomSinglePickLimitToTop12, orderedForSequential, chainMovieIds]);
 
   const randomChosenMovieId = useMemo(() => {
     if (!randomSinglePickMovies || eligibleMovieIdsInOrder.length === 0) return null;

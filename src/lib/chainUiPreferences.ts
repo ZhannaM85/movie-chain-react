@@ -8,6 +8,11 @@ export interface ChainUiPreferences {
   randomSinglePickActors: boolean;
   /** Only one randomly chosen eligible movie is clickable per pick-movie step. */
   randomSinglePickMovies: boolean;
+  /**
+   * When true, random single pick only draws from the first 12 billing cast slots / 12 eligible movies.
+   * When false, the full eligible lists are used (full-access randomizer).
+   */
+  randomSinglePickLimitToTop12: boolean;
 }
 
 export const DEFAULT_CHAIN_UI_PREFERENCES: ChainUiPreferences = {
@@ -15,6 +20,7 @@ export const DEFAULT_CHAIN_UI_PREFERENCES: ChainUiPreferences = {
   strictListOrderMovies: false,
   randomSinglePickActors: false,
   randomSinglePickMovies: false,
+  randomSinglePickLimitToTop12: true,
 };
 
 /**
@@ -51,6 +57,10 @@ export function loadChainUiPreferences(): ChainUiPreferences {
         typeof parsed.randomSinglePickMovies === 'boolean'
           ? parsed.randomSinglePickMovies
           : DEFAULT_CHAIN_UI_PREFERENCES.randomSinglePickMovies,
+      randomSinglePickLimitToTop12:
+        typeof parsed.randomSinglePickLimitToTop12 === 'boolean'
+          ? parsed.randomSinglePickLimitToTop12
+          : DEFAULT_CHAIN_UI_PREFERENCES.randomSinglePickLimitToTop12,
     };
     const normalized = normalizeChainUiPickModes(merged);
     if (JSON.stringify(merged) !== JSON.stringify(normalized)) {

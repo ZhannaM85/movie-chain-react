@@ -97,6 +97,7 @@ const uiPrefsRandomActors = JSON.stringify({
   strictListOrderMovies: false,
   randomSinglePickActors: true,
   randomSinglePickMovies: false,
+  randomSinglePickLimitToTop12: true,
 });
 
 const uiPrefsRandomMovies = JSON.stringify({
@@ -104,6 +105,7 @@ const uiPrefsRandomMovies = JSON.stringify({
   strictListOrderMovies: false,
   randomSinglePickActors: false,
   randomSinglePickMovies: true,
+  randomSinglePickLimitToTop12: true,
 });
 
 async function fulfillTmdb(route: Route) {
