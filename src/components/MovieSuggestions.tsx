@@ -74,6 +74,14 @@ export default function MovieSuggestions() {
   const { strictListOrderMovies, randomSinglePickMovies, randomSinglePickLimitToTop12, crossListMemory } =
     useChainUiPreferences();
 
+  /** Union of in-chain IDs and cross-list-blocked IDs so pick modes never land on a blocked movie. */
+  const excludedMovieIds = useMemo(() => {
+    if (!crossListMemory || crossListData.movieIds.size === 0) return chainMovieIds;
+    const merged = new Set(chainMovieIds);
+    for (const id of crossListData.movieIds.keys()) merged.add(id);
+    return merged;
+  }, [chainMovieIds, crossListMemory, crossListData.movieIds]);
+
   /** Full sort + search order (no 20-movie pagination) — defines “next” for strict list order. */
   const orderedForSequential = useMemo(() => {
     const sorted = sortMovies(movies, sortBy);
@@ -83,17 +91,17 @@ export default function MovieSuggestions() {
   }, [movies, sortBy, searchQuery]);
 
   const firstSelectableMovieId = useMemo(
-    () => findFirstSelectableMovieId(orderedForSequential, chainMovieIds),
-    [orderedForSequential, chainMovieIds]
+    () => findFirstSelectableMovieId(orderedForSequential, excludedMovieIds),
+    [orderedForSequential, excludedMovieIds]
   );
 
   const eligibleMovieIdsInOrder = useMemo(() => {
     if (!randomSinglePickMovies) return [];
     if (!randomSinglePickLimitToTop12) {
-      return orderedForSequential.filter((m) => !chainMovieIds.has(m.id)).map((m) => m.id);
+      return orderedForSequential.filter((m) => !excludedMovieIds.has(m.id)).map((m) => m.id);
     }
-    return eligibleMovieIdsForRandomPick(orderedForSequential, chainMovieIds);
-  }, [randomSinglePickMovies, randomSinglePickLimitToTop12, orderedForSequential, chainMovieIds]);
+    return eligibleMovieIdsForRandomPick(orderedForSequential, excludedMovieIds);
+  }, [randomSinglePickMovies, randomSinglePickLimitToTop12, orderedForSequential, excludedMovieIds]);
 
   const randomChosenMovieId = useMemo(() => {
     if (!randomSinglePickMovies || eligibleMovieIdsInOrder.length === 0) return null;
