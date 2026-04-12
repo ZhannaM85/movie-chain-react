@@ -31,11 +31,17 @@ export function bridgeActorStepByActorId(links: ChainLink[]): Map<number, Bridge
   return map;
 }
 
+export interface CrossListEntry {
+  listName: string;
+  /** YYYY-MM-DD calendar day, or null when the link had no loggedDate. */
+  date: string | null;
+}
+
 export interface CrossListUsage {
-  /** Movie ID → list name(s) it appeared in (across all non-active lists). */
-  movieIds: Map<number, string[]>;
-  /** Bridge actor ID → list name(s) it was used as a bridge in (across all non-active lists). */
-  bridgeActorIds: Map<number, string[]>;
+  /** Movie ID → list entries it appeared in (across all non-active lists). */
+  movieIds: Map<number, CrossListEntry[]>;
+  /** Bridge actor ID → list entries it was used as a bridge in (across all non-active lists). */
+  bridgeActorIds: Map<number, CrossListEntry[]>;
 }
 
 const EMPTY_CROSS_LIST_USAGE: CrossListUsage = {
@@ -43,9 +49,22 @@ const EMPTY_CROSS_LIST_USAGE: CrossListUsage = {
   bridgeActorIds: new Map(),
 };
 
+/** Format a YYYY-MM-DD date as DD.MM.YYYY for display. */
+function formatDateForDisplay(date: string): string {
+  const [y, m, d] = date.split('-');
+  return `${d}.${m}.${y}`;
+}
+
+/** "ListName (DD.MM.YYYY)" or just "ListName" when date is absent. */
+export function formatCrossListEntries(entries: CrossListEntry[]): string {
+  return entries
+    .map((e) => (e.date ? `${e.listName} (${formatDateForDisplay(e.date)})` : e.listName))
+    .join(', ');
+}
+
 /**
  * Scans all non-active lists to build lookup maps of movies and bridge actors
- * already used, keyed by their IDs with the list names they appeared in.
+ * already used, keyed by their IDs with the list names and dates they appeared in.
  */
 export function crossListUsage(
   lists: readonly { id: string; name: string; state: { links: ChainLink[] } }[],
@@ -53,28 +72,30 @@ export function crossListUsage(
 ): CrossListUsage {
   if (lists.length <= 1) return EMPTY_CROSS_LIST_USAGE;
 
-  const movieIds = new Map<number, string[]>();
-  const bridgeActorIds = new Map<number, string[]>();
+  const movieIds = new Map<number, CrossListEntry[]>();
+  const bridgeActorIds = new Map<number, CrossListEntry[]>();
 
   for (const entry of lists) {
     if (entry.id === activeListId) continue;
     const { links } = entry.state;
     for (const link of links) {
-      const existing = movieIds.get(link.movie.id);
-      if (existing) {
-        if (!existing.includes(entry.name)) existing.push(entry.name);
+      const arr = movieIds.get(link.movie.id);
+      const item: CrossListEntry = { listName: entry.name, date: link.loggedDate ?? null };
+      if (arr) {
+        if (!arr.some((e) => e.listName === entry.name)) arr.push(item);
       } else {
-        movieIds.set(link.movie.id, [entry.name]);
+        movieIds.set(link.movie.id, [item]);
       }
     }
     for (let i = 1; i < links.length; i++) {
       const actorId = links[i].connectingActorId;
       if (actorId == null) continue;
-      const existing = bridgeActorIds.get(actorId);
-      if (existing) {
-        if (!existing.includes(entry.name)) existing.push(entry.name);
+      const arr = bridgeActorIds.get(actorId);
+      const item: CrossListEntry = { listName: entry.name, date: links[i].loggedDate ?? null };
+      if (arr) {
+        if (!arr.some((e) => e.listName === entry.name)) arr.push(item);
       } else {
-        bridgeActorIds.set(actorId, [entry.name]);
+        bridgeActorIds.set(actorId, [item]);
       }
     }
   }

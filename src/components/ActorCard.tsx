@@ -29,8 +29,8 @@ interface ActorCardProps {
   /** Preview difficulty: full step (prepend) or actor-only slice (append pick-actor). */
   challengePoints?: number | null;
   challengePointsVariant?: 'step' | 'actorOnly';
-  /** When set, shows a cross-list warning (actor still selectable). */
-  crossListWarning?: string;
+  /** When set, actor is blocked due to cross-list memory (not selectable). */
+  crossListBlocked?: string;
 }
 
 /**
@@ -111,7 +111,7 @@ export default function ActorCard({
   showLink = false,
   challengePoints,
   challengePointsVariant = 'step',
-  crossListWarning,
+  crossListBlocked,
 }: ActorCardProps) {
   const api = useMovieApiForChain();
   const { t } = useTranslation();
@@ -156,11 +156,11 @@ export default function ActorCard({
             </p>
           </div>
         )}
-        {crossListWarning && !disabled && (
-          <div className="mt-1 flex items-start gap-1 min-w-0 text-orange-700/90 dark:text-orange-400/90">
-            <CrossListWarningIcon className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-            <p className="text-[10px] leading-snug min-w-0 break-words line-clamp-2">
-              {crossListWarning}
+        {crossListBlocked && disabled && !disabledBridge && !sequentialLocked && (
+          <div className="mt-1 flex items-start gap-1 min-w-0">
+            <CrossListWarningIcon className="w-3.5 h-3.5 shrink-0 mt-0.5 text-gray-500" />
+            <p className="text-[10px] text-gray-500 leading-snug min-w-0 break-words line-clamp-3">
+              {crossListBlocked}
             </p>
           </div>
         )}
@@ -199,9 +199,11 @@ export default function ActorCard({
   const ariaLabel =
     disabled && disabledBridge
       ? `${actor.name}. ${disabledBridge.description}`
-      : sequentialLocked && sequentialLockedDescription
-        ? sequentialLockedDescription
-        : undefined;
+      : disabled && crossListBlocked
+        ? `${actor.name}. ${crossListBlocked}`
+        : sequentialLocked && sequentialLockedDescription
+          ? sequentialLockedDescription
+          : undefined;
 
   return (
     <div
@@ -213,9 +215,11 @@ export default function ActorCard({
       title={
         disabled && disabledBridge
           ? disabledBridge.description
-          : sequentialLocked && sequentialLockedDescription
-            ? sequentialLockedDescription
-            : undefined
+          : disabled && crossListBlocked
+            ? crossListBlocked
+            : sequentialLocked && sequentialLockedDescription
+              ? sequentialLockedDescription
+              : undefined
       }
       className={`${baseClasses} ${stateClasses} w-full`}
       onClick={() => {
