@@ -11,6 +11,7 @@ import ChallengePointsInline from './ChallengePointsInline';
 import { scoreChainStep } from '../gamification/chainScoring';
 import { useChainUiPreferences } from '../hooks/useChainUiPreferences';
 import { findFirstSelectableMovieId } from '../lib/sequentialSelection';
+import { pickRandomSelectableId } from '../lib/randomSinglePick';
 import { TMDB_GENRE_ANIMATION } from '../lib/tmdbGenres';
 
 type SortOption = 'popularity' | 'title-asc' | 'title-desc' | 'date-newest' | 'date-oldest';
@@ -70,7 +71,7 @@ export default function MovieSuggestions() {
   }, [prependMode, headMovie, actor]);
 
   const chainMovieIds = useMemo(() => new Set(links.map((l) => l.movie.id)), [links]);
-  const { strictListOrderMovies } = useChainUiPreferences();
+  const { strictListOrderMovies, randomSinglePickMovies } = useChainUiPreferences();
 
   /** Full sort + search order (no 20-movie pagination) — defines “next” for strict list order. */
   const orderedForSequential = useMemo(() => {
@@ -84,6 +85,16 @@ export default function MovieSuggestions() {
     () => findFirstSelectableMovieId(orderedForSequential, chainMovieIds),
     [orderedForSequential, chainMovieIds]
   );
+
+  const eligibleMovieIdsInOrder = useMemo(
+    () => orderedForSequential.filter((m) => !chainMovieIds.has(m.id)).map((m) => m.id),
+    [orderedForSequential, chainMovieIds]
+  );
+
+  const randomChosenMovieId = useMemo(() => {
+    if (!randomSinglePickMovies || eligibleMovieIdsInOrder.length === 0) return null;
+    return pickRandomSelectableId(eligibleMovieIdsInOrder, Math.random);
+  }, [randomSinglePickMovies, eligibleMovieIdsInOrder]);
 
   if (selectedActorId !== prevDeps.actorId || links.length !== prevDeps.linksLen) {
     setPrevDeps({ actorId: selectedActorId, linksLen: links.length });
@@ -227,7 +238,9 @@ export default function MovieSuggestions() {
         prependMode={prependMode === true}
         actorPopularity={actor?.popularity ?? null}
         strictListOrderMovies={strictListOrderMovies}
+        randomSinglePickMovies={randomSinglePickMovies}
         firstSelectableMovieId={firstSelectableMovieId}
+        randomChosenMovieId={randomChosenMovieId}
         onSelect={(movie) => addMovie(movie, prependMode ? loggedDateForPastLink : localDateString())}
         posterUrl={api.posterUrl}
         t={t}
@@ -269,7 +282,9 @@ function MovieGrid({
   prependMode,
   actorPopularity,
   strictListOrderMovies,
+  randomSinglePickMovies,
   firstSelectableMovieId,
+  randomChosenMovieId,
   onSelect,
   posterUrl,
   t,
@@ -282,7 +297,9 @@ function MovieGrid({
   prependMode: boolean;
   actorPopularity: number | null;
   strictListOrderMovies: boolean;
+  randomSinglePickMovies: boolean;
   firstSelectableMovieId: number | null;
+  randomChosenMovieId: number | null;
   onSelect: (movie: Movie) => void;
   posterUrl: (path: string | null, size?: string) => string;
   t: (key: string, options?: Record<string, unknown>) => string;
@@ -309,36 +326,48 @@ function MovieGrid({
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
       {displayMovies.map((movie) => {
         const inChain = chainMovieIds.has(movie.id);
+        const randomLocked =
+          randomSinglePickMovies &&
+          !inChain &&
+          randomChosenMovieId !== null &&
+          movie.id !== randomChosenMovieId;
         const sequentialLocked =
+          !randomSinglePickMovies &&
           strictListOrderMovies &&
           !inChain &&
           firstSelectableMovieId !== null &&
           movie.id !== firstSelectableMovieId;
-        const blocked = inChain || sequentialLocked;
+        const listOrderLocked = randomLocked || sequentialLocked;
+        const blocked = inChain || listOrderLocked;
         const stepPoints =
-          prependMode || inChain || sequentialLocked ? null : scoreChainStep(movie, actorPopularity);
-        const ariaLabel = sequentialLocked
-          ? t('movieSequentialLockedAria', { title: movie.title })
-          : undefined;
+          prependMode || inChain || listOrderLocked ? null : scoreChainStep(movie, actorPopularity);
+        const ariaLabel = randomLocked
+          ? t('movieRandomPickLockedAria', { title: movie.title })
+          : sequentialLocked
+            ? t('movieSequentialLockedAria', { title: movie.title })
+            : undefined;
         return (
           <div
             key={movie.id}
             role="button"
+            data-selectable={blocked ? undefined : 'true'}
             tabIndex={blocked ? -1 : 0}
             aria-disabled={blocked || undefined}
             aria-label={ariaLabel}
             title={
               inChain
                 ? t('movieAlreadyInChain')
-                : sequentialLocked
-                  ? t('movieSequentialLockedAria', { title: movie.title })
-                  : undefined
+                : randomLocked
+                  ? t('movieRandomPickLockedAria', { title: movie.title })
+                  : sequentialLocked
+                    ? t('movieSequentialLockedAria', { title: movie.title })
+                    : undefined
             }
             className={
               'group text-left rounded-lg overflow-hidden border transition-all ' +
               (inChain
                 ? 'cursor-not-allowed opacity-50 bg-gray-100/80 dark:bg-gray-800/30 border-gray-200/80 dark:border-gray-800/80'
-                : sequentialLocked
+                : listOrderLocked
                   ? 'cursor-not-allowed border-amber-400/60 dark:border-amber-600/50 bg-amber-50/50 dark:bg-amber-950/25 ring-2 ring-amber-400/35 dark:ring-amber-600/50 opacity-[0.88]'
                   : 'cursor-pointer bg-gray-100/80 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-800 hover:border-indigo-600/50 dark:hover:border-indigo-500/50 hover:scale-[1.02]')
             }
@@ -358,7 +387,7 @@ function MovieGrid({
               alt={movie.title}
               className={
                 'w-full aspect-[2/3] object-cover ' +
-                (inChain ? 'grayscale' : sequentialLocked ? 'brightness-[0.92]' : '')
+                (inChain ? 'grayscale' : listOrderLocked ? 'brightness-[0.92]' : '')
               }
             />
             <div className="p-2">
@@ -367,7 +396,7 @@ function MovieGrid({
                   'text-sm font-medium truncate ' +
                   (inChain
                     ? 'text-gray-500'
-                    : sequentialLocked
+                    : listOrderLocked
                       ? 'text-gray-800 dark:text-gray-200'
                       : 'text-gray-800 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-900 dark:text-white')
                 }
@@ -384,6 +413,25 @@ function MovieGrid({
               </div>
               {inChain ? (
                 <p className="text-[10px] text-gray-600 mt-1 leading-tight">{t('movieAlreadyInChainHint')}</p>
+              ) : randomLocked ? (
+                <p className="text-[10px] text-amber-800/90 dark:text-amber-400/90 mt-1 leading-tight flex items-center gap-1">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-3 h-3 shrink-0"
+                    aria-hidden
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+                    />
+                  </svg>
+                  {t('movieRandomPickLockedHint')}
+                </p>
               ) : sequentialLocked ? (
                 <p className="text-[10px] text-amber-800/90 dark:text-amber-400/90 mt-1 leading-tight flex items-center gap-1">
                   <svg
