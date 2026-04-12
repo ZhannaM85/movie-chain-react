@@ -83,6 +83,8 @@ export default function UserStatsPage() {
 
   const chainMovieIdsKey = useMemo(() => links.map((l) => l.movie.id).join(','), [links]);
 
+  const randomSinglePickAnyOn = randomSinglePickActors || randomSinglePickMovies;
+
   const [topCastActors, setTopCastActors] = useState<ActorBridgeRank[]>([]);
   const [topCastLoading, setTopCastLoading] = useState(true);
 
@@ -378,11 +380,25 @@ export default function UserStatsPage() {
               type="button"
               role="switch"
               aria-checked={randomSinglePickLimitToTop12}
+              aria-disabled={!randomSinglePickAnyOn}
               aria-labelledby="random-single-pick-heading"
               aria-describedby="random-single-pick-limit-desc"
-              onClick={() => setRandomSinglePickLimitToTop12(!randomSinglePickLimitToTop12)}
+              disabled={!randomSinglePickAnyOn && !isTouchPrimaryUi}
+              title={
+                !randomSinglePickAnyOn ? t('randomLimitPoolSwitchDisabledNoRandomOn') : undefined
+              }
+              onClick={() => {
+                if (!randomSinglePickAnyOn) {
+                  if (isTouchPrimaryUi) {
+                    setPickModeBlockedHint(t('randomLimitPoolSwitchDisabledNoRandomOn'));
+                  }
+                  return;
+                }
+                setRandomSinglePickLimitToTop12(!randomSinglePickLimitToTop12);
+              }}
               className={
-                'relative shrink-0 h-7 w-12 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ' +
+                'relative shrink-0 h-7 w-12 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:opacity-45 disabled:cursor-not-allowed ' +
+                (!randomSinglePickAnyOn && isTouchPrimaryUi ? 'opacity-45 cursor-not-allowed ' : '') +
                 (randomSinglePickLimitToTop12
                   ? 'bg-indigo-600 dark:bg-indigo-500'
                   : 'bg-gray-300 dark:bg-gray-600')
