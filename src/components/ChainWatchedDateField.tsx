@@ -55,7 +55,7 @@ export default function ChainWatchedDateField({
   showRemoveFirstButton = false,
   onRemoveFirst,
 }: ChainWatchedDateFieldProps) {
-  const { links, updateLoggedDate } = useChainContext();
+  const { links, updateLoggedDate, updateLoggedTime } = useChainContext();
   const { t, i18n } = useTranslation();
   const link = links[chainIndex];
   const [editing, setEditing] = useState(false);
@@ -136,10 +136,16 @@ export default function ChainWatchedDateField({
                 title={link.loggedDate}
               >
                 {t('chainWatchedOn', { date: shortDateForSidebar })}
+                {link.loggedTime && (
+                  <span className="ml-1 text-emerald-500/70">{link.loggedTime}</span>
+                )}
               </span>
             ) : (
               <time dateTime={link.loggedDate} className="text-sm text-gray-800 dark:text-gray-200 shrink-0">
                 {formattedDateMedium}
+                {link.loggedTime && (
+                  <span className="ml-1.5 text-gray-500 dark:text-gray-400">{link.loggedTime}</span>
+                )}
               </time>
             )
           ) : (
@@ -186,6 +192,15 @@ export default function ChainWatchedDateField({
           if (v) updateLoggedDate(chainIndex, v);
         }}
         className={inputClassName ?? defaultInput}
+      />
+      <input
+        type="time"
+        value={link.loggedTime ?? ''}
+        onChange={(e) => {
+          updateLoggedTime(chainIndex, e.target.value);
+        }}
+        className={inputClassName ?? defaultInput}
+        aria-label={t('loggedTimeAria')}
       />
       <button
         type="button"

@@ -82,6 +82,9 @@ function ChainPageChainItem({
                       dateStyle: 'long',
                     }).format(new Date(`${link.loggedDate}T12:00:00`)),
                   })}
+                  {link.loggedTime && (
+                    <span className="ml-1.5 text-emerald-400/60">{link.loggedTime}</span>
+                  )}
                 </time>
               </p>
             )}
