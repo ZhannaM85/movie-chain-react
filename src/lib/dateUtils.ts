@@ -1,4 +1,13 @@
 /**
+ * Current local time as HH:MM. Used to auto-stamp when a movie is added.
+ */
+export function localTimeString(d = new Date()): string {
+  const h = String(d.getHours()).padStart(2, '0');
+  const m = String(d.getMinutes()).padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+/**
  * Calendar date in the user's local timezone (YYYY-MM-DD). Used for stats heatmap buckets.
  */
 export function localDateString(d = new Date()): string {

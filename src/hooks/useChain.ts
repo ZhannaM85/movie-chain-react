@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import { normalizeLoggedDateForHeatmap } from '../lib/dateUtils';
+import { normalizeLoggedDateForHeatmap, localTimeString } from '../lib/dateUtils';
 import type { Actor, ChainState, Movie, MovieSource } from '../types/movie';
 import {
   CHAIN_LIST_NAME_MAX_LENGTH,
@@ -255,6 +255,7 @@ export function useChain() {
             connectingActorName: null,
             comment: '',
             loggedDate: logged,
+            loggedTime: localTimeString(),
             entryKind: 'start',
             heatmapStrikeId: strikeForRun,
           },
@@ -352,6 +353,7 @@ export function useChain() {
             connectingActorName: null,
             comment: '',
             loggedDate: day,
+            loggedTime: localTimeString(),
             entryKind: 'prepend',
             heatmapStrikeId: strikeForNew,
           },
@@ -374,6 +376,7 @@ export function useChain() {
             connectingActorName: actorName,
             comment: '',
             loggedDate: day,
+            loggedTime: localTimeString(),
             stepDifficulty,
             entryKind: 'append',
             heatmapStrikeId: strikeForNew,
@@ -431,6 +434,17 @@ export function useChain() {
           return next;
         });
       });
+      return { ...prev, links };
+    });
+  }, [updateActiveState]);
+
+  const updateLoggedTime = useCallback((index: number, loggedTime: string) => {
+    updateActiveState((prev) => {
+      const link = prev.links[index];
+      if (!link) return prev;
+      if (link.loggedTime === loggedTime) return prev;
+      const links = [...prev.links];
+      links[index] = { ...link, loggedTime };
       return { ...prev, links };
     });
   }, [updateActiveState]);
@@ -649,6 +663,7 @@ export function useChain() {
     addMovie,
     updateComment,
     updateLoggedDate,
+    updateLoggedTime,
     resetChain,
     undoLast,
     removeFirst,
