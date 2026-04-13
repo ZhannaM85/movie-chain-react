@@ -52,6 +52,8 @@ export interface ChainLink {
   comment: string;
   /** Local calendar day (YYYY-MM-DD) this link counts toward in “movies per day” / heatmap. */
   loggedDate?: string | null;
+  /** Local time of day (HH:MM) when the movie was watched. */
+  loggedTime?: string | null;
   /** Difficulty points for this step (set when linking via a shared actor). */
   stepDifficulty?: number;
   /** Set when the link is created; older saves omit — first link defaults to `start`. */
