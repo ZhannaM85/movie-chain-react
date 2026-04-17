@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { eligibleActorIdsForRandomPick, pickRandomSelectableId, stableRng } from '../lib/randomSinglePick';
 import type { MovieCredits } from '../types/movie';
 import { useChainContext } from '../context/ChainContext';
@@ -40,6 +41,7 @@ function ChevronToggleIcon({ expanded }: { expanded: boolean }) {
 
 export default function ActorPicker({ credits }: ActorPickerProps) {
   const { selectActor, prependMode, links, crossListData } = useChainContext();
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const [showAll, setShowAll] = useState(false);
   const [actorsExpanded, setActorsExpanded] = useState(true);
@@ -166,7 +168,16 @@ export default function ActorPicker({ credits }: ActorPickerProps) {
                   sequentialLockedHintOverride={
                     randomLocked ? t('actorRandomPickLockedHint') : undefined
                   }
-                  onClick={() => selectActor(actor.id, actor.name, actor.popularity)}
+                  onClick={() => {
+                    selectActor(actor.id, actor.name, actor.popularity);
+                    navigate(`/?actorId=${actor.id}`, {
+                      state: {
+                        chainUndo: 'cancelActorSelection',
+                        actorName: actor.name,
+                        actorPopularity: actor.popularity ?? null,
+                      },
+                    });
+                  }}
                   challengePoints={listOrderLocked ? null : challengePoints}
                   challengePointsVariant={challengePointsVariant}
                   crossListBlocked={crossListBlocked}

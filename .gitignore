@@ -33,3 +33,5 @@ dist-ssr
 
 # E2E generated screenshots (see e2e/*.spec.ts)
 e2e/screenshots/
+
+.claude

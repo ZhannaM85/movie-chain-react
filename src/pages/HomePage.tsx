@@ -12,6 +12,7 @@ import { useMovieDetails } from '../hooks/useMovieDetails';
 import { useSyncCastAppearances } from '../hooks/useSyncCastAppearances';
 import { useTranslation } from 'react-i18next';
 import { findHeroChainIndexByLastWatched } from '../lib/chainHero';
+import { useChainBackNavigation } from '../hooks/useChainBackNavigation';
 
 /**
  * Main page that either shows the start screen or the active chain view.
@@ -46,6 +47,7 @@ function ChainView({
   const api = useMovieApiForChain();
   const { t } = useTranslation();
   const { currentStep, links, selectedActorId, prependMode } = useChainContext();
+  useChainBackNavigation();
   const heroMovieId = links[heroChainIndex].movie.id;
   const pickMovieId = links[pickChainIndex].movie.id;
   const sameMovieForHeroAndPick = heroMovieId === pickMovieId;
