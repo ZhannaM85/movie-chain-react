@@ -5,7 +5,7 @@ import type { Actor } from '../types/movie';
 import { defaultPastLinkLoggedDateFromHeadLink, localDateString } from '../lib/dateUtils';
 import { useMovieApiForChain } from '../context/MovieApiContext';
 import { useChainContext } from '../context/ChainContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ChallengePointsInline from './ChallengePointsInline';
 import { scoreChainStep } from '../gamification/chainScoring';
@@ -42,6 +42,7 @@ function sortMovies(movies: Movie[], sortBy: SortOption): Movie[] {
 export default function MovieSuggestions() {
   const api = useMovieApiForChain();
   const { selectedActorId, addMovie, links, cancelActorSelection, prependMode, crossListData } = useChainContext();
+  const navigate = useNavigate();
   const headMovie = prependMode && links[0] ? links[0].movie : null;
   const { t, i18n } = useTranslation();
   const [loggedDateForPastLink, setLoggedDateForPastLink] = useState(() =>
@@ -256,7 +257,11 @@ export default function MovieSuggestions() {
         firstSelectableMovieId={firstSelectableMovieId}
         randomChosenMovieId={randomChosenMovieId}
         crossListMovieIds={crossListMemory ? crossListData.movieIds : null}
-        onSelect={(movie) => addMovie(movie, prependMode ? loggedDateForPastLink : localDateString())}
+        onSelect={(movie) => {
+          const wasPrepend = prependMode === true;
+          addMovie(movie, prependMode ? loggedDateForPastLink : localDateString());
+          navigate('/', { state: { chainUndo: wasPrepend ? 'removeFirstMovie' : 'removeLastMovie' } });
+        }}
         posterUrl={api.posterUrl}
         t={t}
       />
